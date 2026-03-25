@@ -27,6 +27,9 @@ dist-ssr
 progress.md
 tasks.json
 INSTALL.md
+API_CONTRACT.md
+FRONTEND_INTEGRATION.md
+ARCHITECTURE.md
 
 # Optional local task copies
 tasks.local.json
