@@ -89,3 +89,4 @@ export {
 } from "./pagination"
 export { Skeleton } from "./skeleton"
 export { Label } from "./label"
+export { Toaster } from "./sonner"

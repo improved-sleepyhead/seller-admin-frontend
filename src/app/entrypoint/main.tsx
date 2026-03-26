@@ -1,11 +1,15 @@
 import { StrictMode } from "react"
 import { createRoot } from "react-dom/client"
-import { RouterProvider } from "react-router"
 
-import { router } from "../routes"
+import "@/app/styles/index.css"
+
+import { env } from "@/app/config"
+import { AppProviders } from "@/app/providers"
+
+void env.VITE_API_BASE_URL
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
-    <RouterProvider router={router} />
+    <AppProviders />
   </StrictMode>
 )

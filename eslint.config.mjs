@@ -232,6 +232,21 @@ export default defineConfig(
             "../../../../../**",
 
             "react-dom/*",
+            "zod/*",
+
+            "app/*",
+            "app/**",
+            "pages/*",
+            "widgets/*",
+            "features/*",
+            "entities/*",
+
+            "@/app/*",
+            "@/app/**",
+            "@/pages/*",
+            "@/widgets/*",
+            "@/features/*",
+            "@/entities/*",
 
             "shared/ui/**",
             "shared/lib/**",
@@ -345,6 +360,20 @@ export default defineConfig(
           ]
         }
       ]
+    }
+  },
+
+  // Slice index.ts files re-export from internal segments (ui/, model/, api/, lib/)
+  // This is the standard FSD public API pattern
+  {
+    files: [
+      "src/pages/*/index.ts",
+      "src/widgets/*/index.ts",
+      "src/features/*/index.ts",
+      "src/entities/*/index.ts"
+    ],
+    rules: {
+      "import/no-internal-modules": "off"
     }
   }
 )
