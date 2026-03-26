@@ -1,10 +1,22 @@
 import { createBrowserRouter, Outlet } from "react-router-dom"
 
+import { ThemeToggle } from "@/shared/ui/theme"
+
 import { RootRedirect } from "./redirects"
 import { ROUTE_PATHS } from "./route-paths"
 
 function RootLayout() {
-  return <Outlet />
+  return (
+    <div className="min-h-screen bg-background text-foreground">
+      <header className="flex justify-end p-4">
+        <ThemeToggle />
+      </header>
+
+      <main className="px-4 pb-6">
+        <Outlet />
+      </main>
+    </div>
+  )
 }
 
 export const router = createBrowserRouter([
