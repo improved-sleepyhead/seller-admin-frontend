@@ -14,7 +14,13 @@ export type AppApiErrorCode = (typeof APP_API_ERROR_CODES)[number]
 
 export type AppApiFieldErrors = Record<string, string[]>
 
-export type AppApiError = {
+export interface BackendApiErrorPayload {
+  code?: string
+  message?: string
+  details?: unknown
+}
+
+export interface AppApiErrorOptions {
   status: number | null
   code: AppApiErrorCode
   message: string
@@ -22,10 +28,21 @@ export type AppApiError = {
   raw?: unknown
 }
 
-type BackendApiErrorPayload = {
-  code?: string
-  message?: string
-  details?: unknown
+export class AppApiError extends Error {
+  readonly status: number | null
+  readonly code: AppApiErrorCode
+  readonly fieldErrors?: AppApiFieldErrors
+  readonly raw?: unknown
+
+  constructor({ status, code, message, fieldErrors, raw }: AppApiErrorOptions) {
+    super(message)
+
+    this.name = "AppApiError"
+    this.status = status
+    this.code = code
+    this.fieldErrors = fieldErrors
+    this.raw = raw
+  }
 }
 
 const backendCodeMap: Record<string, AppApiErrorCode> = {
@@ -44,7 +61,10 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 }
 
 function isAppApiErrorCode(value: unknown): value is AppApiErrorCode {
-  return typeof value === "string" && APP_API_ERROR_CODES.includes(value as AppApiErrorCode)
+  return (
+    typeof value === "string" &&
+    APP_API_ERROR_CODES.includes(value as AppApiErrorCode)
+  )
 }
 
 function getDefaultMessage(code: AppApiErrorCode): string {
@@ -79,7 +99,9 @@ function getCodeFromStatus(status: number | null): AppApiErrorCode {
   return "BAD_REQUEST"
 }
 
-function extractBackendPayload(data: unknown): BackendApiErrorPayload | undefined {
+function extractBackendPayload(
+  data: unknown
+): BackendApiErrorPayload | undefined {
   if (!isRecord(data)) {
     return undefined
   }
@@ -91,7 +113,9 @@ function extractBackendPayload(data: unknown): BackendApiErrorPayload | undefine
   }
 }
 
-function extractFieldErrorsFromValidationDetails(details: unknown): AppApiFieldErrors | undefined {
+function extractFieldErrorsFromValidationDetails(
+  details: unknown
+): AppApiFieldErrors | undefined {
   if (!isRecord(details)) {
     return undefined
   }
@@ -121,7 +145,10 @@ function extractFieldErrorsFromValidationDetails(details: unknown): AppApiFieldE
   return Object.keys(normalized).length > 0 ? normalized : undefined
 }
 
-function toAppApiErrorCode(rawCode: string | undefined, status: number | null): AppApiErrorCode {
+function toAppApiErrorCode(
+  rawCode: string | undefined,
+  status: number | null
+): AppApiErrorCode {
   if (rawCode && backendCodeMap[rawCode]) {
     return backendCodeMap[rawCode]
   }
@@ -130,6 +157,10 @@ function toAppApiErrorCode(rawCode: string | undefined, status: number | null): 
 }
 
 export function isAppApiError(value: unknown): value is AppApiError {
+  if (value instanceof AppApiError) {
+    return true
+  }
+
   if (!isRecord(value)) {
     return false
   }
@@ -142,48 +173,49 @@ export function isAppApiError(value: unknown): value is AppApiError {
 }
 
 export function normalizeApiError(error: unknown): AppApiError {
-  if (isAppApiError(error)) {
+  if (error instanceof AppApiError) {
     return error
   }
 
   if (isAxiosError(error)) {
     if (!error.response) {
-      const code: AppApiErrorCode = error.code === "ECONNABORTED" ? "AI_TIMEOUT" : "NETWORK_ERROR"
+      const code: AppApiErrorCode =
+        error.code === "ECONNABORTED" ? "AI_TIMEOUT" : "NETWORK_ERROR"
 
-      return {
+      return new AppApiError({
         code,
         message: error.message || getDefaultMessage(code),
         raw: error,
         status: null
-      }
+      })
     }
 
     const payload = extractBackendPayload(error.response.data)
     const status = error.response.status ?? null
     const code = toAppApiErrorCode(payload?.code, status)
 
-    return {
+    return new AppApiError({
       code,
       fieldErrors: extractFieldErrorsFromValidationDetails(payload?.details),
       message: payload?.message ?? error.message ?? getDefaultMessage(code),
       raw: error.response.data,
       status
-    }
+    })
   }
 
   if (error instanceof Error) {
-    return {
+    return new AppApiError({
       code: "BAD_REQUEST",
       message: error.message || getDefaultMessage("BAD_REQUEST"),
       raw: error,
       status: null
-    }
+    })
   }
 
-  return {
+  return new AppApiError({
     code: "BAD_REQUEST",
     message: getDefaultMessage("BAD_REQUEST"),
     raw: error,
     status: null
-  }
+  })
 }

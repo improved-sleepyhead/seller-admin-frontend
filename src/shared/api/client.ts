@@ -4,14 +4,24 @@ import { z } from "zod/v4"
 const apiBaseUrlSchema = z.url()
 
 function getRawEnvValue(name: string): unknown {
-  const viteEnv = (import.meta as ImportMeta & { env?: Record<string, unknown> }).env
+  try {
+    const viteEnv = (
+      import.meta as ImportMeta & { env: Record<string, unknown> }
+    ).env
 
-  if (viteEnv && name in viteEnv) {
-    return viteEnv[name]
+    if (typeof viteEnv[name] !== "undefined") {
+      return viteEnv[name]
+    }
+  } catch {
+    // Ignore when executed outside Vite runtime (for example, Node-based checks).
   }
 
-  if (typeof process !== "undefined" && process.env) {
-    return process.env[name]
+  const globalWithProcess = globalThis as typeof globalThis & {
+    process?: { env?: Record<string, unknown> }
+  }
+
+  if (globalWithProcess.process?.env && name in globalWithProcess.process.env) {
+    return globalWithProcess.process.env[name]
   }
 
   return undefined
@@ -36,7 +46,7 @@ export const apiClient = axios.create({
   }
 })
 
-apiClient.interceptors.request.use((config) => {
+apiClient.interceptors.request.use(config => {
   if (!config.signal) {
     throw new Error("AbortSignal is required for every API request.")
   }
@@ -44,14 +54,21 @@ apiClient.interceptors.request.use((config) => {
   return config
 })
 
-export type ApiRequestConfig<TData = unknown> = Omit<AxiosRequestConfig<TData>, "signal"> & {
+export type ApiRequestConfig<TData = unknown> = Omit<
+  AxiosRequestConfig<TData>,
+  "signal"
+> & {
   signal: AbortSignal
 }
 
 export async function apiRequest<TResponse, TData = unknown>(
   config: ApiRequestConfig<TData>
 ): Promise<TResponse> {
-  const response = await apiClient.request<TResponse, AxiosResponse<TResponse>, TData>(config)
+  const response = await apiClient.request<
+    TResponse,
+    AxiosResponse<TResponse>,
+    TData
+  >(config)
   return response.data
 }
 

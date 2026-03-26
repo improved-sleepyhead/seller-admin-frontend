@@ -1,6 +1,6 @@
 import { z } from "zod/v4"
 
-import type { AppApiError, AppApiFieldErrors } from "./error"
+import { AppApiError, type AppApiFieldErrors } from "./error"
 
 export type ApiParseResult<TData> =
   | {
@@ -16,8 +16,17 @@ function getFieldErrors(error: z.ZodError): AppApiFieldErrors | undefined {
   const flattened = z.flattenError(error)
   const normalized: AppApiFieldErrors = {}
 
-  for (const [field, fieldErrors] of Object.entries(flattened.fieldErrors)) {
-    if (!fieldErrors || fieldErrors.length === 0) {
+  for (const [field, rawFieldErrors] of Object.entries(flattened.fieldErrors)) {
+    if (!Array.isArray(rawFieldErrors)) {
+      continue
+    }
+
+    const fieldErrors = rawFieldErrors.filter(
+      (fieldError): fieldError is string =>
+        typeof fieldError === "string" && fieldError.length > 0
+    )
+
+    if (fieldErrors.length === 0) {
       continue
     }
 
@@ -42,13 +51,13 @@ export function safeParseApiResponse<TData>(
   }
 
   return {
-    error: {
+    error: new AppApiError({
       code: "VALIDATION_ERROR",
       fieldErrors: getFieldErrors(result.error),
       message,
       raw: payload,
       status: null
-    },
+    }),
     success: false
   }
 }
