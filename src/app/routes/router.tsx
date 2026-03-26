@@ -7,7 +7,7 @@ import { ROUTE_PATHS } from "./route-paths"
 
 function RootLayout() {
   return (
-    <div className="min-h-screen bg-background text-foreground">
+    <div className="bg-background text-foreground min-h-screen">
       <header className="flex justify-end p-4">
         <ThemeToggle />
       </header>
