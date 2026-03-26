@@ -12,7 +12,10 @@ export interface UpdateAdMutationVariables {
 
 export function updateAdMutation(id: number) {
   return mutationOptions({
-    mutationFn: ({ item, signal }: UpdateAdMutationVariables): Promise<ApiSuccessDto> =>
+    mutationFn: ({
+      item,
+      signal
+    }: UpdateAdMutationVariables): Promise<ApiSuccessDto> =>
       putAd(id, item, signal),
     mutationKey: [...adsKeys.detail(id), "update"] as const
   })
