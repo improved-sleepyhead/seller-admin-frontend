@@ -150,13 +150,12 @@ export const AiStatusSchema: z.ZodType<AiStatusDto> = z.object({
   provider: z.enum(["openrouter"]).nullable()
 })
 
-export const AiDescriptionResponseSchema: z.ZodType<AiDescriptionResponse> = z.object(
-  {
+export const AiDescriptionResponseSchema: z.ZodType<AiDescriptionResponse> =
+  z.object({
     model: z.string().optional(),
     suggestion: z.string().min(1),
     usage: AiUsageSchema.optional()
-  }
-)
+  })
 
 export const AiPriceResponseSchema: z.ZodType<AiPriceResponse> = z.object({
   currency: z.literal("RUB"),
@@ -168,12 +167,14 @@ export const AiPriceResponseSchema: z.ZodType<AiPriceResponse> = z.object({
 
 export const AdCategoryFilterSchema: z.ZodType<AdCategory> = AdCategorySchema
 
-export const AdsListQueryParamsSchema: z.ZodType<AdsListQueryParams> = z.object({
-  categories: z.array(AdCategorySchema).optional(),
-  limit: z.number().int().positive().optional(),
-  needsRevision: z.boolean().optional(),
-  q: z.string().optional(),
-  skip: z.number().int().nonnegative().optional(),
-  sortColumn: AdSortColumnSchema.optional(),
-  sortDirection: AdSortDirectionSchema.optional()
-})
+export const AdsListQueryParamsSchema: z.ZodType<AdsListQueryParams> = z.object(
+  {
+    categories: z.array(AdCategorySchema).optional(),
+    limit: z.number().int().positive().optional(),
+    needsRevision: z.boolean().optional(),
+    q: z.string().optional(),
+    skip: z.number().int().nonnegative().optional(),
+    sortColumn: AdSortColumnSchema.optional(),
+    sortDirection: AdSortDirectionSchema.optional()
+  }
+)

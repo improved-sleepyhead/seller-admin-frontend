@@ -90,7 +90,11 @@ export async function putAd(
   signal: AbortSignal
 ): Promise<ApiSuccessDto> {
   try {
-    const payload = await apiPut<unknown, ItemUpdateIn>(`/items/${id}`, item, signal)
+    const payload = await apiPut<unknown, ItemUpdateIn>(
+      `/items/${id}`,
+      item,
+      signal
+    )
     return parseApiResponse(SuccessSchema, payload)
   } catch (error) {
     throw normalizeApiError(error)
