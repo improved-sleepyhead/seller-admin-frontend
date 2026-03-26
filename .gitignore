@@ -30,6 +30,7 @@ INSTALL.md
 API_CONTRACT.md
 FRONTEND_INTEGRATION.md
 ARCHITECTURE.md
+Architecture_PRD.md
 
 # Optional local task copies
 tasks.local.json
