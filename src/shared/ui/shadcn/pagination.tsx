@@ -1,12 +1,13 @@
-import * as React from "react"
 import {
   ChevronLeftIcon,
   ChevronRightIcon,
-  MoreHorizontalIcon,
+  MoreHorizontalIcon
 } from "lucide-react"
 
 import { cn } from "@/shared/lib/cn"
 import { buttonVariants, type Button } from "@/shared/ui/shadcn/button"
+
+import type * as React from "react"
 
 function Pagination({ className, ...props }: React.ComponentProps<"nav">) {
   return (
@@ -56,7 +57,7 @@ function PaginationLink({
       className={cn(
         buttonVariants({
           variant: isActive ? "outline" : "ghost",
-          size,
+          size
         }),
         className
       )}
@@ -123,5 +124,5 @@ export {
   PaginationItem,
   PaginationPrevious,
   PaginationNext,
-  PaginationEllipsis,
+  PaginationEllipsis
 }
