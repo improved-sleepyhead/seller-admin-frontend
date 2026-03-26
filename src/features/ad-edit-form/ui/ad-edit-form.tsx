@@ -1,6 +1,6 @@
 // eslint-disable-next-line import/no-internal-modules -- zod resolver is provided by package subpath
 import { zodResolver } from "@hookform/resolvers/zod"
-import { useEffect } from "react"
+import { useEffect, type ComponentType } from "react"
 import { useForm } from "react-hook-form"
 
 import {
@@ -34,20 +34,41 @@ type FormSubmitHandler = (
   values: AdEditFormValues
 ) => Promise<void> | void | undefined
 
+export interface AdEditFormSubmitButtonProps {
+  disabled: boolean
+  isPending: boolean
+}
+
+type AdEditFormSubmitButtonComponent =
+  ComponentType<AdEditFormSubmitButtonProps>
+
 interface AdEditFormProps {
   ad: AdDetailsDto
   isSavePending?: boolean
   onSubmit?: FormSubmitHandler
+  SubmitButton?: AdEditFormSubmitButtonComponent
 }
 
 function isAdCategory(value: string): value is AdEditFormValues["category"] {
   return AD_CATEGORIES.includes(value as AdEditFormValues["category"])
 }
 
+function DefaultSubmitButton({
+  disabled,
+  isPending
+}: AdEditFormSubmitButtonProps) {
+  return (
+    <Button disabled={disabled} type="submit">
+      {isPending ? "Сохраняем..." : "Сохранить"}
+    </Button>
+  )
+}
+
 export function AdEditForm({
   ad,
   isSavePending = false,
-  onSubmit
+  onSubmit,
+  SubmitButton = DefaultSubmitButton
 }: AdEditFormProps) {
   const form = useForm<AdEditFormValues, unknown, AdEditFormValues>({
     defaultValues: mapAdDetailsToFormValues(ad),
@@ -71,6 +92,9 @@ export function AdEditForm({
 
     await onSubmit(values)
   })
+
+  const isSubmitDisabled =
+    !form.formState.isValid || form.formState.isSubmitting || isSavePending
 
   return (
     <Form {...form}>
@@ -177,16 +201,7 @@ export function AdEditForm({
         <CategoryFields category={category} form={form} />
 
         <div className="flex justify-end">
-          <Button
-            disabled={
-              !form.formState.isValid ||
-              form.formState.isSubmitting ||
-              isSavePending
-            }
-            type="submit"
-          >
-            Сохранить
-          </Button>
+          <SubmitButton disabled={isSubmitDisabled} isPending={isSavePending} />
         </div>
       </form>
     </Form>

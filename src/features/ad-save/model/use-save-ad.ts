@@ -3,9 +3,9 @@ import { useCallback } from "react"
 import { useNavigate } from "react-router-dom"
 import { toast } from "sonner"
 
-import { draftRegistryStore } from "@/app/store"
 import { adsKeys, updateAdMutation, type AdEditFormValues } from "@/entities/ad"
 import { isAppApiError } from "@/shared/api/error"
+import { draftRegistryStore } from "@/shared/lib/draft-registry-store"
 
 import { mapAdEditFormValuesToItemUpdateIn } from "./ad-save.payload"
 import { clearAdDraftAndChatStorage } from "./ad-save.storage"
@@ -54,7 +54,7 @@ export function useSaveAd({ itemId }: UseSaveAdOptions): UseSaveAdResult {
       draftRegistryStore.clearDraftMeta(itemId)
       toast.success("Объявление сохранено.")
 
-      navigate(getAdViewPath(itemId))
+      await navigate(getAdViewPath(itemId))
     }
   })
 
