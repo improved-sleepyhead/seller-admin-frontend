@@ -3,9 +3,22 @@ import { z } from "zod/v4"
 
 const apiBaseUrlSchema = z.url()
 
+function getRawEnvValue(name: string): unknown {
+  const viteEnv = (import.meta as ImportMeta & { env?: Record<string, unknown> }).env
+
+  if (viteEnv && name in viteEnv) {
+    return viteEnv[name]
+  }
+
+  if (typeof process !== "undefined" && process.env) {
+    return process.env[name]
+  }
+
+  return undefined
+}
+
 function getApiBaseUrl(): string {
-  const env = (import.meta as ImportMeta & { env: Record<string, unknown> }).env
-  const parsed = apiBaseUrlSchema.safeParse(env.VITE_API_BASE_URL)
+  const parsed = apiBaseUrlSchema.safeParse(getRawEnvValue("VITE_API_BASE_URL"))
 
   if (!parsed.success) {
     const formatted = z.prettifyError(parsed.error)
