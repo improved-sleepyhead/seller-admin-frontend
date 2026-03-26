@@ -3,7 +3,11 @@ import { queryOptions } from "@tanstack/react-query"
 import { getAdById, getAdsList, getAiStatus } from "./ad.api"
 import { mapToDetailsVM, mapToListItemVM } from "./ad.mapper"
 
-import type { AdsListQueryParams, AiStatusDto } from "./ad.contracts"
+import type {
+  AdDetailsDto,
+  AdsListQueryParams,
+  AiStatusDto
+} from "./ad.contracts"
 import type { AdDetailsVM, AdsListItemVM } from "./ad.mapper"
 
 const ADS_ROOT_KEY = ["ads"] as const
@@ -46,6 +50,7 @@ export const adsKeys = {
     [...adsKeys.lists(), normalizeAdsListParams(params)] as const,
   details: () => [...ADS_ROOT_KEY, "detail"] as const,
   detail: (id: number) => [...adsKeys.details(), id] as const,
+  editDetail: (id: number) => [...adsKeys.details(), "edit", id] as const,
   ai: () => [...ADS_ROOT_KEY, "ai"] as const,
   aiStatus: () => [...adsKeys.ai(), "status"] as const
 }
@@ -74,6 +79,15 @@ export function adDetailQuery(id: number) {
       return mapToDetailsVM(result)
     },
     queryKey: adsKeys.detail(id),
+    staleTime: 60_000
+  })
+}
+
+export function adEditDetailQuery(id: number) {
+  return queryOptions({
+    gcTime: 600_000,
+    queryFn: ({ signal }): Promise<AdDetailsDto> => getAdById(id, signal),
+    queryKey: adsKeys.editDetail(id),
     staleTime: 60_000
   })
 }
