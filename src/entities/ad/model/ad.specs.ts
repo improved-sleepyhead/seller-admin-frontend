@@ -9,7 +9,10 @@ import {
 
 import type { Ad, FilledSpec } from "./ad.types"
 
-const ENUM_LABELS_BY_CATEGORY: Record<string, Record<string, Record<string, string>>> = {
+const ENUM_LABELS_BY_CATEGORY: Record<
+  string,
+  Record<string, Record<string, string>>
+> = {
   auto: {
     transmission: AUTO_TRANSMISSION_LABELS
   },
