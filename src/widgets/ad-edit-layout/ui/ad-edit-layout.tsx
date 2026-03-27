@@ -17,7 +17,9 @@ export function AdEditLayout({ aiArea, footer, formArea }: AdEditLayoutProps) {
       </div>
 
       <Card>
-        <CardFooter className="flex justify-end gap-2 pt-6">{footer}</CardFooter>
+        <CardFooter className="flex justify-end gap-2 pt-6">
+          {footer}
+        </CardFooter>
       </Card>
     </div>
   )

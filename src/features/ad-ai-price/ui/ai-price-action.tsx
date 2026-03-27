@@ -6,7 +6,12 @@ interface AiPriceActionProps {
 
 export function AiPriceAction({ disabled }: AiPriceActionProps) {
   return (
-    <Button className="w-full" disabled={disabled} type="button" variant="outline">
+    <Button
+      className="w-full"
+      disabled={disabled}
+      type="button"
+      variant="outline"
+    >
       Предложить цену
     </Button>
   )

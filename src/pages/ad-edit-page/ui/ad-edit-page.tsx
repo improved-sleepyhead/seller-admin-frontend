@@ -13,7 +13,13 @@ import {
 import { AdEditForm } from "@/features/ad-edit-form"
 import { SaveAdButton, useSaveAd } from "@/features/ad-save"
 import { isAppApiError } from "@/shared/api/error"
-import { Badge, Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/shadcn"
+import {
+  Badge,
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle
+} from "@/shared/ui/shadcn"
 import { AdEditLayout, AdEditLayoutSkeleton } from "@/widgets/ad-edit-layout"
 import { AiChatPanel } from "@/widgets/ai-chat-panel"
 
@@ -62,7 +68,10 @@ export function AdEditPage() {
   }
 
   if (detailQuery.isError) {
-    if (isAppApiError(detailQuery.error) && detailQuery.error.code === "NOT_FOUND") {
+    if (
+      isAppApiError(detailQuery.error) &&
+      detailQuery.error.code === "NOT_FOUND"
+    ) {
       return (
         <div className="mx-auto w-full max-w-4xl">
           <Card>
@@ -147,7 +156,11 @@ export function AdEditPage() {
         footer={
           <>
             <CancelEditButton disabled={isSavePending} itemId={adId} />
-            <SaveAdButton disabled={isSavePending} form={EDIT_FORM_ID} isPending={isSavePending} />
+            <SaveAdButton
+              disabled={isSavePending}
+              form={EDIT_FORM_ID}
+              isPending={isSavePending}
+            />
           </>
         }
         formArea={formArea}

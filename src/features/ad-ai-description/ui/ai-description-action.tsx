@@ -6,7 +6,12 @@ interface AiDescriptionActionProps {
 
 export function AiDescriptionAction({ disabled }: AiDescriptionActionProps) {
   return (
-    <Button className="w-full" disabled={disabled} type="button" variant="outline">
+    <Button
+      className="w-full"
+      disabled={disabled}
+      type="button"
+      variant="outline"
+    >
       Улучшить описание
     </Button>
   )
