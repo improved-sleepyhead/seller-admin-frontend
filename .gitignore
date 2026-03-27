@@ -40,6 +40,7 @@ tasks.generated.json
 .ai/
 .ai-cache/
 .ai-notes/
+.p*cli/
 scratch/
 tmp/
 temp/

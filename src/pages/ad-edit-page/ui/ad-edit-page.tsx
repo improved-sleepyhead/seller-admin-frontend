@@ -3,6 +3,7 @@ import { useParams } from "react-router-dom"
 
 import { adEditDetailQuery } from "@/entities/ad"
 import { AdEditForm } from "@/features/ad-edit-form"
+import { SaveAdButton, useSaveAd } from "@/features/ad-save"
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/shadcn"
 
 function parseAdId(rawId: string | undefined): number | null {
@@ -22,6 +23,7 @@ function parseAdId(rawId: string | undefined): number | null {
 export function AdEditPage() {
   const { id } = useParams<{ id: string }>()
   const adId = parseAdId(id)
+  const { isSavePending, saveAd } = useSaveAd({ itemId: adId ?? 0 })
   const detailQuery = useQuery({
     ...adEditDetailQuery(adId ?? 0),
     enabled: adId !== null
@@ -46,7 +48,12 @@ export function AdEditPage() {
           <CardTitle>Редактирование объявления</CardTitle>
         </CardHeader>
         <CardContent>
-          <AdEditForm ad={detailQuery.data} />
+          <AdEditForm
+            SubmitButton={SaveAdButton}
+            ad={detailQuery.data}
+            isSavePending={isSavePending}
+            onSubmit={saveAd}
+          />
         </CardContent>
       </Card>
     </div>
