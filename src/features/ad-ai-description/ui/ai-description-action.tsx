@@ -1,12 +1,8 @@
 import { Loader2Icon } from "lucide-react"
+import { lazy, Suspense } from "react"
 
 import {
   Button,
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
   Popover,
   PopoverAnchor,
   PopoverContent,
@@ -19,6 +15,12 @@ import {
 } from "@/shared/ui/shadcn"
 
 import { useAiDescriptionAction, type AdEditFormApi } from "../model"
+
+const LazyAdDiffViewer = lazy(async () => {
+  const module = await import("@/features/ad-diff-viewer")
+
+  return { default: module.AdDiffViewer }
+})
 
 interface AiDescriptionActionProps {
   disabled: boolean
@@ -217,65 +219,20 @@ export function AiDescriptionAction({
         </Popover>
       )}
 
-      {isMobile ? (
-        <Sheet open={isDiffViewerOpen} onOpenChange={closeDiffViewer}>
-          <SheetContent side="bottom">
-            <SheetHeader>
-              <SheetTitle>Сравнение описания</SheetTitle>
-              <SheetDescription>
-                До применения проверьте, как изменится текст объявления.
-              </SheetDescription>
-            </SheetHeader>
-            <div className="grid gap-4 px-4 pb-4">
-              <div className="space-y-1">
-                <h4 className="text-muted-foreground text-xs font-semibold">
-                  Было
-                </h4>
-                <p className="rounded-md border p-3 text-sm whitespace-pre-wrap">
-                  {visibleDiff?.current ?? "Описание отсутствует"}
-                </p>
-              </div>
-              <div className="space-y-1">
-                <h4 className="text-muted-foreground text-xs font-semibold">
-                  Стало
-                </h4>
-                <p className="rounded-md border p-3 text-sm whitespace-pre-wrap">
-                  {visibleDiff?.suggestion ?? "Нет предложенного текста"}
-                </p>
-              </div>
-            </div>
-          </SheetContent>
-        </Sheet>
-      ) : (
-        <Dialog open={isDiffViewerOpen} onOpenChange={closeDiffViewer}>
-          <DialogContent className="max-w-4xl">
-            <DialogHeader>
-              <DialogTitle>Сравнение описания</DialogTitle>
-              <DialogDescription>
-                До применения проверьте, как изменится текст объявления.
-              </DialogDescription>
-            </DialogHeader>
-            <div className="grid gap-4 md:grid-cols-2">
-              <div className="space-y-1">
-                <h4 className="text-muted-foreground text-xs font-semibold">
-                  Было
-                </h4>
-                <p className="rounded-md border p-3 text-sm whitespace-pre-wrap">
-                  {visibleDiff?.current ?? "Описание отсутствует"}
-                </p>
-              </div>
-              <div className="space-y-1">
-                <h4 className="text-muted-foreground text-xs font-semibold">
-                  Стало
-                </h4>
-                <p className="rounded-md border p-3 text-sm whitespace-pre-wrap">
-                  {visibleDiff?.suggestion ?? "Нет предложенного текста"}
-                </p>
-              </div>
-            </div>
-          </DialogContent>
-        </Dialog>
-      )}
+      <Suspense fallback={null}>
+        {isDiffViewerOpen ? (
+          <LazyAdDiffViewer
+            diff={visibleDiff}
+            isMobile={isMobile}
+            onOpenChange={nextOpen => {
+              if (!nextOpen) {
+                closeDiffViewer()
+              }
+            }}
+            open={isDiffViewerOpen}
+          />
+        ) : null}
+      </Suspense>
     </>
   )
 }
