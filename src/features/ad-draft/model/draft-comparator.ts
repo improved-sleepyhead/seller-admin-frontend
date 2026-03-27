@@ -8,18 +8,19 @@ const NUMERIC_PARAM_KEYS = new Set([
   "yearOfManufacture"
 ])
 
-const CATEGORY_PARAM_KEY_ORDER: Record<AdEditFormValues["category"], string[]> = {
-  auto: [
-    "brand",
-    "model",
-    "yearOfManufacture",
-    "transmission",
-    "mileage",
-    "enginePower"
-  ],
-  electronics: ["type", "brand", "model", "condition", "color"],
-  real_estate: ["type", "address", "area", "floor"]
-}
+const CATEGORY_PARAM_KEY_ORDER: Record<AdEditFormValues["category"], string[]> =
+  {
+    auto: [
+      "brand",
+      "model",
+      "yearOfManufacture",
+      "transmission",
+      "mileage",
+      "enginePower"
+    ],
+    electronics: ["type", "brand", "model", "condition", "color"],
+    real_estate: ["type", "address", "area", "floor"]
+  }
 
 function normalizeNumericValue(
   value: string | number | undefined

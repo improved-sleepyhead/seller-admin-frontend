@@ -1,4 +1,11 @@
-import { Button, Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/shared/ui/shadcn"
+import {
+  Button,
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle
+} from "@/shared/ui/shadcn"
 
 interface DraftRestoreDialogProps {
   onRestoreDraft: () => void

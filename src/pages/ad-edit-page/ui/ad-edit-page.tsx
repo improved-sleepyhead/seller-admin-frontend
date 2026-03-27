@@ -16,7 +16,11 @@ import {
   CategoryChangeConfirmDialog,
   useCategoryChangeConfirm
 } from "@/features/ad-category-change"
-import { DraftRestoreDialog, DraftSavedHint, useAdDraft } from "@/features/ad-draft"
+import {
+  DraftRestoreDialog,
+  DraftSavedHint,
+  useAdDraft
+} from "@/features/ad-draft"
 import { AdEditForm } from "@/features/ad-edit-form"
 import { SaveAdButton, useSaveAd } from "@/features/ad-save"
 import { isAppApiError } from "@/shared/api/error"
@@ -49,9 +53,11 @@ function parseAdId(rawId: string | undefined): number | null {
 export function AdEditPage() {
   const { id } = useParams<{ id: string }>()
   const adId = parseAdId(id)
-  const [editForm, setEditForm] = useState<
-    UseFormReturn<AdEditFormValues, unknown, AdEditFormValues> | null
-  >(null)
+  const [editForm, setEditForm] = useState<UseFormReturn<
+    AdEditFormValues,
+    unknown,
+    AdEditFormValues
+  > | null>(null)
   const { isSavePending, saveAd } = useSaveAd({ itemId: adId ?? 0 })
   const {
     cancelCategoryChange,
@@ -147,28 +153,28 @@ export function AdEditPage() {
   )
 
   const formArea = (
-      <Card>
-        <CardHeader>
-          <CardTitle>Редактирование объявления</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-3">
-          <DraftSavedHint savedAt={draftSavedAt} />
-          <AdEditForm
-            ad={detailQuery.data}
-            formId={EDIT_FORM_ID}
-            hideActions
-            isSavePending={isSavePending}
-            onCategoryChangeRequest={({ applyCategoryChange, nextCategory }) => {
-              requestCategoryChange({
-                nextCategory,
-                onConfirm: applyCategoryChange
-              })
-            }}
-            onFormReady={setEditForm}
-            onSubmit={saveAd}
-          />
-        </CardContent>
-      </Card>
+    <Card>
+      <CardHeader>
+        <CardTitle>Редактирование объявления</CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-3">
+        <DraftSavedHint savedAt={draftSavedAt} />
+        <AdEditForm
+          ad={detailQuery.data}
+          formId={EDIT_FORM_ID}
+          hideActions
+          isSavePending={isSavePending}
+          onCategoryChangeRequest={({ applyCategoryChange, nextCategory }) => {
+            requestCategoryChange({
+              nextCategory,
+              onConfirm: applyCategoryChange
+            })
+          }}
+          onFormReady={setEditForm}
+          onSubmit={saveAd}
+        />
+      </CardContent>
+    </Card>
   )
 
   return (

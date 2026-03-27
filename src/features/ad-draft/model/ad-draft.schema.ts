@@ -1,6 +1,10 @@
 import { z } from "zod/v4"
 
-import { AD_CATEGORIES, type AdDraft, type AdEditFormValues } from "@/entities/ad"
+import {
+  AD_CATEGORIES,
+  type AdDraft,
+  type AdEditFormValues
+} from "@/entities/ad"
 
 const DraftFormParamsSchema = z.record(
   z.string(),

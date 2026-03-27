@@ -46,7 +46,9 @@ export function readAdDraft(itemId: number): AdDraft | null {
     return null
   }
 
-  const legacyDraft = parseDraftPayload(window.localStorage.getItem(legacyStorageKey))
+  const legacyDraft = parseDraftPayload(
+    window.localStorage.getItem(legacyStorageKey)
+  )
 
   if (legacyDraft === null) {
     return null
@@ -68,7 +70,10 @@ export function saveAdDraft(draft: AdDraft): void {
     return
   }
 
-  window.localStorage.setItem(getAdDraftStorageKey(draft.itemId), JSON.stringify(draft))
+  window.localStorage.setItem(
+    getAdDraftStorageKey(draft.itemId),
+    JSON.stringify(draft)
+  )
 }
 
 export function removeAdDraft(itemId: number): void {
