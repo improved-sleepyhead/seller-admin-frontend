@@ -1,1 +1,1 @@
-export {}
+export { AiChatPanel } from "./ui"

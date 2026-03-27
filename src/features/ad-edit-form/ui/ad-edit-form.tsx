@@ -51,6 +51,8 @@ type AdEditFormActionButtonComponent =
 interface AdEditFormProps {
   ad: AdDetailsDto
   CancelButton?: AdEditFormActionButtonComponent
+  formId?: string
+  hideActions?: boolean
   isSavePending?: boolean
   onCategoryChangeRequest?: (request: AdEditFormCategoryChangeRequest) => void
   onSubmit?: FormSubmitHandler
@@ -75,6 +77,8 @@ function DefaultSubmitButton({
 export function AdEditForm({
   ad,
   CancelButton,
+  formId,
+  hideActions = false,
   isSavePending = false,
   onCategoryChangeRequest,
   onSubmit,
@@ -110,6 +114,7 @@ export function AdEditForm({
   return (
     <Form {...form}>
       <form
+        id={formId}
         className="grid gap-6"
         noValidate
         onSubmit={event => {
@@ -224,15 +229,20 @@ export function AdEditForm({
 
         <CategoryFields category={category} form={form} />
 
-        <div className="flex justify-end gap-2">
-          {CancelButton ? (
-            <CancelButton
-              disabled={isCancelDisabled}
+        {hideActions ? null : (
+          <div className="flex justify-end gap-2">
+            {CancelButton ? (
+              <CancelButton
+                disabled={isCancelDisabled}
+                isPending={isSavePending}
+              />
+            ) : null}
+            <SubmitButton
+              disabled={isSubmitDisabled}
               isPending={isSavePending}
             />
-          ) : null}
-          <SubmitButton disabled={isSubmitDisabled} isPending={isSavePending} />
-        </div>
+          </div>
+        )}
       </form>
     </Form>
   )
