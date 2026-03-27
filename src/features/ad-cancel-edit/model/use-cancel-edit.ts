@@ -13,7 +13,9 @@ function getAdViewPath(itemId: number): string {
   return `/ads/${itemId}`
 }
 
-export function useCancelEdit({ itemId }: UseCancelEditOptions): UseCancelEditResult {
+export function useCancelEdit({
+  itemId
+}: UseCancelEditOptions): UseCancelEditResult {
   const navigate = useNavigate()
 
   const cancelEdit = useCallback(async () => {

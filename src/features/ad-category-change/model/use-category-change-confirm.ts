@@ -16,11 +16,15 @@ interface UseCategoryChangeConfirmResult {
 }
 
 export function useCategoryChangeConfirm(): UseCategoryChangeConfirmResult {
-  const [pendingRequest, setPendingRequest] = useState<CategoryChangeRequest | null>(null)
+  const [pendingRequest, setPendingRequest] =
+    useState<CategoryChangeRequest | null>(null)
 
-  const requestCategoryChange = useCallback((request: CategoryChangeRequest) => {
-    setPendingRequest(request)
-  }, [])
+  const requestCategoryChange = useCallback(
+    (request: CategoryChangeRequest) => {
+      setPendingRequest(request)
+    },
+    []
+  )
 
   const cancelCategoryChange = useCallback(() => {
     setPendingRequest(null)

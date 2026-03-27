@@ -2,12 +2,12 @@ import { useQuery } from "@tanstack/react-query"
 import { useParams } from "react-router-dom"
 
 import { adEditDetailQuery } from "@/entities/ad"
-import { AdEditForm } from "@/features/ad-edit-form"
 import { CancelEditButton } from "@/features/ad-cancel-edit"
 import {
   CategoryChangeConfirmDialog,
   useCategoryChangeConfirm
 } from "@/features/ad-category-change"
+import { AdEditForm } from "@/features/ad-edit-form"
 import { SaveAdButton, useSaveAd } from "@/features/ad-save"
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/shadcn"
 
@@ -67,7 +67,10 @@ export function AdEditPage() {
             SubmitButton={SaveAdButton}
             ad={detailQuery.data}
             isSavePending={isSavePending}
-            onCategoryChangeRequest={({ applyCategoryChange, nextCategory }) => {
+            onCategoryChangeRequest={({
+              applyCategoryChange,
+              nextCategory
+            }) => {
               requestCategoryChange({
                 nextCategory,
                 onConfirm: applyCategoryChange

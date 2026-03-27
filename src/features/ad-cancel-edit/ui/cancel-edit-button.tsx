@@ -7,7 +7,10 @@ export interface CancelEditButtonProps {
   disabled?: boolean
 }
 
-export function CancelEditButton({ itemId, disabled = false }: CancelEditButtonProps) {
+export function CancelEditButton({
+  itemId,
+  disabled = false
+}: CancelEditButtonProps) {
   const { cancelEdit } = useCancelEdit({ itemId })
 
   return (

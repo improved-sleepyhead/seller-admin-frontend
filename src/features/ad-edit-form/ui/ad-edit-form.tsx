@@ -52,9 +52,7 @@ interface AdEditFormProps {
   ad: AdDetailsDto
   CancelButton?: AdEditFormActionButtonComponent
   isSavePending?: boolean
-  onCategoryChangeRequest?: (
-    request: AdEditFormCategoryChangeRequest
-  ) => void
+  onCategoryChangeRequest?: (request: AdEditFormCategoryChangeRequest) => void
   onSubmit?: FormSubmitHandler
   SubmitButton?: AdEditFormActionButtonComponent
 }
@@ -228,7 +226,10 @@ export function AdEditForm({
 
         <div className="flex justify-end gap-2">
           {CancelButton ? (
-            <CancelButton disabled={isCancelDisabled} isPending={isSavePending} />
+            <CancelButton
+              disabled={isCancelDisabled}
+              isPending={isSavePending}
+            />
           ) : null}
           <SubmitButton disabled={isSubmitDisabled} isPending={isSavePending} />
         </div>
