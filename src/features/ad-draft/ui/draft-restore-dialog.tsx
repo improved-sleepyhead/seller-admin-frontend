@@ -2,6 +2,7 @@ import {
   Button,
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle
@@ -23,11 +24,10 @@ export function DraftRestoreDialog({
       <DialogContent className="sm:max-w-lg">
         <DialogHeader>
           <DialogTitle>Найден локальный черновик</DialogTitle>
+          <DialogDescription>
+            Найдены несохранённые изменения для этого объявления.
+          </DialogDescription>
         </DialogHeader>
-
-        <p className="text-muted-foreground text-sm">
-          Найдены несохранённые изменения для этого объявления.
-        </p>
 
         <DialogFooter className="sm:justify-between">
           <Button type="button" variant="outline" onClick={onUseServerVersion}>

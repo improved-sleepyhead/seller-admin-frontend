@@ -1,6 +1,5 @@
-import debounce from "lodash/debounce"
+import { debounce } from "lodash"
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
-import type { UseFormReturn } from "react-hook-form"
 
 import type { AdDetailsDto, AdDraft, AdEditFormValues } from "@/entities/ad"
 import { draftRegistryStore } from "@/shared/lib/draft-registry-store"
@@ -10,6 +9,8 @@ import {
   isDraftDifferentFromServer
 } from "./draft-comparator"
 import { readAdDraft, removeAdDraft, saveAdDraft } from "./draft-storage"
+
+import type { UseFormReturn } from "react-hook-form"
 
 const AUTOSAVE_DEBOUNCE_MS = 700
 
@@ -134,7 +135,7 @@ export function useAdDraft({
     }, AUTOSAVE_DEBOUNCE_MS)
 
     const valuesSubscription = form.watch((_currentValues, watchMeta) => {
-      if (!watchMeta.name || !form.formState.isDirty) {
+      if (!watchMeta.name) {
         return
       }
 
@@ -142,10 +143,7 @@ export function useAdDraft({
     })
 
     const handleBeforeUnload = () => {
-      if (form.formState.isDirty) {
-        debouncedSave(form.getValues())
-      }
-
+      debouncedSave(form.getValues())
       debouncedSave.flush()
     }
 
