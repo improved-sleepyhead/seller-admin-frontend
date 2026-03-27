@@ -1,1 +1,1 @@
-export {}
+export { AiDescriptionAction } from "./ui"

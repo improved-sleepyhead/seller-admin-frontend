@@ -1,1 +1,1 @@
-export {}
+export { AiChatPlaceholder } from "./ui"
