@@ -1,12 +1,13 @@
 import { AD_CATEGORY_LABELS, type AdEditFormValues } from "@/entities/ad"
 import {
-  Button,
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle
 } from "@/shared/ui/shadcn"
 
 interface CategoryChangeConfirmDialogProps {
@@ -27,7 +28,7 @@ export function CategoryChangeConfirmDialog({
   }
 
   return (
-    <Dialog
+    <AlertDialog
       open={open}
       onOpenChange={nextOpen => {
         if (!nextOpen) {
@@ -35,24 +36,24 @@ export function CategoryChangeConfirmDialog({
         }
       }}
     >
-      <DialogContent showCloseButton={false}>
-        <DialogHeader>
-          <DialogTitle>Сменить категорию?</DialogTitle>
-          <DialogDescription>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>Сменить категорию?</AlertDialogTitle>
+          <AlertDialogDescription>
             После подтверждения несовместимые параметры будут очищены. Новая
             категория: {AD_CATEGORY_LABELS[nextCategory]}.
-          </DialogDescription>
-        </DialogHeader>
+          </AlertDialogDescription>
+        </AlertDialogHeader>
 
-        <DialogFooter>
-          <Button type="button" variant="outline" onClick={onCancel}>
+        <AlertDialogFooter>
+          <AlertDialogCancel type="button" onClick={onCancel}>
             Отмена
-          </Button>
-          <Button type="button" onClick={onConfirm}>
+          </AlertDialogCancel>
+          <AlertDialogAction type="button" onClick={onConfirm}>
             Подтвердить
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
   )
 }
