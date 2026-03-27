@@ -1,7 +1,13 @@
 import { useQuery } from "@tanstack/react-query"
+import { useEffect, useState } from "react"
+import type { UseFormReturn } from "react-hook-form"
 import { useParams } from "react-router-dom"
 
-import { adEditDetailQuery, aiStatusQuery } from "@/entities/ad"
+import {
+  adEditDetailQuery,
+  aiStatusQuery,
+  type AdEditFormValues
+} from "@/entities/ad"
 import { AiChatPlaceholder } from "@/features/ad-ai-chat"
 import { AiDescriptionAction } from "@/features/ad-ai-description"
 import { AiPriceAction } from "@/features/ad-ai-price"
@@ -10,6 +16,7 @@ import {
   CategoryChangeConfirmDialog,
   useCategoryChangeConfirm
 } from "@/features/ad-category-change"
+import { DraftRestoreDialog, DraftSavedHint, useAdDraft } from "@/features/ad-draft"
 import { AdEditForm } from "@/features/ad-edit-form"
 import { SaveAdButton, useSaveAd } from "@/features/ad-save"
 import { isAppApiError } from "@/shared/api/error"
@@ -42,6 +49,9 @@ function parseAdId(rawId: string | undefined): number | null {
 export function AdEditPage() {
   const { id } = useParams<{ id: string }>()
   const adId = parseAdId(id)
+  const [editForm, setEditForm] = useState<
+    UseFormReturn<AdEditFormValues, unknown, AdEditFormValues> | null
+  >(null)
   const { isSavePending, saveAd } = useSaveAd({ itemId: adId ?? 0 })
   const {
     cancelCategoryChange,
@@ -58,6 +68,16 @@ export function AdEditPage() {
     ...aiStatusQuery(),
     enabled: adId !== null
   })
+  const { draftSavedAt, isRestoreDialogOpen, restoreDraft, useServerVersion } =
+    useAdDraft({
+      ad: detailQuery.data ?? null,
+      form: editForm,
+      itemId: adId ?? 0
+    })
+
+  useEffect(() => {
+    setEditForm(null)
+  }, [adId])
 
   if (adId === null) {
     return <div>Некорректный идентификатор объявления.</div>
@@ -127,26 +147,28 @@ export function AdEditPage() {
   )
 
   const formArea = (
-    <Card>
-      <CardHeader>
-        <CardTitle>Редактирование объявления</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <AdEditForm
-          ad={detailQuery.data}
-          formId={EDIT_FORM_ID}
-          hideActions
-          isSavePending={isSavePending}
-          onCategoryChangeRequest={({ applyCategoryChange, nextCategory }) => {
-            requestCategoryChange({
-              nextCategory,
-              onConfirm: applyCategoryChange
-            })
-          }}
-          onSubmit={saveAd}
-        />
-      </CardContent>
-    </Card>
+      <Card>
+        <CardHeader>
+          <CardTitle>Редактирование объявления</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          <DraftSavedHint savedAt={draftSavedAt} />
+          <AdEditForm
+            ad={detailQuery.data}
+            formId={EDIT_FORM_ID}
+            hideActions
+            isSavePending={isSavePending}
+            onCategoryChangeRequest={({ applyCategoryChange, nextCategory }) => {
+              requestCategoryChange({
+                nextCategory,
+                onConfirm: applyCategoryChange
+              })
+            }}
+            onFormReady={setEditForm}
+            onSubmit={saveAd}
+          />
+        </CardContent>
+      </Card>
   )
 
   return (
@@ -171,6 +193,12 @@ export function AdEditPage() {
         onCancel={cancelCategoryChange}
         onConfirm={confirmCategoryChange}
         open={isCategoryChangeDialogOpen}
+      />
+
+      <DraftRestoreDialog
+        onRestoreDraft={restoreDraft}
+        onUseServerVersion={useServerVersion}
+        open={isRestoreDialogOpen}
       />
     </div>
   )

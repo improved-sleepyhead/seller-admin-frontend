@@ -1,7 +1,7 @@
 // eslint-disable-next-line import/no-internal-modules -- zod resolver is provided by package subpath
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useEffect, type ComponentType } from "react"
-import { useForm } from "react-hook-form"
+import { useForm, type UseFormReturn } from "react-hook-form"
 
 import {
   AD_CATEGORIES,
@@ -54,6 +54,9 @@ interface AdEditFormProps {
   formId?: string
   hideActions?: boolean
   isSavePending?: boolean
+  onFormReady?: (
+    form: UseFormReturn<AdEditFormValues, unknown, AdEditFormValues>
+  ) => void
   onCategoryChangeRequest?: (request: AdEditFormCategoryChangeRequest) => void
   onSubmit?: FormSubmitHandler
   SubmitButton?: AdEditFormActionButtonComponent
@@ -80,6 +83,7 @@ export function AdEditForm({
   formId,
   hideActions = false,
   isSavePending = false,
+  onFormReady,
   onCategoryChangeRequest,
   onSubmit,
   SubmitButton = DefaultSubmitButton
@@ -96,6 +100,14 @@ export function AdEditForm({
   useEffect(() => {
     reset(mapAdDetailsToFormValues(ad))
   }, [ad, reset])
+
+  useEffect(() => {
+    if (!onFormReady) {
+      return
+    }
+
+    onFormReady(form)
+  }, [form, onFormReady])
 
   const category = form.watch("category")
 
