@@ -1,8 +1,7 @@
-export { AiChatPlaceholder } from "./ui"
 export {
   parseAiChatSseBuffer,
   streamAiChat,
   type AiChatStreamEvent,
   type AiChatStreamResult,
   type StreamAiChatOptions
-} from "./model"
+} from "./ai-chat.transport"
