@@ -17,7 +17,7 @@ const MOBILE_MEDIA_QUERY = "(max-width: 767px)"
 type AdEditFormApi = UseFormReturn<AdEditFormValues, unknown, AdEditFormValues>
 
 interface DescriptionDiffModel {
-  current: string
+  sourceText: string
   suggestion: string
 }
 
@@ -171,7 +171,7 @@ export function useAiDescriptionAction({
   const viewDiff = useCallback(() => {
     if (form !== null && response !== null) {
       setVisibleDiff({
-        current: form.getValues("description"),
+        sourceText: form.getValues("description"),
         suggestion: response.suggestion
       })
       setIsDiffViewerOpen(true)
@@ -191,7 +191,7 @@ export function useAiDescriptionAction({
 
     const previousDescription = form.getValues("description")
     const nextDiff: DescriptionDiffModel = {
-      current: previousDescription,
+      sourceText: previousDescription,
       suggestion: response.suggestion
     }
 
