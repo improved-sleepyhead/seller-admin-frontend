@@ -1,1 +1,1 @@
-export {}
+export { AdsPagination } from "./ui"

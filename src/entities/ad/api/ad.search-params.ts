@@ -8,11 +8,11 @@ import {
   type AdSortDirection
 } from "./ad.contracts"
 
-const ADS_LAYOUTS = ["grid", "list"] as const
-const ADS_PAGE_SIZE = 10
+export const ADS_LAYOUTS = ["grid", "list"] as const
+export const ADS_LIST_PAGE_SIZE = 10
 const DEFAULT_PAGE = 1
 
-type AdsLayout = (typeof ADS_LAYOUTS)[number]
+export type AdsLayout = (typeof ADS_LAYOUTS)[number]
 
 export interface AdsListUrlParams {
   q: string
@@ -32,6 +32,16 @@ export interface AdsListBackendQueryParams {
   sortDirection: AdSortDirection
   limit: number
   skip: number
+}
+
+export const ADS_LIST_DEFAULT_URL_PARAMS: AdsListUrlParams = {
+  q: "",
+  categories: [],
+  needsRevision: false,
+  sortColumn: "createdAt",
+  sortDirection: "desc",
+  page: DEFAULT_PAGE,
+  layout: "grid"
 }
 
 function isAdCategory(value: string): value is AdCategory {
@@ -104,14 +114,54 @@ export function parseAdsSearchParams(
     sortColumn:
       sortColumnParam && isAdSortColumn(sortColumnParam)
         ? sortColumnParam
-        : "createdAt",
+        : ADS_LIST_DEFAULT_URL_PARAMS.sortColumn,
     sortDirection:
       sortDirectionParam && isAdSortDirection(sortDirectionParam)
         ? sortDirectionParam
-        : "desc",
+        : ADS_LIST_DEFAULT_URL_PARAMS.sortDirection,
     page: parsePage(searchParams.get("page")),
-    layout: layoutParam && isAdsLayout(layoutParam) ? layoutParam : "grid"
+    layout:
+      layoutParam && isAdsLayout(layoutParam)
+        ? layoutParam
+        : ADS_LIST_DEFAULT_URL_PARAMS.layout
   }
+}
+
+export function createAdsSearchParams(
+  params: AdsListUrlParams
+): URLSearchParams {
+  const searchParams = new URLSearchParams()
+  const q = params.q.trim()
+
+  if (q.length > 0) {
+    searchParams.set("q", q)
+  }
+
+  if (params.categories.length > 0) {
+    searchParams.set("categories", params.categories.join(","))
+  }
+
+  if (params.needsRevision) {
+    searchParams.set("needsRevision", "true")
+  }
+
+  if (params.sortColumn !== ADS_LIST_DEFAULT_URL_PARAMS.sortColumn) {
+    searchParams.set("sortColumn", params.sortColumn)
+  }
+
+  if (params.sortDirection !== ADS_LIST_DEFAULT_URL_PARAMS.sortDirection) {
+    searchParams.set("sortDirection", params.sortDirection)
+  }
+
+  if (params.page !== ADS_LIST_DEFAULT_URL_PARAMS.page) {
+    searchParams.set("page", String(params.page))
+  }
+
+  if (params.layout !== ADS_LIST_DEFAULT_URL_PARAMS.layout) {
+    searchParams.set("layout", params.layout)
+  }
+
+  return searchParams
 }
 
 export function mapAdsUrlParamsToBackendQuery(
@@ -126,8 +176,8 @@ export function mapAdsUrlParamsToBackendQuery(
     needsRevision: params.needsRevision ? "true" : undefined,
     sortColumn: params.sortColumn,
     sortDirection: params.sortDirection,
-    limit: ADS_PAGE_SIZE,
-    skip: (params.page - 1) * ADS_PAGE_SIZE
+    limit: ADS_LIST_PAGE_SIZE,
+    skip: (params.page - 1) * ADS_LIST_PAGE_SIZE
   }
 }
 
@@ -140,7 +190,7 @@ export function mapAdsUrlParamsToListQuery(
     needsRevision: params.needsRevision,
     sortColumn: params.sortColumn,
     sortDirection: params.sortDirection,
-    limit: ADS_PAGE_SIZE,
-    skip: (params.page - 1) * ADS_PAGE_SIZE
+    limit: ADS_LIST_PAGE_SIZE,
+    skip: (params.page - 1) * ADS_LIST_PAGE_SIZE
   }
 }

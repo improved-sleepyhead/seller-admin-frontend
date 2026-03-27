@@ -1,1 +1,1 @@
-export {}
+export { AdsSearchInput } from "./ui"
