@@ -3,4 +3,4 @@ export {
   AdsCatalogSkeleton,
   AdsEmptyState,
   AdsErrorState
-} from "./ui"
+} from "./ads-catalog"
