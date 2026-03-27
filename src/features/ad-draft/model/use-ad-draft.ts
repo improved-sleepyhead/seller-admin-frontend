@@ -1,8 +1,8 @@
 import { debounce } from "lodash"
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 
-import { draftRegistryStore } from "@/app/store"
 import type { AdDetailsDto, AdDraft, AdEditFormValues } from "@/entities/ad"
+import { draftRegistryStore } from "@/shared/lib/draft-registry-store"
 
 import {
   createServerHashFromAd,
