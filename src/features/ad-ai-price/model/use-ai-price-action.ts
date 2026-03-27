@@ -1,0 +1,207 @@
+import { useMutation } from "@tanstack/react-query"
+import { useCallback, useEffect, useRef, useState } from "react"
+
+import {
+  requestAiPrice,
+  type AdEditFormValues,
+  type AiPriceResponse
+} from "@/entities/ad"
+import { isAppApiError } from "@/shared/api/error"
+
+import { mapAdEditFormValuesToAiPricePayload } from "./ai-price.payload"
+
+import type { UseFormReturn } from "react-hook-form"
+
+const MOBILE_MEDIA_QUERY = "(max-width: 767px)"
+
+type AdEditFormApi = UseFormReturn<AdEditFormValues, unknown, AdEditFormValues>
+
+interface UseAiPriceActionOptions {
+  disabled: boolean
+  form: AdEditFormApi | null
+}
+
+interface UseAiPriceActionResult {
+  applySuggestion: () => void
+  canRequestSuggestion: boolean
+  cancelRequest: () => void
+  closeResult: () => void
+  errorMessage: string | null
+  isMobile: boolean
+  isPending: boolean
+  isResultOpen: boolean
+  requestSuggestion: () => Promise<void>
+  response: AiPriceResponse | null
+  retrySuggestion: () => Promise<void>
+  setResultOpen: (nextOpen: boolean) => void
+}
+
+function getAiPriceErrorMessage(error: unknown): string {
+  if (isAppApiError(error)) {
+    return error.message
+  }
+
+  if (error instanceof Error && error.message.length > 0) {
+    return error.message
+  }
+
+  return "Не удалось получить AI-предложение цены."
+}
+
+function useIsMobile(): boolean {
+  const [isMobile, setIsMobile] = useState(() => {
+    if (typeof window === "undefined") {
+      return false
+    }
+
+    return window.matchMedia(MOBILE_MEDIA_QUERY).matches
+  })
+
+  useEffect(() => {
+    if (typeof window === "undefined") {
+      return
+    }
+
+    const mediaQueryList = window.matchMedia(MOBILE_MEDIA_QUERY)
+    const handleChange = (event: MediaQueryListEvent) => {
+      setIsMobile(event.matches)
+    }
+
+    setIsMobile(mediaQueryList.matches)
+    mediaQueryList.addEventListener("change", handleChange)
+
+    return () => {
+      mediaQueryList.removeEventListener("change", handleChange)
+    }
+  }, [])
+
+  return isMobile
+}
+
+export function useAiPriceAction({
+  disabled,
+  form
+}: UseAiPriceActionOptions): UseAiPriceActionResult {
+  const [errorMessage, setErrorMessage] = useState<string | null>(null)
+  const [isResultOpen, setIsResultOpen] = useState(false)
+  const [response, setResponse] = useState<AiPriceResponse | null>(null)
+  const abortControllerRef = useRef<AbortController | null>(null)
+  const isMobile = useIsMobile()
+  const mutation = useMutation({
+    mutationFn: ({
+      item,
+      signal
+    }: {
+      item: ReturnType<typeof mapAdEditFormValuesToAiPricePayload>
+      signal: AbortSignal
+    }): Promise<AiPriceResponse> => requestAiPrice(item, signal)
+  })
+
+  const cancelRequest = useCallback(() => {
+    if (abortControllerRef.current === null) {
+      return
+    }
+
+    abortControllerRef.current.abort()
+    abortControllerRef.current = null
+    mutation.reset()
+  }, [mutation])
+
+  const closeResult = useCallback(() => {
+    if (mutation.isPending) {
+      cancelRequest()
+    }
+
+    setIsResultOpen(false)
+  }, [cancelRequest, mutation.isPending])
+
+  const requestSuggestion = useCallback(async () => {
+    if (disabled || form === null || mutation.isPending) {
+      return
+    }
+
+    const requestAbortController = new AbortController()
+    abortControllerRef.current = requestAbortController
+    setErrorMessage(null)
+    setResponse(null)
+    setIsResultOpen(true)
+
+    try {
+      const nextResponse = await mutation.mutateAsync({
+        item: mapAdEditFormValuesToAiPricePayload(form.getValues()),
+        signal: requestAbortController.signal
+      })
+
+      if (requestAbortController.signal.aborted) {
+        return
+      }
+
+      setResponse(nextResponse)
+    } catch (error) {
+      if (requestAbortController.signal.aborted) {
+        return
+      }
+
+      setErrorMessage(getAiPriceErrorMessage(error))
+    } finally {
+      if (abortControllerRef.current === requestAbortController) {
+        abortControllerRef.current = null
+      }
+    }
+  }, [disabled, form, mutation])
+
+  const retrySuggestion = useCallback(async () => {
+    await requestSuggestion()
+  }, [requestSuggestion])
+
+  const applySuggestion = useCallback(() => {
+    if (response === null || form === null) {
+      return
+    }
+
+    form.setValue("price", response.suggestedPrice, {
+      shouldDirty: true,
+      shouldTouch: true,
+      shouldValidate: true
+    })
+    setIsResultOpen(false)
+  }, [form, response])
+
+  const setResultOpen = useCallback(
+    (nextOpen: boolean) => {
+      if (!nextOpen) {
+        closeResult()
+        return
+      }
+
+      setIsResultOpen(true)
+    },
+    [closeResult]
+  )
+
+  useEffect(() => {
+    return () => {
+      if (abortControllerRef.current !== null) {
+        abortControllerRef.current.abort()
+        abortControllerRef.current = null
+      }
+    }
+  }, [])
+
+  return {
+    applySuggestion,
+    canRequestSuggestion: !disabled && form !== null && !mutation.isPending,
+    cancelRequest,
+    closeResult,
+    errorMessage,
+    isMobile,
+    isPending: mutation.isPending,
+    isResultOpen,
+    requestSuggestion,
+    response,
+    retrySuggestion,
+    setResultOpen
+  }
+}
+
+export type { AdEditFormApi }
