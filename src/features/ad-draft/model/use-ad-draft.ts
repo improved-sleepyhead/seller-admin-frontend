@@ -34,9 +34,9 @@ function cloneDraftValues(values: AdEditFormValues): AdEditFormValues {
 }
 
 function upsertDraftMetadata(itemId: number, savedAt: string) {
-  const existingMeta = draftRegistryStore.drafts[itemId]
+  const existingMeta = draftRegistryStore.getState().drafts[itemId]
 
-  draftRegistryStore.upsertDraftMeta(itemId, {
+  draftRegistryStore.getState().upsertDraftMeta(itemId, {
     hasChatHistory: existingMeta?.hasChatHistory ?? false,
     hasDraft: true,
     updatedAt: savedAt
@@ -44,14 +44,14 @@ function upsertDraftMetadata(itemId: number, savedAt: string) {
 }
 
 function clearDraftMetadata(itemId: number) {
-  const existingMeta = draftRegistryStore.drafts[itemId]
+  const existingMeta = draftRegistryStore.getState().drafts[itemId]
 
   if (!existingMeta?.hasChatHistory) {
-    draftRegistryStore.clearDraftMeta(itemId)
+    draftRegistryStore.getState().clearDraftMeta(itemId)
     return
   }
 
-  draftRegistryStore.upsertDraftMeta(itemId, {
+  draftRegistryStore.getState().upsertDraftMeta(itemId, {
     hasChatHistory: true,
     hasDraft: false,
     updatedAt: new Date().toISOString()

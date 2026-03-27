@@ -51,7 +51,7 @@ export function useSaveAd({ itemId }: UseSaveAdOptions): UseSaveAdResult {
       ])
 
       clearAdDraftAndChatStorage(itemId)
-      draftRegistryStore.clearDraftMeta(itemId)
+      draftRegistryStore.getState().clearDraftMeta(itemId)
       toast.success("Объявление сохранено.")
 
       await navigate(getAdViewPath(itemId))
