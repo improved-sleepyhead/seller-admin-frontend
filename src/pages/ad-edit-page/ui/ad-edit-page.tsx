@@ -90,7 +90,7 @@ export function AdEditPage() {
     return <div>Некорректный идентификатор объявления.</div>
   }
 
-  if (detailQuery.isPending || aiStatusResult.isPending) {
+  if (detailQuery.isPending) {
     return <AdEditLayoutSkeleton />
   }
 
@@ -114,11 +114,70 @@ export function AdEditPage() {
     return <div>Не удалось загрузить объявление.</div>
   }
 
-  const aiStatus = aiStatusResult.data
-  const aiEnabled = aiStatus?.enabled === true && !aiStatusResult.isError
-  const isDescriptionEnabled = aiEnabled && aiStatus.features.description
-  const isPriceEnabled = aiEnabled && aiStatus.features.price
-  const isChatEnabled = aiEnabled && aiStatus.features.chat
+  const aiStatus = aiStatusResult.data ?? null
+  const aiFeatures = aiStatus?.features ?? {
+    chat: false,
+    description: false,
+    price: false
+  }
+  const aiEnabled =
+    aiStatusResult.isSuccess && aiStatus?.enabled === true && !aiStatusResult.isError
+  const isDescriptionEnabled = aiEnabled && aiFeatures.description
+  const isPriceEnabled = aiEnabled && aiFeatures.price
+  const isChatEnabled = aiEnabled && aiFeatures.chat
+
+  const partiallyDisabledFeatures =
+    aiEnabled
+      ? [
+          !aiFeatures.description ? "описание" : null,
+          !aiFeatures.price ? "цена" : null,
+          !aiFeatures.chat ? "чат" : null
+        ].filter((value): value is string => value !== null)
+      : []
+
+  const aiStatusBadgeVariant = (() => {
+    if (aiStatusResult.isError) {
+      return "destructive" as const
+    }
+
+    if (aiEnabled) {
+      return "default" as const
+    }
+
+    return "secondary" as const
+  })()
+
+  const aiStatusLabel = (() => {
+    if (aiStatusResult.isPending) {
+      return "Проверка AI..."
+    }
+
+    if (aiStatusResult.isError) {
+      return "AI недоступен"
+    }
+
+    return aiEnabled ? "AI доступен" : "AI недоступен"
+  })()
+
+  const aiStatusMessage = (() => {
+    if (aiStatusResult.isPending) {
+      return "Проверяем доступность AI. До завершения проверки AI-контролы отключены."
+    }
+
+    if (aiStatusResult.isError) {
+      return "Не удалось загрузить AI-статус. AI-контролы временно отключены."
+    }
+
+    if (!aiEnabled) {
+      return "AI отключен в текущем окружении. Основное редактирование доступно без ограничений."
+    }
+
+    if (partiallyDisabledFeatures.length > 0) {
+      return `Частично недоступно: ${partiallyDisabledFeatures.join(", ")}.`
+    }
+
+    return "Все AI-инструменты доступны."
+  })()
 
   const aiArea = (
     <div className="space-y-6">
@@ -129,21 +188,13 @@ export function AdEditPage() {
         <CardContent className="space-y-3">
           <AiDescriptionAction disabled={!isDescriptionEnabled} />
           <AiPriceAction disabled={!isPriceEnabled} />
-
-          {aiStatusResult.isError ? (
+          <div className="space-y-2">
+            <Badge variant={aiStatusBadgeVariant}>{aiStatusLabel}</Badge>
+            <p className="text-muted-foreground text-sm">{aiStatusMessage}</p>
             <p className="text-muted-foreground text-sm">
-              Не удалось загрузить AI-статус. AI-контролы временно отключены.
+              Модель: {aiStatus?.model ?? "не указана"}
             </p>
-          ) : (
-            <div className="space-y-2">
-              <Badge variant={aiEnabled ? "default" : "secondary"}>
-                {aiEnabled ? "AI доступен" : "AI недоступен"}
-              </Badge>
-              <p className="text-muted-foreground text-sm">
-                Модель: {aiStatus?.model ?? "не указана"}
-              </p>
-            </div>
-          )}
+          </div>
         </CardContent>
       </Card>
 
