@@ -121,19 +121,20 @@ export function AdEditPage() {
     price: false
   }
   const aiEnabled =
-    aiStatusResult.isSuccess && aiStatus?.enabled === true && !aiStatusResult.isError
+    aiStatusResult.isSuccess &&
+    aiStatus?.enabled === true &&
+    !aiStatusResult.isError
   const isDescriptionEnabled = aiEnabled && aiFeatures.description
   const isPriceEnabled = aiEnabled && aiFeatures.price
   const isChatEnabled = aiEnabled && aiFeatures.chat
 
-  const partiallyDisabledFeatures =
-    aiEnabled
-      ? [
-          !aiFeatures.description ? "описание" : null,
-          !aiFeatures.price ? "цена" : null,
-          !aiFeatures.chat ? "чат" : null
-        ].filter((value): value is string => value !== null)
-      : []
+  const partiallyDisabledFeatures = aiEnabled
+    ? [
+        !aiFeatures.description ? "описание" : null,
+        !aiFeatures.price ? "цена" : null,
+        !aiFeatures.chat ? "чат" : null
+      ].filter((value): value is string => value !== null)
+    : []
 
   const aiStatusBadgeVariant = (() => {
     if (aiStatusResult.isError) {
