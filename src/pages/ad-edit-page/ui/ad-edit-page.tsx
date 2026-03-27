@@ -188,7 +188,7 @@ export function AdEditPage() {
         </CardHeader>
         <CardContent className="space-y-3">
           <AiDescriptionAction disabled={!isDescriptionEnabled} />
-          <AiPriceAction disabled={!isPriceEnabled} />
+          <AiPriceAction disabled={!isPriceEnabled} form={editForm} />
           <div className="space-y-2">
             <Badge variant={aiStatusBadgeVariant}>{aiStatusLabel}</Badge>
             <p className="text-muted-foreground text-sm">{aiStatusMessage}</p>
