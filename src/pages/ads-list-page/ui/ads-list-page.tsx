@@ -1,63 +1,76 @@
+import { useQuery } from "@tanstack/react-query"
+import { useMemo } from "react"
 import { useSearchParams } from "react-router-dom"
 
-import { parseAdsSearchParams } from "@/entities/ad"
 import {
-  CategoryFilterGroup,
-  ResetFiltersButton,
-  RevisionToggle
-} from "@/features/ads-filtering"
-import { AdsLayoutSwitch } from "@/features/ads-layout-switch"
+  adsListQuery,
+  mapAdsUrlParamsToListQuery,
+  parseAdsSearchParams
+} from "@/entities/ad"
 import { AdsPagination } from "@/features/ads-pagination"
-import { AdsSearchInput } from "@/features/ads-search"
-import { AdsSortSelect } from "@/features/ads-sorting"
-import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/shadcn"
+import { isAppApiError } from "@/shared/api/error"
+import {
+  AdsCatalog,
+  AdsCatalogSkeleton,
+  AdsEmptyState,
+  AdsErrorState
+} from "@/widgets/ads-catalog"
+import { AdsFiltersPanel } from "@/widgets/ads-filters-panel"
+import { AdsToolbar } from "@/widgets/ads-toolbar"
 
 export function AdsListPage() {
   const [searchParams] = useSearchParams()
-  const normalizedParams = parseAdsSearchParams(searchParams)
+  const normalizedParams = useMemo(() => {
+    return parseAdsSearchParams(searchParams)
+  }, [searchParams])
+
+  const listQueryParams = useMemo(() => {
+    return mapAdsUrlParamsToListQuery(normalizedParams)
+  }, [normalizedParams])
+
+  const adsQuery = useQuery(adsListQuery(listQueryParams))
+
+  const catalogContent = (() => {
+    if (adsQuery.isPending) {
+      return <AdsCatalogSkeleton layout={normalizedParams.layout} />
+    }
+
+    if (adsQuery.isError) {
+      return (
+        <AdsErrorState
+          message={
+            isAppApiError(adsQuery.error) ? adsQuery.error.message : undefined
+          }
+          onRetry={() => {
+            void adsQuery.refetch()
+          }}
+        />
+      )
+    }
+
+    if (adsQuery.data.items.length === 0) {
+      return <AdsEmptyState />
+    }
+
+    return (
+      <AdsCatalog ads={adsQuery.data.items} layout={normalizedParams.layout} />
+    )
+  })()
 
   return (
-    <div className="mx-auto flex w-full max-w-6xl flex-col gap-6">
-      <Card>
-        <CardHeader className="gap-1">
-          <CardTitle>Список объявлений</CardTitle>
-        </CardHeader>
-        <CardContent className="grid gap-3 lg:grid-cols-[1.4fr_1fr_auto]">
-          <AdsSearchInput />
-          <AdsSortSelect />
-          <AdsLayoutSwitch />
-        </CardContent>
-      </Card>
+    <div className="mx-auto flex w-full max-w-7xl flex-col gap-6">
+      <AdsToolbar isRefreshing={adsQuery.isFetching && !adsQuery.isPending} />
 
-      <Card>
-        <CardHeader className="gap-1">
-          <CardTitle>Фильтры</CardTitle>
-        </CardHeader>
-        <CardContent className="grid gap-4 md:grid-cols-[1fr_auto]">
-          <div className="space-y-4">
-            <CategoryFilterGroup />
-            <RevisionToggle />
-          </div>
-          <div className="self-start">
-            <ResetFiltersButton />
-          </div>
-        </CardContent>
-      </Card>
+      <div className="grid items-start gap-6 lg:grid-cols-[280px_minmax(0,1fr)]">
+        <AdsFiltersPanel />
 
-      <Card>
-        <CardHeader className="gap-1">
-          <CardTitle>Пагинация</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <AdsPagination total={120} />
-          <p className="text-muted-foreground text-sm">
-            Текущая страница: {normalizedParams.page}
-          </p>
-          <p className="text-muted-foreground text-xs">
-            Query string: {searchParams.toString() || "(empty)"}
-          </p>
-        </CardContent>
-      </Card>
+        <section className="space-y-6">
+          {catalogContent}
+          <div className="flex justify-center">
+            <AdsPagination total={adsQuery.data?.total ?? 0} />
+          </div>
+        </section>
+      </div>
     </div>
   )
 }
