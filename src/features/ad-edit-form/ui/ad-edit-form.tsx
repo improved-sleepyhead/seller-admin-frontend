@@ -34,19 +34,27 @@ type FormSubmitHandler = (
   values: AdEditFormValues
 ) => Promise<void> | void | undefined
 
-export interface AdEditFormSubmitButtonProps {
+export interface AdEditFormActionButtonProps {
   disabled: boolean
   isPending: boolean
 }
 
-type AdEditFormSubmitButtonComponent =
-  ComponentType<AdEditFormSubmitButtonProps>
+export interface AdEditFormCategoryChangeRequest {
+  applyCategoryChange: () => void
+  currentCategory: AdEditFormValues["category"]
+  nextCategory: AdEditFormValues["category"]
+}
+
+type AdEditFormActionButtonComponent =
+  ComponentType<AdEditFormActionButtonProps>
 
 interface AdEditFormProps {
   ad: AdDetailsDto
+  CancelButton?: AdEditFormActionButtonComponent
   isSavePending?: boolean
+  onCategoryChangeRequest?: (request: AdEditFormCategoryChangeRequest) => void
   onSubmit?: FormSubmitHandler
-  SubmitButton?: AdEditFormSubmitButtonComponent
+  SubmitButton?: AdEditFormActionButtonComponent
 }
 
 function isAdCategory(value: string): value is AdEditFormValues["category"] {
@@ -56,7 +64,7 @@ function isAdCategory(value: string): value is AdEditFormValues["category"] {
 function DefaultSubmitButton({
   disabled,
   isPending
-}: AdEditFormSubmitButtonProps) {
+}: AdEditFormActionButtonProps) {
   return (
     <Button disabled={disabled} type="submit">
       {isPending ? "Сохраняем..." : "Сохранить"}
@@ -66,7 +74,9 @@ function DefaultSubmitButton({
 
 export function AdEditForm({
   ad,
+  CancelButton,
   isSavePending = false,
+  onCategoryChangeRequest,
   onSubmit,
   SubmitButton = DefaultSubmitButton
 }: AdEditFormProps) {
@@ -95,6 +105,7 @@ export function AdEditForm({
 
   const isSubmitDisabled =
     !form.formState.isValid || form.formState.isSubmitting || isSavePending
+  const isCancelDisabled = form.formState.isSubmitting || isSavePending
 
   return (
     <Form {...form}>
@@ -122,15 +133,28 @@ export function AdEditForm({
                       return
                     }
 
-                    field.onChange(nextCategory)
-                    form.setValue(
-                      "params",
-                      getCategoryDefaultParams(nextCategory),
-                      {
-                        shouldDirty: true,
-                        shouldValidate: true
-                      }
-                    )
+                    const applyCategoryChange = () => {
+                      field.onChange(nextCategory)
+                      form.setValue(
+                        "params",
+                        getCategoryDefaultParams(nextCategory),
+                        {
+                          shouldDirty: true,
+                          shouldValidate: true
+                        }
+                      )
+                    }
+
+                    if (onCategoryChangeRequest) {
+                      onCategoryChangeRequest({
+                        applyCategoryChange,
+                        currentCategory: field.value,
+                        nextCategory
+                      })
+                      return
+                    }
+
+                    applyCategoryChange()
                   }}
                 >
                   <FormControl>
@@ -200,7 +224,13 @@ export function AdEditForm({
 
         <CategoryFields category={category} form={form} />
 
-        <div className="flex justify-end">
+        <div className="flex justify-end gap-2">
+          {CancelButton ? (
+            <CancelButton
+              disabled={isCancelDisabled}
+              isPending={isSavePending}
+            />
+          ) : null}
           <SubmitButton disabled={isSubmitDisabled} isPending={isSavePending} />
         </div>
       </form>
