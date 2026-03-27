@@ -187,7 +187,10 @@ export function AdEditPage() {
           <CardTitle className="text-base">AI инструменты</CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
-          <AiDescriptionAction disabled={!isDescriptionEnabled} />
+          <AiDescriptionAction
+            disabled={!isDescriptionEnabled}
+            form={editForm}
+          />
           <AiPriceAction disabled={!isPriceEnabled} form={editForm} />
           <div className="space-y-2">
             <Badge variant={aiStatusBadgeVariant}>{aiStatusLabel}</Badge>
