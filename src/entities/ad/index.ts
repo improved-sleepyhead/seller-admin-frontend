@@ -9,7 +9,12 @@ export {
   resolveAdsSearchFromNavigationState,
   useAdsListState
 } from "./model"
-export type { AdDraft, AdEditFormValues, AdsListNavigationState } from "./model"
+export type {
+  AdDraft,
+  AdEditFormValues,
+  AdsListNavigationState,
+  AiChatMessage
+} from "./model"
 export type {
   AdEditFormApi,
   AdsListState,
