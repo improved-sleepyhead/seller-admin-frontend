@@ -1,4 +1,6 @@
 export * from "./api"
 export { AD_CATEGORY_LABELS } from "./model"
+export { ensureValidAiPayload } from "./model"
 export type { AdDraft, AdEditFormValues } from "./model"
+export type { AdEditFormApi, EnsureValidAiPayloadResult } from "./model"
 export * from "./ui"

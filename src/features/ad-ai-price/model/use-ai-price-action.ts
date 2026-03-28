@@ -2,19 +2,15 @@ import { useMutation } from "@tanstack/react-query"
 import { useCallback, useEffect, useRef, useState } from "react"
 
 import {
+  ensureValidAiPayload,
   requestAiPrice,
-  type AdEditFormValues,
-  type AiPriceResponse
+  type AdEditFormApi,
+  type AiPriceResponse,
+  type ItemUpdateIn
 } from "@/entities/ad"
 import { isAppApiError } from "@/shared/api/error"
 
-import { mapAdEditFormValuesToAiPricePayload } from "./ai-price.payload"
-
-import type { UseFormReturn } from "react-hook-form"
-
 const MOBILE_MEDIA_QUERY = "(max-width: 767px)"
-
-type AdEditFormApi = UseFormReturn<AdEditFormValues, unknown, AdEditFormValues>
 
 interface UseAiPriceActionOptions {
   disabled: boolean
@@ -92,7 +88,7 @@ export function useAiPriceAction({
       item,
       signal
     }: {
-      item: ReturnType<typeof mapAdEditFormValuesToAiPricePayload>
+      item: ItemUpdateIn
       signal: AbortSignal
     }): Promise<AiPriceResponse> => requestAiPrice(item, signal)
   })
@@ -120,6 +116,15 @@ export function useAiPriceAction({
       return
     }
 
+    const validationResult = await ensureValidAiPayload(form)
+
+    if (!validationResult.isValid) {
+      setErrorMessage("Заполните обязательные поля перед AI-запросом.")
+      setResponse(null)
+      setIsResultOpen(true)
+      return
+    }
+
     const requestAbortController = new AbortController()
     abortControllerRef.current = requestAbortController
     setErrorMessage(null)
@@ -128,7 +133,7 @@ export function useAiPriceAction({
 
     try {
       const nextResponse = await mutation.mutateAsync({
-        item: mapAdEditFormValuesToAiPricePayload(form.getValues()),
+        item: validationResult.payload,
         signal: requestAbortController.signal
       })
 
