@@ -9,8 +9,8 @@ import {
 import { isAppApiError } from "@/shared/api/error"
 
 import { readAdAiChatHistory, saveAdAiChatHistory } from "./ai-chat-history"
-import { isAbortError } from "./ai-chat.transport-errors"
 import { streamAiChat } from "./ai-chat.transport"
+import { isAbortError } from "./ai-chat.transport-errors"
 
 interface UseAiChatOptions {
   disabled: boolean
@@ -270,15 +270,13 @@ export function useAiChat({
           userMessage
         })
       } finally {
-        if (activeRequestIdRef.current !== requestId) {
-          return
-        }
+        if (activeRequestIdRef.current === requestId) {
+          if (abortControllerRef.current === requestAbortController) {
+            abortControllerRef.current = null
+          }
 
-        if (abortControllerRef.current === requestAbortController) {
-          abortControllerRef.current = null
+          setIsPending(false)
         }
-
-        setIsPending(false)
       }
     },
     []
@@ -353,7 +351,8 @@ export function useAiChat({
   }, [])
 
   const canSubmit = useMemo(
-    () => !disabled && form !== null && !isPending && inputValue.trim().length > 0,
+    () =>
+      !disabled && form !== null && !isPending && inputValue.trim().length > 0,
     [disabled, form, inputValue, isPending]
   )
 
