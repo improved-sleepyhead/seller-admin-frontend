@@ -68,7 +68,7 @@ function AiDescriptionResultContent({
     return (
       <div className="space-y-4">
         <p className="text-destructive text-sm">{errorMessage}</p>
-        <div className="flex flex-col gap-2 sm:flex-row">
+        <div className="flex flex-col gap-2">
           <Button
             className="w-full"
             type="button"
