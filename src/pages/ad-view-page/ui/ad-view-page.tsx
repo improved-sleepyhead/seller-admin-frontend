@@ -1,7 +1,12 @@
 import { useQuery } from "@tanstack/react-query"
 import { useLocation, useParams } from "react-router-dom"
 
-import { adDetailQuery } from "@/entities/ad"
+import {
+  adDetailQuery,
+  buildAdsListHrefFromNavigationState,
+  resolveAdsSearchFromNavigationState,
+  type AdsListNavigationState
+} from "@/entities/ad"
 import { isAppApiError } from "@/shared/api/error"
 import {
   AdViewErrorState,
@@ -9,8 +14,6 @@ import {
   AdViewLayoutSkeleton,
   AdViewNotFoundState
 } from "@/widgets/ad-view-layout"
-
-const ADS_LIST_PATH = "/ads"
 
 function parseAdId(rawId: string | undefined): number | null {
   if (!rawId) {
@@ -30,32 +33,14 @@ function buildAdEditPath(adId: number): string {
   return `/ads/${adId}/edit`
 }
 
-function resolveBackHref(state: unknown): string {
-  if (
-    typeof state === "object" &&
-    state !== null &&
-    "adsSearch" in state &&
-    typeof state.adsSearch === "string"
-  ) {
-    const normalizedSearch = state.adsSearch.trim()
-
-    if (normalizedSearch.length === 0) {
-      return ADS_LIST_PATH
-    }
-
-    if (normalizedSearch.startsWith("?")) {
-      return `${ADS_LIST_PATH}${normalizedSearch}`
-    }
-  }
-
-  return ADS_LIST_PATH
-}
-
 export function AdViewPage() {
   const { id } = useParams<{ id: string }>()
   const location = useLocation()
   const adId = parseAdId(id)
-  const backHref = resolveBackHref(location.state)
+  const backHref = buildAdsListHrefFromNavigationState(location.state)
+  const adsSearch = resolveAdsSearchFromNavigationState(location.state)
+  const editState: AdsListNavigationState | undefined =
+    adsSearch === null ? undefined : { adsSearch }
   const detailQuery = useQuery({
     ...adDetailQuery(adId ?? 0),
     enabled: adId !== null
@@ -97,6 +82,7 @@ export function AdViewPage() {
       ad={detailQuery.data}
       backHref={backHref}
       editHref={buildAdEditPath(adId)}
+      editState={editState}
     />
   )
 }

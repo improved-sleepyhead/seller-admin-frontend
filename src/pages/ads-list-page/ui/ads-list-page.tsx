@@ -1,11 +1,10 @@
 import { useQuery } from "@tanstack/react-query"
 import { useMemo } from "react"
-import { useSearchParams } from "react-router-dom"
 
 import {
   adsListQuery,
   mapAdsUrlParamsToListQuery,
-  parseAdsSearchParams
+  useAdsListState
 } from "@/entities/ad"
 import { AdsPagination } from "@/features/ads-pagination"
 import { isAppApiError } from "@/shared/api/error"
@@ -18,21 +17,38 @@ import {
 import { AdsFiltersPanel } from "@/widgets/ads-filters-panel"
 import { AdsToolbar } from "@/widgets/ads-toolbar"
 
+import { useAdsListUrlSync } from "../model"
+
 export function AdsListPage() {
-  const [searchParams] = useSearchParams()
-  const normalizedParams = useMemo(() => {
-    return parseAdsSearchParams(searchParams)
-  }, [searchParams])
+  const q = useAdsListState(state => state.q)
+  const categories = useAdsListState(state => state.categories)
+  const needsRevision = useAdsListState(state => state.needsRevision)
+  const sortColumn = useAdsListState(state => state.sortColumn)
+  const sortDirection = useAdsListState(state => state.sortDirection)
+  const page = useAdsListState(state => state.page)
+  const layout = useAdsListState(state => state.layout)
+  const { isHydrated } = useAdsListUrlSync()
 
   const listQueryParams = useMemo(() => {
-    return mapAdsUrlParamsToListQuery(normalizedParams)
-  }, [normalizedParams])
+    return mapAdsUrlParamsToListQuery({
+      categories,
+      layout,
+      needsRevision,
+      page,
+      q,
+      sortColumn,
+      sortDirection
+    })
+  }, [categories, layout, needsRevision, page, q, sortColumn, sortDirection])
 
-  const adsQuery = useQuery(adsListQuery(listQueryParams))
+  const adsQuery = useQuery({
+    ...adsListQuery(listQueryParams),
+    enabled: isHydrated
+  })
 
   const catalogContent = (() => {
-    if (adsQuery.isPending) {
-      return <AdsCatalogSkeleton layout={normalizedParams.layout} />
+    if (!isHydrated || adsQuery.isPending) {
+      return <AdsCatalogSkeleton layout={layout} />
     }
 
     if (adsQuery.isError) {
@@ -52,9 +68,7 @@ export function AdsListPage() {
       return <AdsEmptyState />
     }
 
-    return (
-      <AdsCatalog ads={adsQuery.data.items} layout={normalizedParams.layout} />
-    )
+    return <AdsCatalog ads={adsQuery.data.items} layout={layout} />
   })()
 
   return (

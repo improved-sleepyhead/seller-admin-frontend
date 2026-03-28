@@ -1,11 +1,9 @@
 import { useCallback } from "react"
-import { useSearchParams } from "react-router-dom"
 
 import {
-  createAdsSearchParams,
-  parseAdsSearchParams,
   type AdSortColumn,
-  type AdSortDirection
+  type AdSortDirection,
+  useAdsListState
 } from "@/entities/ad"
 
 interface UseAdsSortingResult {
@@ -16,43 +14,34 @@ interface UseAdsSortingResult {
 }
 
 export function useAdsSorting(): UseAdsSortingResult {
-  const [searchParams, setSearchParams] = useSearchParams()
-  const normalizedParams = parseAdsSearchParams(searchParams)
+  const sortColumn = useAdsListState(state => state.sortColumn)
+  const sortDirection = useAdsListState(state => state.sortDirection)
+  const setSort = useAdsListState(state => state.setSort)
 
   const setSortColumn = useCallback(
     (nextSortColumn: AdSortColumn) => {
-      const nextParams = parseAdsSearchParams(searchParams)
-
-      setSearchParams(
-        createAdsSearchParams({
-          ...nextParams,
-          page: 1,
-          sortColumn: nextSortColumn
-        })
-      )
+      setSort({
+        sortColumn: nextSortColumn,
+        sortDirection
+      })
     },
-    [searchParams, setSearchParams]
+    [setSort, sortDirection]
   )
 
   const setSortDirection = useCallback(
     (nextSortDirection: AdSortDirection) => {
-      const nextParams = parseAdsSearchParams(searchParams)
-
-      setSearchParams(
-        createAdsSearchParams({
-          ...nextParams,
-          page: 1,
-          sortDirection: nextSortDirection
-        })
-      )
+      setSort({
+        sortColumn,
+        sortDirection: nextSortDirection
+      })
     },
-    [searchParams, setSearchParams]
+    [setSort, sortColumn]
   )
 
   return {
     setSortColumn,
     setSortDirection,
-    sortColumn: normalizedParams.sortColumn,
-    sortDirection: normalizedParams.sortDirection
+    sortColumn,
+    sortDirection
   }
 }

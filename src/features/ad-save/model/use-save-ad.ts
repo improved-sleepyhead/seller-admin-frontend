@@ -3,7 +3,12 @@ import { useCallback } from "react"
 import { useNavigate } from "react-router-dom"
 import { toast } from "sonner"
 
-import { adsKeys, updateAdMutation, type AdEditFormValues } from "@/entities/ad"
+import {
+  adsKeys,
+  updateAdMutation,
+  type AdEditFormValues,
+  type AdsListNavigationState
+} from "@/entities/ad"
 import { isAppApiError } from "@/shared/api/error"
 import { draftRegistryStore } from "@/shared/lib/draft-registry-store"
 
@@ -12,6 +17,7 @@ import { clearAdDraftAndChatStorage } from "./ad-save.storage"
 
 interface UseSaveAdOptions {
   itemId: number
+  navigationState?: AdsListNavigationState
 }
 
 interface UseSaveAdResult {
@@ -35,7 +41,10 @@ function getErrorToastMessage(error: unknown): string {
   return "Не удалось сохранить объявление."
 }
 
-export function useSaveAd({ itemId }: UseSaveAdOptions): UseSaveAdResult {
+export function useSaveAd({
+  itemId,
+  navigationState
+}: UseSaveAdOptions): UseSaveAdResult {
   const queryClient = useQueryClient()
   const navigate = useNavigate()
   const mutation = useMutation({
@@ -54,7 +63,9 @@ export function useSaveAd({ itemId }: UseSaveAdOptions): UseSaveAdResult {
       draftRegistryStore.getState().clearDraftMeta(itemId)
       toast.success("Объявление сохранено.")
 
-      await navigate(getAdViewPath(itemId))
+      await navigate(getAdViewPath(itemId), {
+        state: navigationState
+      })
     }
   })
 
