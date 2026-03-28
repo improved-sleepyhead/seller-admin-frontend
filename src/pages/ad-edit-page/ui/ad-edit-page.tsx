@@ -9,7 +9,7 @@ import {
   type AdEditFormValues,
   type AdsListNavigationState
 } from "@/entities/ad"
-import { AiChatPlaceholder } from "@/features/ad-ai-chat"
+import { AdAiChat } from "@/features/ad-ai-chat"
 import { AiDescriptionAction } from "@/features/ad-ai-description"
 import { AiPriceAction } from "@/features/ad-ai-price"
 import { CancelEditButton } from "@/features/ad-cancel-edit"
@@ -211,8 +211,8 @@ export function AdEditPage() {
         </CardContent>
       </Card>
 
-      <AiChatPanel>
-        <AiChatPlaceholder enabled={isChatEnabled} />
+      <AiChatPanel disabled={!isChatEnabled}>
+        <AdAiChat disabled={!isChatEnabled} form={editForm} itemId={adId} />
       </AiChatPanel>
     </div>
   )
