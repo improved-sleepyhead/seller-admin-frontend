@@ -109,7 +109,7 @@ function AiPriceResultContent({
         <p className="text-muted-foreground text-xs">Обоснование</p>
         <p className="text-sm">{responseReasoning}</p>
       </div>
-      <div className="flex flex-col gap-2 sm:flex-row">
+      <div className="flex flex-col gap-2">
         <Button className="w-full" type="button" onClick={applySuggestion}>
           Применить цену
         </Button>

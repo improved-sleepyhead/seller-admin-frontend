@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom"
+import { Link, useLocation } from "react-router-dom"
 
 import {
   type AdsLayout,
@@ -32,12 +32,15 @@ interface AdsErrorStateProps {
 }
 
 function AdsGrid({ ads }: Pick<AdsCatalogProps, "ads">) {
+  const location = useLocation()
+
   return (
     <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
       {ads.map(ad => (
         <Link
           key={ad.id}
           to={`/ads/${ad.id}`}
+          state={{ adsSearch: location.search }}
           className="focus-visible:ring-ring rounded-md focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none"
         >
           <AdCard
@@ -51,12 +54,15 @@ function AdsGrid({ ads }: Pick<AdsCatalogProps, "ads">) {
 }
 
 function AdsList({ ads }: Pick<AdsCatalogProps, "ads">) {
+  const location = useLocation()
+
   return (
     <div className="space-y-4">
       {ads.map(ad => (
         <Link
           key={ad.id}
           to={`/ads/${ad.id}`}
+          state={{ adsSearch: location.search }}
           className="focus-visible:ring-ring block rounded-md focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none"
         >
           <AdCardListItem

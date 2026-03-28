@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query"
-import { useParams } from "react-router-dom"
+import { useLocation, useParams } from "react-router-dom"
 
 import { adDetailQuery } from "@/entities/ad"
 import { isAppApiError } from "@/shared/api/error"
@@ -30,16 +30,39 @@ function buildAdEditPath(adId: number): string {
   return `/ads/${adId}/edit`
 }
 
+function resolveBackHref(state: unknown): string {
+  if (
+    typeof state === "object" &&
+    state !== null &&
+    "adsSearch" in state &&
+    typeof state.adsSearch === "string"
+  ) {
+    const normalizedSearch = state.adsSearch.trim()
+
+    if (normalizedSearch.length === 0) {
+      return ADS_LIST_PATH
+    }
+
+    if (normalizedSearch.startsWith("?")) {
+      return `${ADS_LIST_PATH}${normalizedSearch}`
+    }
+  }
+
+  return ADS_LIST_PATH
+}
+
 export function AdViewPage() {
   const { id } = useParams<{ id: string }>()
+  const location = useLocation()
   const adId = parseAdId(id)
+  const backHref = resolveBackHref(location.state)
   const detailQuery = useQuery({
     ...adDetailQuery(adId ?? 0),
     enabled: adId !== null
   })
 
   if (adId === null) {
-    return <AdViewNotFoundState backHref={ADS_LIST_PATH} />
+    return <AdViewNotFoundState backHref={backHref} />
   }
 
   if (detailQuery.isPending) {
@@ -51,12 +74,12 @@ export function AdViewPage() {
       isAppApiError(detailQuery.error) &&
       detailQuery.error.code === "NOT_FOUND"
     ) {
-      return <AdViewNotFoundState backHref={ADS_LIST_PATH} />
+      return <AdViewNotFoundState backHref={backHref} />
     }
 
     return (
       <AdViewErrorState
-        backHref={ADS_LIST_PATH}
+        backHref={backHref}
         message={
           isAppApiError(detailQuery.error)
             ? detailQuery.error.message
@@ -72,7 +95,7 @@ export function AdViewPage() {
   return (
     <AdViewLayout
       ad={detailQuery.data}
-      backHref={ADS_LIST_PATH}
+      backHref={backHref}
       editHref={buildAdEditPath(adId)}
     />
   )
