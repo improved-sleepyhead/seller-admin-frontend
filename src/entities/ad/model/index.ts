@@ -1,4 +1,6 @@
 export * from "./ad.constants"
+export { ensureValidAiPayload } from "./ad-ai-payload"
+export type { AdEditFormApi, EnsureValidAiPayloadResult } from "./ad-ai-payload"
 export * from "./ad.revision"
 export * from "./ad.specs"
 export * from "./ad.types"

@@ -2,19 +2,15 @@ import { useMutation } from "@tanstack/react-query"
 import { useCallback, useEffect, useRef, useState } from "react"
 
 import {
+  ensureValidAiPayload,
+  type AdEditFormApi,
   requestAiDescription,
-  type AdEditFormValues,
-  type AiDescriptionResponse
+  type AiDescriptionResponse,
+  type ItemUpdateIn
 } from "@/entities/ad"
 import { isAppApiError } from "@/shared/api/error"
 
-import { mapAdEditFormValuesToAiDescriptionPayload } from "./ai-description.payload"
-
-import type { UseFormReturn } from "react-hook-form"
-
 const MOBILE_MEDIA_QUERY = "(max-width: 767px)"
-
-type AdEditFormApi = UseFormReturn<AdEditFormValues, unknown, AdEditFormValues>
 
 interface DescriptionDiffModel {
   sourceText: string
@@ -106,7 +102,7 @@ export function useAiDescriptionAction({
       item,
       signal
     }: {
-      item: ReturnType<typeof mapAdEditFormValuesToAiDescriptionPayload>
+      item: ItemUpdateIn
       signal: AbortSignal
     }): Promise<AiDescriptionResponse> => requestAiDescription(item, signal)
   })
@@ -134,6 +130,15 @@ export function useAiDescriptionAction({
       return
     }
 
+    const validationResult = await ensureValidAiPayload(form)
+
+    if (!validationResult.isValid) {
+      setErrorMessage("Заполните обязательные поля перед AI-запросом.")
+      setResponse(null)
+      setIsResultOpen(true)
+      return
+    }
+
     const requestAbortController = new AbortController()
     abortControllerRef.current = requestAbortController
     setErrorMessage(null)
@@ -142,7 +147,7 @@ export function useAiDescriptionAction({
 
     try {
       const nextResponse = await mutation.mutateAsync({
-        item: mapAdEditFormValuesToAiDescriptionPayload(form.getValues()),
+        item: validationResult.payload,
         signal: requestAbortController.signal
       })
 
