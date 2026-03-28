@@ -122,10 +122,13 @@ export function useAiChat({
   const [inputValue, setInputValue] = useState("")
   const [inlineError, setInlineError] = useState<string | null>(null)
   const [isPending, setIsPending] = useState(false)
-  const [messages, setMessages] = useState<AiChatMessage[]>([])
+  const [messages, setMessages] = useState<AiChatMessage[]>(() =>
+    readAdAiChatHistory(itemId)
+  )
   const [retryContext, setRetryContext] = useState<RetryContext | null>(null)
   const abortControllerRef = useRef<AbortController | null>(null)
   const activeRequestIdRef = useRef(0)
+  const savedItemIdRef = useRef(itemId)
 
   useEffect(() => {
     activeRequestIdRef.current += 1
@@ -143,6 +146,11 @@ export function useAiChat({
   }, [itemId])
 
   useEffect(() => {
+    if (savedItemIdRef.current !== itemId) {
+      savedItemIdRef.current = itemId
+      return
+    }
+
     saveAdAiChatHistory(itemId, messages)
   }, [itemId, messages])
 
