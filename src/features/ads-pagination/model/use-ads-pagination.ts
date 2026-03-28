@@ -1,11 +1,6 @@
 import { useCallback, useMemo } from "react"
-import { useSearchParams } from "react-router-dom"
 
-import {
-  ADS_LIST_PAGE_SIZE,
-  createAdsSearchParams,
-  parseAdsSearchParams
-} from "@/entities/ad"
+import { ADS_LIST_PAGE_SIZE, useAdsListState } from "@/entities/ad"
 
 interface UseAdsPaginationOptions {
   total: number
@@ -28,28 +23,21 @@ function getTotalPages(total: number, pageSize: number): number {
 export function useAdsPagination({
   total
 }: UseAdsPaginationOptions): UseAdsPaginationResult {
-  const [searchParams, setSearchParams] = useSearchParams()
-  const normalizedParams = parseAdsSearchParams(searchParams)
+  const page = useAdsListState(state => state.page)
+  const setPage = useAdsListState(state => state.setPage)
 
   const totalPages = useMemo(() => {
     return getTotalPages(total, ADS_LIST_PAGE_SIZE)
   }, [total])
 
-  const currentPage = Math.min(normalizedParams.page, totalPages)
+  const currentPage = Math.min(page, totalPages)
 
   const goToPage = useCallback(
     (nextPage: number) => {
-      const nextParams = parseAdsSearchParams(searchParams)
       const clampedPage = Math.max(1, Math.min(nextPage, totalPages))
-
-      setSearchParams(
-        createAdsSearchParams({
-          ...nextParams,
-          page: clampedPage
-        })
-      )
+      setPage(clampedPage)
     },
-    [searchParams, setSearchParams, totalPages]
+    [setPage, totalPages]
   )
 
   return {

@@ -1,8 +1,11 @@
 import { useCallback } from "react"
 import { useNavigate } from "react-router-dom"
 
+import type { AdsListNavigationState } from "@/entities/ad"
+
 interface UseCancelEditOptions {
   itemId: number
+  navigationState?: AdsListNavigationState
 }
 
 interface UseCancelEditResult {
@@ -14,13 +17,16 @@ function getAdViewPath(itemId: number): string {
 }
 
 export function useCancelEdit({
-  itemId
+  itemId,
+  navigationState
 }: UseCancelEditOptions): UseCancelEditResult {
   const navigate = useNavigate()
 
   const cancelEdit = useCallback(async () => {
-    await navigate(getAdViewPath(itemId))
-  }, [itemId, navigate])
+    await navigate(getAdViewPath(itemId), {
+      state: navigationState
+    })
+  }, [itemId, navigate, navigationState])
 
   return { cancelEdit }
 }

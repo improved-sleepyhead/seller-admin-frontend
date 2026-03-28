@@ -164,6 +164,21 @@ export function createAdsSearchParams(
   return searchParams
 }
 
+export function serializeAdsListUrlParams(params: AdsListUrlParams): string {
+  return createAdsSearchParams(params).toString()
+}
+
+export function areAdsListUrlParamsEqual(
+  left: AdsListUrlParams,
+  right: AdsListUrlParams
+): boolean {
+  if (left === right) {
+    return true
+  }
+
+  return serializeAdsListUrlParams(left) === serializeAdsListUrlParams(right)
+}
+
 export function mapAdsUrlParamsToBackendQuery(
   params: AdsListUrlParams
 ): AdsListBackendQueryParams {

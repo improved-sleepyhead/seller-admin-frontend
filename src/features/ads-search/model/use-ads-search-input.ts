@@ -1,8 +1,7 @@
 import { debounce } from "lodash"
-import { useCallback, useEffect, useMemo, useRef, useState } from "react"
-import { useSearchParams } from "react-router-dom"
+import { useCallback, useEffect, useMemo, useState } from "react"
 
-import { createAdsSearchParams, parseAdsSearchParams } from "@/entities/ad"
+import { useAdsListState } from "@/entities/ad"
 
 const SEARCH_DEBOUNCE_MS = 400
 
@@ -12,34 +11,21 @@ interface UseAdsSearchInputResult {
 }
 
 export function useAdsSearchInput(): UseAdsSearchInputResult {
-  const [searchParams, setSearchParams] = useSearchParams()
-  const [queryValue, setQueryValueState] = useState(() => {
-    return parseAdsSearchParams(searchParams).q
-  })
-  const searchParamsRef = useRef(searchParams)
+  const queryFromState = useAdsListState(state => state.q)
+  const setSearch = useAdsListState(state => state.setSearch)
+  const [queryValue, setQueryValueState] = useState(queryFromState)
 
   useEffect(() => {
-    searchParamsRef.current = searchParams
-    const normalizedQuery = parseAdsSearchParams(searchParams).q
-
     setQueryValueState(currentValue =>
-      currentValue === normalizedQuery ? currentValue : normalizedQuery
+      currentValue === queryFromState ? currentValue : queryFromState
     )
-  }, [searchParams])
+  }, [queryFromState])
 
   const debouncedSyncQuery = useMemo(() => {
     return debounce((nextValue: string) => {
-      const normalizedParams = parseAdsSearchParams(searchParamsRef.current)
-
-      setSearchParams(
-        createAdsSearchParams({
-          ...normalizedParams,
-          page: 1,
-          q: nextValue
-        })
-      )
+      setSearch(nextValue)
     }, SEARCH_DEBOUNCE_MS)
-  }, [setSearchParams])
+  }, [setSearch])
 
   useEffect(() => {
     return () => {

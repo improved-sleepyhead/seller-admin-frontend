@@ -7,7 +7,8 @@ import {
   AdPrice,
   AdRevisionBadge,
   AdSpecsList,
-  type AdDetailsVM
+  type AdDetailsVM,
+  type AdsListNavigationState
 } from "@/entities/ad"
 import {
   Button,
@@ -23,6 +24,7 @@ interface AdViewLayoutProps {
   ad: AdDetailsVM
   backHref: string
   editHref: string
+  editState?: AdsListNavigationState
 }
 
 interface AdViewErrorStateProps {
@@ -58,7 +60,12 @@ function MissingFieldsList({ missingFields }: { missingFields: string[] }) {
   )
 }
 
-export function AdViewLayout({ ad, backHref, editHref }: AdViewLayoutProps) {
+export function AdViewLayout({
+  ad,
+  backHref,
+  editHref,
+  editState
+}: AdViewLayoutProps) {
   return (
     <div className="mx-auto w-full max-w-5xl space-y-6">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
@@ -66,7 +73,9 @@ export function AdViewLayout({ ad, backHref, editHref }: AdViewLayoutProps) {
           <Link to={backHref}>К списку</Link>
         </Button>
         <Button asChild size="sm">
-          <Link to={editHref}>Редактировать</Link>
+          <Link to={editHref} state={editState}>
+            Редактировать
+          </Link>
         </Button>
       </div>
 

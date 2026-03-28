@@ -1,13 +1,6 @@
 import { useCallback } from "react"
-import { useSearchParams } from "react-router-dom"
 
-import {
-  AD_CATEGORIES,
-  ADS_LIST_DEFAULT_URL_PARAMS,
-  createAdsSearchParams,
-  parseAdsSearchParams,
-  type AdCategory
-} from "@/entities/ad"
+import { AD_CATEGORIES, type AdCategory, useAdsListState } from "@/entities/ad"
 
 interface UseAdsFilteringResult {
   categories: AdCategory[]
@@ -18,13 +11,15 @@ interface UseAdsFilteringResult {
 }
 
 export function useAdsFiltering(): UseAdsFilteringResult {
-  const [searchParams, setSearchParams] = useSearchParams()
-  const normalizedParams = parseAdsSearchParams(searchParams)
+  const categories = useAdsListState(state => state.categories)
+  const needsRevision = useAdsListState(state => state.needsRevision)
+  const setCategories = useAdsListState(state => state.setCategories)
+  const setNeedsRevision = useAdsListState(state => state.setNeedsRevision)
+  const resetFilters = useAdsListState(state => state.resetFilters)
 
   const toggleCategory = useCallback(
     (category: AdCategory, checked: boolean) => {
-      const nextParams = parseAdsSearchParams(searchParams)
-      const selectedCategories = new Set(nextParams.categories)
+      const selectedCategories = new Set(categories)
 
       if (checked) {
         selectedCategories.add(category)
@@ -32,41 +27,18 @@ export function useAdsFiltering(): UseAdsFilteringResult {
         selectedCategories.delete(category)
       }
 
-      setSearchParams(
-        createAdsSearchParams({
-          ...nextParams,
-          categories: AD_CATEGORIES.filter(nextCategory =>
-            selectedCategories.has(nextCategory)
-          ),
-          page: 1
-        })
+      setCategories(
+        AD_CATEGORIES.filter(nextCategory =>
+          selectedCategories.has(nextCategory)
+        )
       )
     },
-    [searchParams, setSearchParams]
+    [categories, setCategories]
   )
-
-  const setNeedsRevision = useCallback(
-    (checked: boolean) => {
-      const nextParams = parseAdsSearchParams(searchParams)
-
-      setSearchParams(
-        createAdsSearchParams({
-          ...nextParams,
-          needsRevision: checked,
-          page: 1
-        })
-      )
-    },
-    [searchParams, setSearchParams]
-  )
-
-  const resetFilters = useCallback(() => {
-    setSearchParams(createAdsSearchParams(ADS_LIST_DEFAULT_URL_PARAMS))
-  }, [setSearchParams])
 
   return {
-    categories: normalizedParams.categories,
-    needsRevision: normalizedParams.needsRevision,
+    categories,
+    needsRevision,
     resetFilters,
     setNeedsRevision,
     toggleCategory

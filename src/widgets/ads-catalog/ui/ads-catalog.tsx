@@ -1,10 +1,14 @@
-import { Link, useLocation } from "react-router-dom"
+import { useMemo } from "react"
+import { Link } from "react-router-dom"
 
 import {
   type AdsLayout,
   type AdsListItemVM,
   AdCard,
-  AdCardListItem
+  AdCardListItem,
+  createAdsListNavigationState,
+  type AdsListNavigationState,
+  useAdsListState
 } from "@/entities/ad"
 import { ResetFiltersButton } from "@/features/ads-filtering"
 import {
@@ -31,16 +35,19 @@ interface AdsErrorStateProps {
   message?: string
 }
 
-function AdsGrid({ ads }: Pick<AdsCatalogProps, "ads">) {
-  const location = useLocation()
+interface AdsListContentProps {
+  ads: AdsListItemVM[]
+  navigationState: AdsListNavigationState
+}
 
+function AdsGrid({ ads, navigationState }: AdsListContentProps) {
   return (
     <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
       {ads.map(ad => (
         <Link
           key={ad.id}
           to={`/ads/${ad.id}`}
-          state={{ adsSearch: location.search }}
+          state={navigationState}
           className="focus-visible:ring-ring rounded-md focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none"
         >
           <AdCard
@@ -53,16 +60,14 @@ function AdsGrid({ ads }: Pick<AdsCatalogProps, "ads">) {
   )
 }
 
-function AdsList({ ads }: Pick<AdsCatalogProps, "ads">) {
-  const location = useLocation()
-
+function AdsList({ ads, navigationState }: AdsListContentProps) {
   return (
     <div className="space-y-4">
       {ads.map(ad => (
         <Link
           key={ad.id}
           to={`/ads/${ad.id}`}
-          state={{ adsSearch: location.search }}
+          state={navigationState}
           className="focus-visible:ring-ring block rounded-md focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none"
         >
           <AdCardListItem
@@ -76,7 +81,39 @@ function AdsList({ ads }: Pick<AdsCatalogProps, "ads">) {
 }
 
 export function AdsCatalog({ ads, layout }: AdsCatalogProps) {
-  return layout === "list" ? <AdsList ads={ads} /> : <AdsGrid ads={ads} />
+  const q = useAdsListState(state => state.q)
+  const categories = useAdsListState(state => state.categories)
+  const needsRevision = useAdsListState(state => state.needsRevision)
+  const sortColumn = useAdsListState(state => state.sortColumn)
+  const sortDirection = useAdsListState(state => state.sortDirection)
+  const page = useAdsListState(state => state.page)
+  const currentLayout = useAdsListState(state => state.layout)
+
+  const navigationState = useMemo(() => {
+    return createAdsListNavigationState({
+      categories,
+      layout: currentLayout,
+      needsRevision,
+      page,
+      q,
+      sortColumn,
+      sortDirection
+    })
+  }, [
+    categories,
+    currentLayout,
+    needsRevision,
+    page,
+    q,
+    sortColumn,
+    sortDirection
+  ])
+
+  return layout === "list" ? (
+    <AdsList ads={ads} navigationState={navigationState} />
+  ) : (
+    <AdsGrid ads={ads} navigationState={navigationState} />
+  )
 }
 
 export function AdsCatalogSkeleton({ layout }: AdsCatalogSkeletonProps) {

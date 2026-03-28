@@ -1,11 +1,13 @@
 import { useQuery } from "@tanstack/react-query"
 import { useEffect, useState } from "react"
-import { useParams } from "react-router-dom"
+import { useLocation, useParams } from "react-router-dom"
 
 import {
   adEditDetailQuery,
   aiStatusQuery,
-  type AdEditFormValues
+  resolveAdsSearchFromNavigationState,
+  type AdEditFormValues,
+  type AdsListNavigationState
 } from "@/entities/ad"
 import { AiChatPlaceholder } from "@/features/ad-ai-chat"
 import { AiDescriptionAction } from "@/features/ad-ai-description"
@@ -53,13 +55,20 @@ function parseAdId(rawId: string | undefined): number | null {
 
 export function AdEditPage() {
   const { id } = useParams<{ id: string }>()
+  const location = useLocation()
   const adId = parseAdId(id)
+  const adsSearch = resolveAdsSearchFromNavigationState(location.state)
+  const navigationState: AdsListNavigationState | undefined =
+    adsSearch === null ? undefined : { adsSearch }
   const [editForm, setEditForm] = useState<UseFormReturn<
     AdEditFormValues,
     unknown,
     AdEditFormValues
   > | null>(null)
-  const { isSavePending, saveAd } = useSaveAd({ itemId: adId ?? 0 })
+  const { isSavePending, saveAd } = useSaveAd({
+    itemId: adId ?? 0,
+    navigationState
+  })
   const {
     cancelCategoryChange,
     confirmCategoryChange,
@@ -239,7 +248,11 @@ export function AdEditPage() {
         aiArea={aiArea}
         footer={
           <>
-            <CancelEditButton disabled={isSavePending} itemId={adId} />
+            <CancelEditButton
+              disabled={isSavePending}
+              itemId={adId}
+              navigationState={navigationState}
+            />
             <SaveAdButton
               disabled={isSavePending}
               form={EDIT_FORM_ID}
