@@ -1,6 +1,7 @@
 export { AdDraftSchema } from "./ad-draft.schema"
 export {
   areDraftFormsEqual,
+  createServerFormSnapshotFromAd,
   createServerHashFromAd,
   isDraftDifferentFromServer
 } from "./draft-comparator"

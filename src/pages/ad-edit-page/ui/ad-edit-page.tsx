@@ -57,6 +57,7 @@ export function AdEditPage() {
   const { id } = useParams<{ id: string }>()
   const location = useLocation()
   const adId = parseAdId(id)
+  const [editEntryRevision, setEditEntryRevision] = useState(0)
   const adsSearch = resolveAdsSearchFromNavigationState(location.state)
   const navigationState: AdsListNavigationState | undefined =
     adsSearch === null ? undefined : { adsSearch }
@@ -87,13 +88,18 @@ export function AdEditPage() {
   const { draftSavedAt, isRestoreDialogOpen, restoreDraft, useServerVersion } =
     useAdDraft({
       ad: detailQuery.data ?? null,
+      entryRevision: editEntryRevision,
       form: editForm,
       itemId: adId ?? 0
     })
 
   useEffect(() => {
-    setEditForm(null)
-  }, [adId])
+    if (!location.pathname.endsWith("/edit")) {
+      return
+    }
+
+    setEditEntryRevision(previousRevision => previousRevision + 1)
+  }, [location.pathname])
 
   if (adId === null) {
     return <div>Некорректный идентификатор объявления.</div>
