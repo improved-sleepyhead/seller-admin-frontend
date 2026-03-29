@@ -27,7 +27,13 @@ import {
 import { AdEditForm } from "@/features/ad-edit-form"
 import { SaveAdButton, useSaveAd } from "@/features/ad-save"
 import { isAppApiError } from "@/shared/api/error"
-import { Badge, Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/shadcn"
+import {
+  Badge,
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle
+} from "@/shared/ui/shadcn"
 import {
   AdEditErrorState,
   AdEditLayout,
@@ -144,7 +150,9 @@ export function AdEditPage() {
       <AdEditErrorState
         backHref={backHref}
         message={
-          isAppApiError(detailQuery.error) ? detailQuery.error.message : undefined
+          isAppApiError(detailQuery.error)
+            ? detailQuery.error.message
+            : undefined
         }
         onRetry={() => {
           void detailQuery.refetch()
