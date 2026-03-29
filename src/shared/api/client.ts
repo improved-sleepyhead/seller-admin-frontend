@@ -1,6 +1,6 @@
 import axios, { type AxiosRequestConfig, type AxiosResponse } from "axios"
 
-import { getApiBaseUrl } from "@/shared/config"
+import { getApiBaseUrl } from "@/shared/config/runtime-config"
 
 export const apiClient = axios.create({
   baseURL: getApiBaseUrl(),

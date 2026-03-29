@@ -4,16 +4,17 @@ const DEFAULT_API_BASE_URL = "http://localhost"
 
 const apiBaseUrlSchema = z.url()
 
-type RuntimeWindow = {
+interface RuntimeWindow {
   APP_CONFIG?: {
     API_BASE_URL?: unknown
   }
 }
 
 function readRawApiBaseUrl(): unknown {
-  const runtimeWindow = globalThis as typeof globalThis & RuntimeWindow & {
-    window?: RuntimeWindow
-  }
+  const runtimeWindow = globalThis as typeof globalThis &
+    RuntimeWindow & {
+      window?: RuntimeWindow
+    }
 
   return (
     runtimeWindow.window?.APP_CONFIG?.API_BASE_URL ??
