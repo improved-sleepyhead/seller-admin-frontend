@@ -137,6 +137,7 @@ function FormDescription({ className, ...props }: React.ComponentProps<"p">) {
 function FormMessage({ className, ...props }: React.ComponentProps<"p">) {
   const { error, formMessageId } = useFormField()
   const body = error ? String(error?.message ?? "") : props.children
+  const isErrorMessage = !!error
 
   if (!body) {
     return null
@@ -147,6 +148,8 @@ function FormMessage({ className, ...props }: React.ComponentProps<"p">) {
       data-slot="form-message"
       id={formMessageId}
       className={cn("text-destructive text-sm", className)}
+      aria-live={isErrorMessage ? "assertive" : "polite"}
+      role={isErrorMessage ? "alert" : undefined}
       {...props}
     >
       {body}

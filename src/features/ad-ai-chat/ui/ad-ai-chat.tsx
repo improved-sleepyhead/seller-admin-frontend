@@ -2,7 +2,7 @@ import { Loader2Icon } from "lucide-react"
 
 import { type AdEditFormApi, type AiChatMessage } from "@/entities/ad"
 import { cn } from "@/shared/lib/cn"
-import { Badge, Button, Textarea } from "@/shared/ui/shadcn"
+import { Badge, Button, Label, Textarea } from "@/shared/ui/shadcn"
 
 import { useAiChat } from "../model"
 
@@ -91,13 +91,18 @@ export function AdAiChat({ disabled, form, itemId }: AdAiChatProps) {
     form,
     itemId
   })
+  const chatInputId = `ad-ai-chat-input-${itemId}`
+  const chatErrorId = `ad-ai-chat-error-${itemId}`
+  const hasInlineError = inlineError !== null
 
   return (
     <div className="space-y-4">
       <div
         aria-live="polite"
+        aria-relevant="additions text"
         className="max-h-80 space-y-3 overflow-y-auto rounded-md border p-3"
         data-testid="ai-chat-messages"
+        role="log"
       >
         {messages.length === 0 ? (
           <p className="text-muted-foreground text-sm">
@@ -112,8 +117,11 @@ export function AdAiChat({ disabled, form, itemId }: AdAiChatProps) {
 
       {inlineError !== null ? (
         <div
+          id={chatErrorId}
+          aria-live="assertive"
           className="bg-destructive/10 space-y-2 rounded-md border border-red-500/40 p-3"
           data-testid="ai-chat-error"
+          role="alert"
         >
           <p className="text-destructive text-sm">{inlineError}</p>
           {canRetry ? (
@@ -137,8 +145,14 @@ export function AdAiChat({ disabled, form, itemId }: AdAiChatProps) {
           void sendMessage()
         }}
       >
+        <Label className="sr-only" htmlFor={chatInputId}>
+          Сообщение для AI чата
+        </Label>
         <Textarea
+          aria-describedby={hasInlineError ? chatErrorId : undefined}
+          aria-invalid={hasInlineError}
           disabled={disabled || isPending || form === null}
+          id={chatInputId}
           placeholder={
             disabled
               ? "AI чат недоступен"
