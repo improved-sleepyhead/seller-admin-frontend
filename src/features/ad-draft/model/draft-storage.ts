@@ -7,6 +7,28 @@ function isBrowserEnvironment(): boolean {
   return typeof window !== "undefined"
 }
 
+function isDevEnvironment(): boolean {
+  try {
+    const env = (
+      import.meta as ImportMeta & {
+        env?: Record<string, unknown>
+      }
+    ).env
+
+    return env?.DEV === true
+  } catch {
+    return false
+  }
+}
+
+function warnInvalidDraftPayload(reason: string): void {
+  if (!isDevEnvironment()) {
+    return
+  }
+
+  console.warn(`[ad-draft] Ignored invalid draft payload: ${reason}`)
+}
+
 function parseDraftPayload(rawPayload: string | null): AdDraft | null {
   if (rawPayload === null) {
     return null
@@ -17,11 +39,13 @@ function parseDraftPayload(rawPayload: string | null): AdDraft | null {
     const parseResult = AdDraftSchema.safeParse(parsedPayload)
 
     if (!parseResult.success) {
+      warnInvalidDraftPayload("schema validation failed")
       return null
     }
 
     return parseResult.data
   } catch {
+    warnInvalidDraftPayload("invalid JSON")
     return null
   }
 }
