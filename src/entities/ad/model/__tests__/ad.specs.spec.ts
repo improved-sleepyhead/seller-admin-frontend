@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest"
 
 import { getFilledSpecs } from "../ad.specs"
+
 import type { AutoAd, ElectronicsAd } from "../ad.types"
 
 const TIMESTAMP = "2026-03-29T00:00:00.000Z"

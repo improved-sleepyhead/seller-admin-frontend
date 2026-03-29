@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest"
 
 import { doesNeedRevision, getMissingFields } from "../ad.revision"
+
 import type { AutoAd, ElectronicsAd, RealEstateAd } from "../ad.types"
 
 const TIMESTAMP = "2026-03-29T00:00:00.000Z"

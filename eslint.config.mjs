@@ -103,6 +103,7 @@ export default defineConfig(
       "dist/**",
       "coverage/**",
       "node_modules/**",
+      ".agents/**",
       "public/config.js",
       "*.d.ts",
       "eslint.config.mjs"
