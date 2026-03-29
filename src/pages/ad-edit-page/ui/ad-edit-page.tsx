@@ -1,9 +1,10 @@
-import { useQuery } from "@tanstack/react-query"
+import { useQuery, useQueryClient } from "@tanstack/react-query"
 import { useEffect, useState } from "react"
 import { useLocation, useParams } from "react-router-dom"
 
 import {
   adEditDetailQuery,
+  adsKeys,
   aiStatusQuery,
   resolveAdsSearchFromNavigationState,
   type AdEditFormValues,
@@ -54,6 +55,7 @@ function parseAdId(rawId: string | undefined): number | null {
 }
 
 export function AdEditPage() {
+  const queryClient = useQueryClient()
   const { id } = useParams<{ id: string }>()
   const location = useLocation()
   const adId = parseAdId(id)
@@ -100,6 +102,26 @@ export function AdEditPage() {
 
     setEditEntryRevision(previousRevision => previousRevision + 1)
   }, [location.pathname])
+
+  useEffect(() => {
+    if (adId === null) {
+      return
+    }
+
+    const detailQueryKey = adsKeys.editDetail(adId)
+    const aiStatusQueryKey = adsKeys.aiStatus()
+
+    return () => {
+      void queryClient.cancelQueries({
+        exact: true,
+        queryKey: detailQueryKey
+      })
+      void queryClient.cancelQueries({
+        exact: true,
+        queryKey: aiStatusQueryKey
+      })
+    }
+  }, [adId, queryClient])
 
   if (adId === null) {
     return <div>Некорректный идентификатор объявления.</div>
