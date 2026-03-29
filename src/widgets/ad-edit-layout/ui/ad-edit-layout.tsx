@@ -1,4 +1,15 @@
-import { Card, CardContent, CardFooter, Skeleton } from "@/shared/ui/shadcn"
+import { Link } from "react-router-dom"
+
+import {
+  Button,
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+  Skeleton
+} from "@/shared/ui/shadcn"
 
 import type { ReactNode } from "react"
 
@@ -61,6 +72,63 @@ export function AdEditLayoutSkeleton() {
           <Skeleton className="h-10 w-32" />
           <Skeleton className="h-10 w-32" />
         </CardFooter>
+      </Card>
+    </div>
+  )
+}
+
+interface AdEditNotFoundStateProps {
+  backHref: string
+}
+
+interface AdEditErrorStateProps {
+  backHref: string
+  message?: string
+  onRetry: () => void
+}
+
+export function AdEditNotFoundState({ backHref }: AdEditNotFoundStateProps) {
+  return (
+    <div className="mx-auto w-full max-w-3xl">
+      <Card>
+        <CardHeader>
+          <CardTitle>Объявление не найдено</CardTitle>
+          <CardDescription>
+            Проверьте корректность ссылки или вернитесь к списку объявлений.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Button asChild variant="outline">
+            <Link to={backHref}>Вернуться к списку</Link>
+          </Button>
+        </CardContent>
+      </Card>
+    </div>
+  )
+}
+
+export function AdEditErrorState({
+  backHref,
+  message,
+  onRetry
+}: AdEditErrorStateProps) {
+  return (
+    <div className="mx-auto w-full max-w-3xl">
+      <Card>
+        <CardHeader>
+          <CardTitle>Не удалось загрузить объявление</CardTitle>
+          <CardDescription>
+            {message ?? "Попробуйте повторить запрос ещё раз."}
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="flex flex-wrap gap-2">
+          <Button type="button" variant="outline" onClick={onRetry}>
+            Повторить
+          </Button>
+          <Button asChild variant="ghost">
+            <Link to={backHref}>К списку</Link>
+          </Button>
+        </CardContent>
       </Card>
     </div>
   )

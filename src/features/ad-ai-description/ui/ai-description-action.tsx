@@ -51,7 +51,10 @@ function AiDescriptionResultContent({
   if (isPending) {
     return (
       <div className="space-y-4">
-        <p className="text-sm">Генерируем улучшенный текст...</p>
+        <p className="flex items-center gap-2 text-sm">
+          <Loader2Icon className="size-4 animate-spin" />
+          Генерируем улучшенный текст...
+        </p>
         <Button
           className="w-full"
           type="button"
