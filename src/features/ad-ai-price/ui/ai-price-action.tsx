@@ -52,7 +52,10 @@ function AiPriceResultContent({
   if (isPending) {
     return (
       <div className="space-y-4">
-        <p className="text-sm">Подбираем рекомендованную цену...</p>
+        <p className="flex items-center gap-2 text-sm">
+          <Loader2Icon className="size-4 animate-spin" />
+          Подбираем рекомендованную цену...
+        </p>
         <div className="flex gap-2">
           <Button
             className="w-full"
