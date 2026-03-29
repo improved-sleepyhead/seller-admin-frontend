@@ -163,6 +163,18 @@ export function AdAiChat({ disabled, form, itemId }: AdAiChatProps) {
           onChange={event => {
             setInputValue(event.target.value)
           }}
+          onKeyDown={event => {
+            if (
+              event.key !== "Enter" ||
+              event.shiftKey ||
+              event.nativeEvent.isComposing
+            ) {
+              return
+            }
+
+            event.preventDefault()
+            void sendMessage()
+          }}
         />
         <div className="flex items-center justify-end gap-2">
           {isPending ? (
