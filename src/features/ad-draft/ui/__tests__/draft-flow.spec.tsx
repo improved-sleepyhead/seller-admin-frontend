@@ -12,22 +12,21 @@ import { useForm } from "react-hook-form"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 
 import type { AdDetailsDto, AdDraft, AdEditFormValues } from "@/entities/ad"
-import { adDraftStateStore } from "@/features/ad-draft/model/ad-draft-state.store"
-import { getAdDraftStorageKey } from "@/features/ad-draft/model/draft-keys"
-import { useAdDraft } from "@/features/ad-draft/model/use-ad-draft"
 import { draftRegistryStore } from "@/shared/lib/draft-registry-store"
 
+import { getAdDraftStorageKey, useAdDraft } from "../../model"
 import { DraftRestoreDialog } from "../draft-restore-dialog"
 
 const TIMESTAMP = "2026-03-30T00:00:00.000Z"
-const ITEM_ID = 1
 
-function createAd(): AdDetailsDto {
+type ElectronicsAdDetails = Extract<AdDetailsDto, { category: "electronics" }>
+
+function createAd(itemId: number): ElectronicsAdDetails {
   return {
     category: "electronics",
     createdAt: TIMESTAMP,
     description: "Серверное описание",
-    id: ITEM_ID,
+    id: itemId,
     params: {
       brand: "Apple",
       color: "Black",
@@ -41,7 +40,7 @@ function createAd(): AdDetailsDto {
   }
 }
 
-function toFormValues(ad: AdDetailsDto): AdEditFormValues {
+function toFormValues(ad: ElectronicsAdDetails): AdEditFormValues {
   return {
     category: ad.category,
     description: ad.description ?? "",
@@ -57,21 +56,25 @@ function toFormValues(ad: AdDetailsDto): AdEditFormValues {
   }
 }
 
-function createDraft(overrides: Partial<AdDraft["form"]> = {}): AdDraft {
-  const ad = createAd()
+function createDraft(
+  itemId: number,
+  overrides: Partial<AdDraft["form"]> = {}
+): AdDraft {
+  const ad = createAd(itemId)
+
   return {
     form: {
       ...toFormValues(ad),
       ...overrides
     },
-    itemId: ITEM_ID,
+    itemId,
     savedAt: "2026-03-30T10:00:00.000Z",
-    serverHash: `${ITEM_ID}:${TIMESTAMP}`
+    serverHash: `${itemId}:${TIMESTAMP}`
   }
 }
 
 interface DraftFlowHarnessProps {
-  ad: AdDetailsDto
+  ad: ElectronicsAdDetails
   entryRevision?: number
   itemId: number
 }
@@ -116,7 +119,6 @@ describe("Draft restore flow", () => {
     vi.useRealTimers()
     window.localStorage.clear()
     window.sessionStorage.clear()
-    adDraftStateStore.setState({ byItemId: {} })
     draftRegistryStore.setState({ drafts: {} })
   })
 
@@ -126,28 +128,27 @@ describe("Draft restore flow", () => {
   })
 
   it("should render restore dialog when draft exists in localStorage", async () => {
+    const itemId = 101
     window.localStorage.setItem(
-      getAdDraftStorageKey(ITEM_ID),
-      JSON.stringify(createDraft({ title: "Черновик" }))
+      getAdDraftStorageKey(itemId),
+      JSON.stringify(createDraft(itemId, { title: "Черновик" }))
     )
 
-    render(<DraftFlowHarness ad={createAd()} itemId={ITEM_ID} />)
+    render(<DraftFlowHarness ad={createAd(itemId)} itemId={itemId} />)
 
-    await waitFor(() => {
-      expect(screen.getByText("Найден локальный черновик")).not.toBeNull()
-    })
+    await screen.findByText("Найден локальный черновик")
   })
 
   it("should restore form values when user clicks restore draft", async () => {
+    const itemId = 102
     window.localStorage.setItem(
-      getAdDraftStorageKey(ITEM_ID),
-      JSON.stringify(createDraft({ title: "Заголовок из черновика" }))
+      getAdDraftStorageKey(itemId),
+      JSON.stringify(createDraft(itemId, { title: "Заголовок из черновика" }))
     )
 
-    render(<DraftFlowHarness ad={createAd()} itemId={ITEM_ID} />)
+    render(<DraftFlowHarness ad={createAd(itemId)} itemId={itemId} />)
 
-    await screen.findByText("Восстановить черновик")
-    fireEvent.click(screen.getByText("Восстановить черновик"))
+    fireEvent.click(await screen.findByText("Восстановить черновик"))
 
     await waitFor(() => {
       expect(screen.getByTestId("title-value").textContent).toBe(
@@ -157,27 +158,29 @@ describe("Draft restore flow", () => {
   })
 
   it("should remove draft when user opens server version", async () => {
-    const storageKey = getAdDraftStorageKey(ITEM_ID)
+    const itemId = 103
+    const storageKey = getAdDraftStorageKey(itemId)
+
     window.localStorage.setItem(
       storageKey,
-      JSON.stringify(createDraft({ title: "Черновой заголовок" }))
+      JSON.stringify(createDraft(itemId, { title: "Черновой заголовок" }))
     )
 
-    render(<DraftFlowHarness ad={createAd()} itemId={ITEM_ID} />)
+    render(<DraftFlowHarness ad={createAd(itemId)} itemId={itemId} />)
 
-    await screen.findByText("Открыть актуальную версию")
-    fireEvent.click(screen.getByText("Открыть актуальную версию"))
+    fireEvent.click(await screen.findByText("Открыть актуальную версию"))
 
     await waitFor(() => {
       expect(window.localStorage.getItem(storageKey)).toBeNull()
     })
   })
 
-  it("should autosave form values to localStorage after debounce", async () => {
-    vi.useFakeTimers()
-    const storageKey = getAdDraftStorageKey(ITEM_ID)
-    render(<DraftFlowHarness ad={createAd()} itemId={ITEM_ID} />)
+  it("should autosave form values to localStorage after debounce", () => {
+    const itemId = 104
+    const storageKey = getAdDraftStorageKey(itemId)
 
+    vi.useFakeTimers()
+    render(<DraftFlowHarness ad={createAd(itemId)} itemId={itemId} />)
     fireEvent.click(screen.getByText("Изменить заголовок"))
 
     act(() => {
@@ -192,8 +195,7 @@ describe("Draft restore flow", () => {
     const rawDraft = window.localStorage.getItem(storageKey)
     expect(rawDraft).not.toBeNull()
 
-    const savedDraft = JSON.parse(rawDraft as string) as AdDraft
+    const savedDraft = JSON.parse(rawDraft!) as AdDraft
     expect(savedDraft.form.title).toBe("Изменённый заголовок")
-
   })
 })
