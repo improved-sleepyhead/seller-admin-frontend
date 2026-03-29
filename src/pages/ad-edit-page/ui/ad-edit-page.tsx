@@ -6,6 +6,7 @@ import {
   adEditDetailQuery,
   adsKeys,
   aiStatusQuery,
+  buildAdsListHrefFromNavigationState,
   resolveAdsSearchFromNavigationState,
   type AdEditFormValues,
   type AdsListNavigationState
@@ -26,14 +27,13 @@ import {
 import { AdEditForm } from "@/features/ad-edit-form"
 import { SaveAdButton, useSaveAd } from "@/features/ad-save"
 import { isAppApiError } from "@/shared/api/error"
+import { Badge, Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/shadcn"
 import {
-  Badge,
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle
-} from "@/shared/ui/shadcn"
-import { AdEditLayout, AdEditLayoutSkeleton } from "@/widgets/ad-edit-layout"
+  AdEditErrorState,
+  AdEditLayout,
+  AdEditLayoutSkeleton,
+  AdEditNotFoundState
+} from "@/widgets/ad-edit-layout"
 import { AiChatPanel } from "@/widgets/ai-chat-panel"
 
 import type { UseFormReturn } from "react-hook-form"
@@ -59,6 +59,7 @@ export function AdEditPage() {
   const { id } = useParams<{ id: string }>()
   const location = useLocation()
   const adId = parseAdId(id)
+  const backHref = buildAdsListHrefFromNavigationState(location.state)
   const [editEntryRevision, setEditEntryRevision] = useState(0)
   const adsSearch = resolveAdsSearchFromNavigationState(location.state)
   const navigationState: AdsListNavigationState | undefined =
@@ -124,7 +125,7 @@ export function AdEditPage() {
   }, [adId, queryClient])
 
   if (adId === null) {
-    return <div>Некорректный идентификатор объявления.</div>
+    return <AdEditNotFoundState backHref={backHref} />
   }
 
   if (detailQuery.isPending) {
@@ -136,19 +137,20 @@ export function AdEditPage() {
       isAppApiError(detailQuery.error) &&
       detailQuery.error.code === "NOT_FOUND"
     ) {
-      return (
-        <div className="mx-auto w-full max-w-4xl">
-          <Card>
-            <CardHeader>
-              <CardTitle>Объявление не найдено.</CardTitle>
-            </CardHeader>
-            <CardContent>Проверьте корректность идентификатора.</CardContent>
-          </Card>
-        </div>
-      )
+      return <AdEditNotFoundState backHref={backHref} />
     }
 
-    return <div>Не удалось загрузить объявление.</div>
+    return (
+      <AdEditErrorState
+        backHref={backHref}
+        message={
+          isAppApiError(detailQuery.error) ? detailQuery.error.message : undefined
+        }
+        onRetry={() => {
+          void detailQuery.refetch()
+        }}
+      />
+    )
   }
 
   const aiStatus = aiStatusResult.data ?? null
