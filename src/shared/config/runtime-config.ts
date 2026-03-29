@@ -1,6 +1,6 @@
 import { z } from "zod/v4"
 
-const DEFAULT_API_BASE_URL = "http://localhost"
+const DEFAULT_API_BASE_URL = "http://localhost:8080"
 
 const apiBaseUrlSchema = z.url()
 
