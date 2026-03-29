@@ -9,9 +9,11 @@ function isBrowserEnvironment(): boolean {
 
 function isDevEnvironment(): boolean {
   try {
-    const env = (import.meta as ImportMeta & {
-      env?: Record<string, unknown>
-    }).env
+    const env = (
+      import.meta as ImportMeta & {
+        env?: Record<string, unknown>
+      }
+    ).env
 
     return env?.DEV === true
   } catch {
