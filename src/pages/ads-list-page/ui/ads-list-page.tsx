@@ -1,8 +1,9 @@
-import { useQuery } from "@tanstack/react-query"
-import { useMemo } from "react"
+import { useQuery, useQueryClient } from "@tanstack/react-query"
+import { useEffect, useMemo } from "react"
 
 import {
   adsListQuery,
+  adsKeys,
   mapAdsUrlParamsToListQuery,
   useAdsListState
 } from "@/entities/ad"
@@ -20,6 +21,7 @@ import { AdsToolbar } from "@/widgets/ads-toolbar"
 import { useAdsListUrlSync } from "../model"
 
 export function AdsListPage() {
+  const queryClient = useQueryClient()
   const q = useAdsListState(state => state.q)
   const categories = useAdsListState(state => state.categories)
   const needsRevision = useAdsListState(state => state.needsRevision)
@@ -40,11 +42,24 @@ export function AdsListPage() {
       sortDirection
     })
   }, [categories, layout, needsRevision, page, q, sortColumn, sortDirection])
+  const listQueryKey = useMemo(
+    () => adsKeys.list(listQueryParams),
+    [listQueryParams]
+  )
 
   const adsQuery = useQuery({
     ...adsListQuery(listQueryParams),
     enabled: isHydrated
   })
+
+  useEffect(() => {
+    return () => {
+      void queryClient.cancelQueries({
+        exact: true,
+        queryKey: listQueryKey
+      })
+    }
+  }, [listQueryKey, queryClient])
 
   const catalogContent = (() => {
     if (!isHydrated || adsQuery.isPending) {

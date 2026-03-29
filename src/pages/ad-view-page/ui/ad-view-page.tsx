@@ -1,8 +1,10 @@
-import { useQuery } from "@tanstack/react-query"
+import { useQuery, useQueryClient } from "@tanstack/react-query"
+import { useEffect } from "react"
 import { useLocation, useParams } from "react-router-dom"
 
 import {
   adDetailQuery,
+  adsKeys,
   buildAdsListHrefFromNavigationState,
   resolveAdsSearchFromNavigationState,
   type AdsListNavigationState
@@ -34,6 +36,7 @@ function buildAdEditPath(adId: number): string {
 }
 
 export function AdViewPage() {
+  const queryClient = useQueryClient()
   const { id } = useParams<{ id: string }>()
   const location = useLocation()
   const adId = parseAdId(id)
@@ -45,6 +48,21 @@ export function AdViewPage() {
     ...adDetailQuery(adId ?? 0),
     enabled: adId !== null
   })
+
+  useEffect(() => {
+    if (adId === null) {
+      return
+    }
+
+    const detailQueryKey = adsKeys.detail(adId)
+
+    return () => {
+      void queryClient.cancelQueries({
+        exact: true,
+        queryKey: detailQueryKey
+      })
+    }
+  }, [adId, queryClient])
 
   if (adId === null) {
     return <AdViewNotFoundState backHref={backHref} />
