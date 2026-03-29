@@ -8,62 +8,14 @@ import {
   waitFor,
   within
 } from "@testing-library/react"
-import { useForm } from "react-hook-form"
 import { type ReactElement } from "react"
+import { useForm } from "react-hook-form"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 
 import type { AdEditFormValues } from "@/entities/ad"
 import { draftRegistryStore } from "@/shared/lib/draft-registry-store"
 
-import type {
-  AiChatStreamResult,
-  StreamAiChatOptions
-} from "../../model/ai-chat.transport.types"
-import { streamAiChat } from "../../model/ai-chat.transport"
 import { AdAiChat } from "../ad-ai-chat"
-
-vi.mock("../../model/ai-chat.transport", () => ({
-  streamAiChat: vi.fn()
-}))
-
-const streamAiChatMock = vi.mocked(streamAiChat)
-
-interface Deferred<T> {
-  promise: Promise<T>
-  reject: (reason?: unknown) => void
-  resolve: (value: T | PromiseLike<T>) => void
-}
-
-function createDeferred<T>(): Deferred<T> {
-  let resolve!: (value: T | PromiseLike<T>) => void
-  let reject!: (reason?: unknown) => void
-  const promise = new Promise<T>((innerResolve, innerReject) => {
-    resolve = innerResolve
-    reject = innerReject
-  })
-
-  return {
-    promise,
-    reject,
-    resolve
-  }
-}
-
-function createAbortError(): Error {
-  const abortError = new Error("Aborted")
-  abortError.name = "AbortError"
-
-  return abortError
-}
-
-function createStreamResult(content: string): AiChatStreamResult {
-  return {
-    message: {
-      content,
-      role: "assistant"
-    }
-  }
-}
 
 const FORM_DEFAULT_VALUES: AdEditFormValues = {
   category: "electronics",
@@ -79,6 +31,61 @@ const FORM_DEFAULT_VALUES: AdEditFormValues = {
   title: "Ноутбук"
 }
 
+interface ControlledSseResponse {
+  close: () => void
+  error: (reason?: unknown) => void
+  push: (chunk: string) => void
+  ready: Promise<void>
+  response: Response
+}
+
+function createAbortError(): Error {
+  const abortError = new Error("Aborted")
+  abortError.name = "AbortError"
+
+  return abortError
+}
+
+function createControlledSseResponse(): ControlledSseResponse {
+  const encoder = new TextEncoder()
+  let controllerRef: ReadableStreamDefaultController<Uint8Array> | null = null
+  let readyResolver: (() => void) | null = null
+  const ready = new Promise<void>(resolve => {
+    readyResolver = resolve
+  })
+
+  const stream = new ReadableStream<Uint8Array>({
+    start(controller) {
+      controllerRef = controller
+      readyResolver?.()
+      readyResolver = null
+    }
+  })
+
+  return {
+    close: () => {
+      controllerRef?.close()
+    },
+    error: reason => {
+      controllerRef?.error(reason)
+    },
+    push: chunk => {
+      controllerRef?.enqueue(encoder.encode(chunk))
+    },
+    ready,
+    response: new Response(stream, {
+      headers: {
+        "Content-Type": "text/event-stream"
+      },
+      status: 200
+    })
+  }
+}
+
+function toSseFrame(eventName: string, data: object): string {
+  return `event: ${eventName}\ndata: ${JSON.stringify(data)}\n\n`
+}
+
 function AdAiChatHarness(): ReactElement {
   const form = useForm<AdEditFormValues>({
     defaultValues: FORM_DEFAULT_VALUES
@@ -88,8 +95,12 @@ function AdAiChatHarness(): ReactElement {
 }
 
 describe("AdAiChat", () => {
+  const fetchMock = vi.fn<typeof fetch>()
+
   beforeEach(() => {
     vi.clearAllMocks()
+    vi.stubGlobal("fetch", fetchMock)
+
     window.localStorage.clear()
     window.sessionStorage.clear()
     draftRegistryStore.setState({ drafts: {} })
@@ -97,23 +108,12 @@ describe("AdAiChat", () => {
 
   afterEach(() => {
     cleanup()
+    vi.unstubAllGlobals()
   })
 
   it("should append user message and update assistant text by streaming chunks", async () => {
-    const secondChunkGate = createDeferred<void>()
-
-    streamAiChatMock.mockImplementation(
-      async ({ onChunk, onDone }: StreamAiChatOptions) => {
-        onChunk?.("Част", "Част")
-        await secondChunkGate.promise
-        onChunk?.("ь ответа", "Часть ответа")
-
-        const result = createStreamResult("Часть ответа")
-        onDone?.(result)
-
-        return result
-      }
-    )
+    const stream = createControlledSseResponse()
+    fetchMock.mockResolvedValueOnce(stream.response)
 
     render(<AdAiChatHarness />)
 
@@ -122,40 +122,39 @@ describe("AdAiChat", () => {
     })
     fireEvent.click(screen.getByRole("button", { name: "Отправить" }))
 
-    await screen.findByText("Привет")
-
     await waitFor(() => {
-      expect(screen.getByText("Част")).toBeDefined()
+      expect(fetchMock).toHaveBeenCalledTimes(1)
     })
 
-    secondChunkGate.resolve()
+    await stream.ready
+    stream.push(toSseFrame("chunk", { content: "Част" }))
+
+    await screen.findByText("Част")
+    expect(screen.getByText("Привет")).toBeDefined()
+
+    stream.push(toSseFrame("chunk", { content: "ь ответа" }))
+    stream.push(toSseFrame("done", { model: "test-model" }))
+    stream.close()
 
     await waitFor(() => {
       expect(screen.getByText("Часть ответа")).toBeDefined()
     })
-
-    expect(streamAiChatMock).toHaveBeenCalledTimes(1)
-    expect(streamAiChatMock.mock.calls[0]?.[0].userMessage).toBe("Привет")
   })
 
   it("should stop streaming on cancel and keep partial assistant message", async () => {
-    streamAiChatMock.mockImplementation(
-      async ({ onChunk, signal }: StreamAiChatOptions) => {
-        onChunk?.("Частичный", "Частичный")
+    const stream = createControlledSseResponse()
 
-        await new Promise((_, reject) => {
-          signal.addEventListener(
-            "abort",
-            () => {
-              reject(createAbortError())
-            },
-            { once: true }
-          )
-        })
+    fetchMock.mockImplementationOnce((_, init) => {
+      init?.signal?.addEventListener(
+        "abort",
+        () => {
+          stream.error(createAbortError())
+        },
+        { once: true }
+      )
 
-        return createStreamResult("")
-      }
-    )
+      return Promise.resolve(stream.response)
+    })
 
     render(<AdAiChatHarness />)
 
@@ -163,6 +162,13 @@ describe("AdAiChat", () => {
       target: { value: "Отмени" }
     })
     fireEvent.click(screen.getByRole("button", { name: "Отправить" }))
+
+    await waitFor(() => {
+      expect(fetchMock).toHaveBeenCalledTimes(1)
+    })
+
+    await stream.ready
+    stream.push(toSseFrame("chunk", { content: "Частичный" }))
 
     await screen.findByText("Частичный")
 
@@ -177,16 +183,12 @@ describe("AdAiChat", () => {
   })
 
   it("should show inline error and retry last message", async () => {
-    streamAiChatMock
-      .mockImplementationOnce(async () => {
-        throw new Error("Временная ошибка")
-      })
-      .mockImplementationOnce(async ({ onDone }: StreamAiChatOptions) => {
-        const result = createStreamResult("Ответ после повтора")
-        onDone?.(result)
+    const firstStream = createControlledSseResponse()
+    const secondStream = createControlledSseResponse()
 
-        return result
-      })
+    fetchMock
+      .mockResolvedValueOnce(firstStream.response)
+      .mockResolvedValueOnce(secondStream.response)
 
     render(<AdAiChatHarness />)
 
@@ -195,19 +197,36 @@ describe("AdAiChat", () => {
     })
     fireEvent.click(screen.getByRole("button", { name: "Отправить" }))
 
+    await waitFor(() => {
+      expect(fetchMock).toHaveBeenCalledTimes(1)
+    })
+
+    await firstStream.ready
+    firstStream.push(
+      toSseFrame("error", {
+        message: "Временная ошибка",
+        success: false
+      })
+    )
+    firstStream.close()
+
     const errorContainer = await screen.findByTestId("ai-chat-error")
     expect(within(errorContainer).getByText("Временная ошибка")).toBeDefined()
 
     fireEvent.click(screen.getByRole("button", { name: "Повторить" }))
 
     await waitFor(() => {
-      expect(streamAiChatMock).toHaveBeenCalledTimes(2)
+      expect(fetchMock).toHaveBeenCalledTimes(2)
     })
+
+    await secondStream.ready
+    secondStream.push(toSseFrame("chunk", { content: "Ответ после " }))
+    secondStream.push(toSseFrame("chunk", { content: "повтора" }))
+    secondStream.push(toSseFrame("done", { model: "test-model" }))
+    secondStream.close()
 
     await screen.findByText("Ответ после повтора")
 
-    const userMessages = screen.getAllByTestId("ai-chat-message-user")
-    expect(userMessages).toHaveLength(1)
-    expect(streamAiChatMock.mock.calls[1]?.[0].userMessage).toBe("Повтори")
+    expect(screen.getAllByTestId("ai-chat-message-user")).toHaveLength(1)
   })
 })
