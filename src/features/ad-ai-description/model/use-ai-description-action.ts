@@ -115,15 +115,12 @@ export function useAiDescriptionAction({
     abortControllerRef.current.abort()
     abortControllerRef.current = null
     mutation.reset()
+    setIsResultOpen(false)
   }, [mutation])
 
   const closeResult = useCallback(() => {
-    if (mutation.isPending) {
-      cancelRequest()
-    }
-
     setIsResultOpen(false)
-  }, [cancelRequest, mutation.isPending])
+  }, [])
 
   const requestSuggestion = useCallback(async () => {
     if (disabled || form === null || mutation.isPending) {
@@ -212,6 +209,10 @@ export function useAiDescriptionAction({
 
   const setResultOpen = useCallback(
     (nextOpen: boolean) => {
+      if (!nextOpen && mutation.isPending) {
+        return
+      }
+
       if (!nextOpen) {
         closeResult()
         return
@@ -219,7 +220,7 @@ export function useAiDescriptionAction({
 
       setIsResultOpen(true)
     },
-    [closeResult]
+    [closeResult, mutation.isPending]
   )
 
   const closeDiffViewer = useCallback(() => {

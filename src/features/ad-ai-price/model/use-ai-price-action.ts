@@ -101,15 +101,12 @@ export function useAiPriceAction({
     abortControllerRef.current.abort()
     abortControllerRef.current = null
     mutation.reset()
+    setIsResultOpen(false)
   }, [mutation])
 
   const closeResult = useCallback(() => {
-    if (mutation.isPending) {
-      cancelRequest()
-    }
-
     setIsResultOpen(false)
-  }, [cancelRequest, mutation.isPending])
+  }, [])
 
   const requestSuggestion = useCallback(async () => {
     if (disabled || form === null || mutation.isPending) {
@@ -174,6 +171,10 @@ export function useAiPriceAction({
 
   const setResultOpen = useCallback(
     (nextOpen: boolean) => {
+      if (!nextOpen && mutation.isPending) {
+        return
+      }
+
       if (!nextOpen) {
         closeResult()
         return
@@ -181,7 +182,7 @@ export function useAiPriceAction({
 
       setIsResultOpen(true)
     },
-    [closeResult]
+    [closeResult, mutation.isPending]
   )
 
   useEffect(() => {
