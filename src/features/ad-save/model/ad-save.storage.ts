@@ -1,3 +1,5 @@
+import { markSkipNextDraftAutosave } from "@/shared/lib/draft-autosave-guard"
+
 const DRAFT_STORAGE_KEY_PREFIX = "ad-draft:v1:"
 const AI_CHAT_STORAGE_KEY_PREFIX = "ad-ai-chat:v1:"
 const LEGACY_DRAFT_STORAGE_KEY_PREFIX = "ad-draft:"
@@ -26,4 +28,6 @@ export function clearAdDraftAndChatStorage(itemId: number) {
   for (const storageKey of keysToRemove) {
     window.localStorage.removeItem(storageKey)
   }
+
+  markSkipNextDraftAutosave(itemId)
 }
