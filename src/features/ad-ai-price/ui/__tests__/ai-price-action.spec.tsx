@@ -13,9 +13,7 @@ import { useForm } from "react-hook-form"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 
 vi.mock("@/entities/ad", async () => {
-  const actual = await vi.importActual<typeof import("@/entities/ad")>(
-    "@/entities/ad"
-  )
+  const actual = await vi.importActual<Record<string, unknown>>("@/entities/ad")
 
   return {
     ...actual,
@@ -101,6 +99,7 @@ describe("AiPriceAction", () => {
 
   it("should update form price only after explicit apply action", async () => {
     requestAiPriceMock.mockResolvedValue({
+      currency: "RUB",
       reasoning: "Рыночная цена",
       suggestedPrice: 150000
     })
@@ -128,6 +127,7 @@ describe("AiPriceAction", () => {
 
   it("should keep existing price when user dismisses AI suggestion", async () => {
     requestAiPriceMock.mockResolvedValue({
+      currency: "RUB",
       reasoning: "Другая рекомендация",
       suggestedPrice: 170000
     })
@@ -136,7 +136,9 @@ describe("AiPriceAction", () => {
 
     fireEvent.click(screen.getByRole("button", { name: "Предложить цену" }))
 
-    fireEvent.click(await screen.findByRole("button", { name: "Оставить текущую" }))
+    fireEvent.click(
+      await screen.findByRole("button", { name: "Оставить текущую" })
+    )
 
     expect(screen.getByTestId("price-value").textContent).toBe("120000")
   })

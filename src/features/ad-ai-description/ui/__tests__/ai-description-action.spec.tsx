@@ -13,9 +13,7 @@ import { useForm } from "react-hook-form"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 
 vi.mock("@/entities/ad", async () => {
-  const actual = await vi.importActual<typeof import("@/entities/ad")>(
-    "@/entities/ad"
-  )
+  const actual = await vi.importActual<Record<string, unknown>>("@/entities/ad")
 
   return {
     ...actual,
@@ -112,9 +110,7 @@ describe("AiDescriptionAction", () => {
       "Старое описание"
     )
 
-    fireEvent.click(
-      screen.getByRole("button", { name: "Улучшить описание" })
-    )
+    fireEvent.click(screen.getByRole("button", { name: "Улучшить описание" }))
 
     await waitFor(() => {
       expect(requestAiDescriptionMock).toHaveBeenCalledTimes(1)
@@ -142,9 +138,7 @@ describe("AiDescriptionAction", () => {
 
     render(<AiDescriptionActionHarness />)
 
-    fireEvent.click(
-      screen.getByRole("button", { name: "Улучшить описание" })
-    )
+    fireEvent.click(screen.getByRole("button", { name: "Улучшить описание" }))
 
     fireEvent.click(await screen.findByRole("button", { name: "Закрыть" }))
 
