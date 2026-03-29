@@ -118,7 +118,7 @@ export function useAiPriceAction({
     if (!validationResult.isValid) {
       setErrorMessage("Заполните обязательные поля перед AI-запросом.")
       setResponse(null)
-      setIsResultOpen(true)
+      setIsResultOpen(false)
       return
     }
 

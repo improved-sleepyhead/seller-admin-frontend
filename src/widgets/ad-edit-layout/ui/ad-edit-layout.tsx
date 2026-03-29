@@ -21,34 +21,44 @@ interface AdEditLayoutProps {
 
 export function AdEditLayout({ aiArea, footer, formArea }: AdEditLayoutProps) {
   return (
-    <div className="mx-auto w-full max-w-6xl space-y-6">
-      <div className="grid gap-6 lg:grid-cols-[minmax(0,2fr)_minmax(320px,1fr)]">
-        <div>{formArea}</div>
+    <div className="mx-auto w-full max-w-6xl">
+      <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,2fr)_minmax(320px,1fr)]">
+        <div className="space-y-6">
+          {formArea}
+          <Card>
+            <CardFooter className="flex justify-end gap-2 pt-6">
+              {footer}
+            </CardFooter>
+          </Card>
+        </div>
         <div>{aiArea}</div>
       </div>
-
-      <Card>
-        <CardFooter className="flex justify-end gap-2 pt-6">
-          {footer}
-        </CardFooter>
-      </Card>
     </div>
   )
 }
 
 export function AdEditLayoutSkeleton() {
   return (
-    <div className="mx-auto w-full max-w-6xl space-y-6">
-      <div className="grid gap-6 lg:grid-cols-[minmax(0,2fr)_minmax(320px,1fr)]">
-        <Card>
-          <CardContent className="space-y-4 p-6">
-            <Skeleton className="h-10 w-full" />
-            <Skeleton className="h-10 w-full" />
-            <Skeleton className="h-32 w-full" />
-            <Skeleton className="h-10 w-full" />
-            <Skeleton className="h-10 w-full" />
-          </CardContent>
-        </Card>
+    <div className="mx-auto w-full max-w-6xl">
+      <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,2fr)_minmax(320px,1fr)]">
+        <div className="space-y-6">
+          <Card>
+            <CardContent className="space-y-4 p-6">
+              <Skeleton className="h-10 w-full" />
+              <Skeleton className="h-10 w-full" />
+              <Skeleton className="h-32 w-full" />
+              <Skeleton className="h-10 w-full" />
+              <Skeleton className="h-10 w-full" />
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardFooter className="flex justify-end gap-2 pt-6">
+              <Skeleton className="h-10 w-32" />
+              <Skeleton className="h-10 w-32" />
+            </CardFooter>
+          </Card>
+        </div>
 
         <div className="space-y-6">
           <Card>
@@ -66,13 +76,6 @@ export function AdEditLayoutSkeleton() {
           </Card>
         </div>
       </div>
-
-      <Card>
-        <CardFooter className="flex justify-end gap-2 pt-6">
-          <Skeleton className="h-10 w-32" />
-          <Skeleton className="h-10 w-32" />
-        </CardFooter>
-      </Card>
     </div>
   )
 }
