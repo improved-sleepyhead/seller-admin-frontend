@@ -1,42 +1,6 @@
 import axios, { type AxiosRequestConfig, type AxiosResponse } from "axios"
-import { z } from "zod/v4"
 
-const apiBaseUrlSchema = z.url()
-
-function getRawEnvValue(name: string): unknown {
-  try {
-    const viteEnv = (
-      import.meta as ImportMeta & { env: Record<string, unknown> }
-    ).env
-
-    if (typeof viteEnv[name] !== "undefined") {
-      return viteEnv[name]
-    }
-  } catch {
-    // Ignore when executed outside Vite runtime (for example, Node-based checks).
-  }
-
-  const globalWithProcess = globalThis as typeof globalThis & {
-    process?: { env?: Record<string, unknown> }
-  }
-
-  if (globalWithProcess.process?.env && name in globalWithProcess.process.env) {
-    return globalWithProcess.process.env[name]
-  }
-
-  return undefined
-}
-
-function getApiBaseUrl(): string {
-  const parsed = apiBaseUrlSchema.safeParse(getRawEnvValue("VITE_API_BASE_URL"))
-
-  if (!parsed.success) {
-    const formatted = z.prettifyError(parsed.error)
-    throw new Error(`Invalid VITE_API_BASE_URL in runtime env:\n${formatted}`)
-  }
-
-  return parsed.data
-}
+import { getApiBaseUrl } from "@/shared/config"
 
 export const apiClient = axios.create({
   baseURL: getApiBaseUrl(),
