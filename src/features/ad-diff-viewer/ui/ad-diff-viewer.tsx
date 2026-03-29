@@ -39,10 +39,10 @@ function getHighlightClass(
   highlightKind: DiffTextPanelProps["highlightKind"]
 ): string {
   if (highlightKind === "added") {
-    return "rounded-sm bg-emerald-500/15 px-0.5 text-emerald-700 dark:text-emerald-300"
+    return "rounded-sm bg-emerald-500/20 px-0.5 text-emerald-900 dark:bg-emerald-500/35 dark:text-emerald-100"
   }
 
-  return "text-destructive rounded-sm bg-destructive/15 px-0.5"
+  return "rounded-sm bg-red-500/20 px-0.5 text-red-900 dark:bg-red-500/35 dark:text-red-100"
 }
 
 function DiffTextPanel({
@@ -92,13 +92,13 @@ function DiffLegend() {
     <div className="space-y-2">
       <div className="flex flex-wrap gap-2">
         <Badge
-          className="border-emerald-500/30 bg-emerald-500/15 text-emerald-700 dark:text-emerald-300"
+          className="border-emerald-500/40 bg-emerald-500/20 text-emerald-900 dark:bg-emerald-500/35 dark:text-emerald-100"
           variant="outline"
         >
           Добавлено
         </Badge>
         <Badge
-          className="border-destructive/30 bg-destructive/15 text-destructive"
+          className="border-red-500/40 bg-red-500/20 text-red-900 dark:bg-red-500/35 dark:text-red-100"
           variant="outline"
         >
           Удалено
