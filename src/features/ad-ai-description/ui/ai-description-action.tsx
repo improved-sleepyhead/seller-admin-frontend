@@ -210,7 +210,11 @@ export function AiDescriptionAction({
       ) : (
         <Popover open={isResultOpen} onOpenChange={setResultOpen}>
           <PopoverAnchor asChild>{triggerButton}</PopoverAnchor>
-          <PopoverContent align="start" className="w-[26rem] space-y-4">
+          <PopoverContent
+            align="start"
+            className="w-[26rem] space-y-4"
+            side="left"
+          >
             <div className="space-y-1">
               <h3 className="text-sm font-semibold">AI-улучшение описания</h3>
               <p className="text-muted-foreground text-xs">

@@ -88,6 +88,7 @@ export function useAiDescriptionAction({
   form
 }: UseAiDescriptionActionOptions): UseAiDescriptionActionResult {
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
+  const [isPreparing, setIsPreparing] = useState(false)
   const [isDiffViewerOpen, setIsDiffViewerOpen] = useState(false)
   const [isResultOpen, setIsResultOpen] = useState(false)
   const [response, setResponse] = useState<AiDescriptionResponse | null>(null)
@@ -114,25 +115,28 @@ export function useAiDescriptionAction({
 
     abortControllerRef.current.abort()
     abortControllerRef.current = null
+    setIsPreparing(false)
     mutation.reset()
     setIsResultOpen(false)
-  }, [mutation])
+  }, [mutation, setIsPreparing])
 
   const closeResult = useCallback(() => {
     setIsResultOpen(false)
   }, [])
 
   const requestSuggestion = useCallback(async () => {
-    if (disabled || form === null || mutation.isPending) {
+    if (disabled || form === null || mutation.isPending || isPreparing) {
       return
     }
 
+    setIsPreparing(true)
     const validationResult = await ensureValidAiPayload(form)
 
     if (!validationResult.isValid) {
       setErrorMessage("Заполните обязательные поля перед AI-запросом.")
       setResponse(null)
       setIsResultOpen(false)
+      setIsPreparing(false)
       return
     }
 
@@ -160,11 +164,12 @@ export function useAiDescriptionAction({
 
       setErrorMessage(getAiDescriptionErrorMessage(error))
     } finally {
+      setIsPreparing(false)
       if (abortControllerRef.current === requestAbortController) {
         abortControllerRef.current = null
       }
     }
-  }, [disabled, form, mutation])
+  }, [disabled, form, isPreparing, mutation])
 
   const retrySuggestion = useCallback(async () => {
     await requestSuggestion()
@@ -209,7 +214,7 @@ export function useAiDescriptionAction({
 
   const setResultOpen = useCallback(
     (nextOpen: boolean) => {
-      if (!nextOpen && mutation.isPending) {
+      if (!nextOpen && (mutation.isPending || isPreparing)) {
         return
       }
 
@@ -220,7 +225,7 @@ export function useAiDescriptionAction({
 
       setIsResultOpen(true)
     },
-    [closeResult, mutation.isPending]
+    [closeResult, isPreparing, mutation.isPending]
   )
 
   const closeDiffViewer = useCallback(() => {
@@ -239,13 +244,14 @@ export function useAiDescriptionAction({
   return {
     applySuggestion,
     cancelRequest,
-    canRequestSuggestion: !disabled && form !== null && !mutation.isPending,
+    canRequestSuggestion:
+      !disabled && form !== null && !mutation.isPending && !isPreparing,
     closeDiffViewer,
     closeResult,
     errorMessage,
     isDiffViewerOpen,
     isMobile,
-    isPending: mutation.isPending,
+    isPending: mutation.isPending || isPreparing,
     isResultOpen,
     requestSuggestion,
     retrySuggestion,

@@ -79,6 +79,7 @@ export function useAiPriceAction({
   form
 }: UseAiPriceActionOptions): UseAiPriceActionResult {
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
+  const [isPreparing, setIsPreparing] = useState(false)
   const [isResultOpen, setIsResultOpen] = useState(false)
   const [response, setResponse] = useState<AiPriceResponse | null>(null)
   const abortControllerRef = useRef<AbortController | null>(null)
@@ -100,25 +101,28 @@ export function useAiPriceAction({
 
     abortControllerRef.current.abort()
     abortControllerRef.current = null
+    setIsPreparing(false)
     mutation.reset()
     setIsResultOpen(false)
-  }, [mutation])
+  }, [mutation, setIsPreparing])
 
   const closeResult = useCallback(() => {
     setIsResultOpen(false)
   }, [])
 
   const requestSuggestion = useCallback(async () => {
-    if (disabled || form === null || mutation.isPending) {
+    if (disabled || form === null || mutation.isPending || isPreparing) {
       return
     }
 
+    setIsPreparing(true)
     const validationResult = await ensureValidAiPayload(form)
 
     if (!validationResult.isValid) {
       setErrorMessage("Заполните обязательные поля перед AI-запросом.")
       setResponse(null)
       setIsResultOpen(false)
+      setIsPreparing(false)
       return
     }
 
@@ -146,11 +150,12 @@ export function useAiPriceAction({
 
       setErrorMessage(getAiPriceErrorMessage(error))
     } finally {
+      setIsPreparing(false)
       if (abortControllerRef.current === requestAbortController) {
         abortControllerRef.current = null
       }
     }
-  }, [disabled, form, mutation])
+  }, [disabled, form, isPreparing, mutation])
 
   const retrySuggestion = useCallback(async () => {
     await requestSuggestion()
@@ -171,7 +176,7 @@ export function useAiPriceAction({
 
   const setResultOpen = useCallback(
     (nextOpen: boolean) => {
-      if (!nextOpen && mutation.isPending) {
+      if (!nextOpen && (mutation.isPending || isPreparing)) {
         return
       }
 
@@ -182,7 +187,7 @@ export function useAiPriceAction({
 
       setIsResultOpen(true)
     },
-    [closeResult, mutation.isPending]
+    [closeResult, isPreparing, mutation.isPending]
   )
 
   useEffect(() => {
@@ -196,12 +201,13 @@ export function useAiPriceAction({
 
   return {
     applySuggestion,
-    canRequestSuggestion: !disabled && form !== null && !mutation.isPending,
+    canRequestSuggestion:
+      !disabled && form !== null && !mutation.isPending && !isPreparing,
     cancelRequest,
     closeResult,
     errorMessage,
     isMobile,
-    isPending: mutation.isPending,
+    isPending: mutation.isPending || isPreparing,
     isResultOpen,
     requestSuggestion,
     response,
