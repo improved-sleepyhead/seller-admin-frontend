@@ -1,5 +1,5 @@
 import { debounce } from "lodash"
-import { useCallback, useEffect, useMemo, useRef } from "react"
+import { useCallback, useEffect, useMemo } from "react"
 
 import type { AdDetailsDto, AdEditFormValues } from "@/entities/ad"
 import { draftRegistryStore } from "@/shared/lib/draft-registry-store"
@@ -23,6 +23,7 @@ type AdEditFormApi = UseFormReturn<AdEditFormValues, unknown, AdEditFormValues>
 
 interface UseAdDraftOptions {
   ad: AdDetailsDto | null
+  entryRevision: number
   form: AdEditFormApi | null
   itemId: number
 }
@@ -65,10 +66,10 @@ function clearDraftMetadata(itemId: number) {
 
 export function useAdDraft({
   ad,
+  entryRevision,
   form,
   itemId
 }: UseAdDraftOptions): UseAdDraftResult {
-  const lastRestoreCheckKeyRef = useRef<string | null>(null)
   const draftSavedAt = useAdDraftSessionSelector(
     itemId,
     session => session.draftSavedAt
@@ -76,6 +77,14 @@ export function useAdDraft({
   const isRestoreDialogOpen = useAdDraftSessionSelector(
     itemId,
     session => session.isRestoreDialogOpen
+  )
+  const pendingRestore = useAdDraftSessionSelector(
+    itemId,
+    session => session.pendingRestore
+  )
+  const restoreCandidate = useAdDraftSessionSelector(
+    itemId,
+    session => session.restoreCandidate
   )
 
   const serverHash = useMemo(() => {
@@ -85,10 +94,6 @@ export function useAdDraft({
 
     return createServerHashFromAd(ad)
   }, [ad])
-
-  useEffect(() => {
-    lastRestoreCheckKeyRef.current = null
-  }, [itemId])
 
   useEffect(() => {
     if (ad === null || serverHash === null) {
@@ -104,14 +109,6 @@ export function useAdDraft({
 
     adDraftStateStore.getState().setDraftSavedAt(itemId, draft.savedAt)
 
-    const restoreCheckKey = `${itemId}:${serverHash}:${draft.savedAt}`
-
-    if (lastRestoreCheckKeyRef.current === restoreCheckKey) {
-      return
-    }
-
-    lastRestoreCheckKeyRef.current = restoreCheckKey
-
     if (
       !isDraftDifferentFromServer(
         draft.form,
@@ -122,7 +119,7 @@ export function useAdDraft({
     }
 
     adDraftStateStore.getState().openRestoreDialog(itemId, draft)
-  }, [ad, itemId, serverHash])
+  }, [ad, entryRevision, itemId, serverHash])
 
   useEffect(() => {
     if (ad === null || form === null || serverHash === null) {
@@ -170,14 +167,12 @@ export function useAdDraft({
   }, [ad, form, itemId, serverHash])
 
   const restoreDraft = useCallback(() => {
-    if (form === null) {
+    if (restoreCandidate === null) {
       return
     }
 
-    const restoreCandidate =
-      adDraftStateStore.getState().byItemId[itemId]?.restoreCandidate ?? null
-
-    if (restoreCandidate === null) {
+    if (form === null) {
+      adDraftStateStore.getState().markRestorePending(itemId)
       return
     }
 
@@ -186,7 +181,19 @@ export function useAdDraft({
       .getState()
       .setDraftSavedAt(itemId, restoreCandidate.savedAt)
     adDraftStateStore.getState().closeRestoreDialog(itemId)
-  }, [form, itemId])
+  }, [form, itemId, restoreCandidate])
+
+  useEffect(() => {
+    if (form === null || !pendingRestore || restoreCandidate === null) {
+      return
+    }
+
+    form.reset(restoreCandidate.form)
+    adDraftStateStore
+      .getState()
+      .setDraftSavedAt(itemId, restoreCandidate.savedAt)
+    adDraftStateStore.getState().closeRestoreDialog(itemId)
+  }, [form, itemId, pendingRestore, restoreCandidate])
 
   const useServerVersion = useCallback(() => {
     removeAdDraft(itemId)
