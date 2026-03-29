@@ -2,6 +2,7 @@ import { debounce } from "lodash"
 import { useCallback, useEffect, useMemo } from "react"
 
 import type { AdDetailsDto, AdEditFormValues } from "@/entities/ad"
+import { consumeSkipNextDraftAutosave } from "@/shared/lib/draft-autosave-guard"
 import { draftRegistryStore } from "@/shared/lib/draft-registry-store"
 
 import {
@@ -94,9 +95,16 @@ export function useAdDraft({
 
     return createServerHashFromAd(ad)
   }, [ad])
+  const serverSnapshot = useMemo(() => {
+    if (ad === null) {
+      return null
+    }
+
+    return createServerFormSnapshotFromAd(ad)
+  }, [ad])
 
   useEffect(() => {
-    if (ad === null || serverHash === null) {
+    if (ad === null || serverHash === null || serverSnapshot === null) {
       return
     }
 
@@ -109,24 +117,38 @@ export function useAdDraft({
 
     adDraftStateStore.getState().setDraftSavedAt(itemId, draft.savedAt)
 
-    if (
-      !isDraftDifferentFromServer(
-        draft.form,
-        createServerFormSnapshotFromAd(ad)
-      )
-    ) {
+    if (!isDraftDifferentFromServer(draft.form, serverSnapshot)) {
       return
     }
 
     adDraftStateStore.getState().openRestoreDialog(itemId, draft)
-  }, [ad, entryRevision, itemId, serverHash])
+  }, [ad, entryRevision, itemId, serverHash, serverSnapshot])
 
   useEffect(() => {
-    if (ad === null || form === null || serverHash === null) {
+    if (
+      ad === null ||
+      form === null ||
+      serverHash === null ||
+      serverSnapshot === null
+    ) {
       return
     }
 
     const persistDraft = (values: AdEditFormValues) => {
+      if (consumeSkipNextDraftAutosave(itemId)) {
+        removeAdDraft(itemId)
+        clearDraftMetadata(itemId)
+        adDraftStateStore.getState().setDraftSavedAt(itemId, null)
+        return
+      }
+
+      if (!isDraftDifferentFromServer(values, serverSnapshot)) {
+        removeAdDraft(itemId)
+        clearDraftMetadata(itemId)
+        adDraftStateStore.getState().setDraftSavedAt(itemId, null)
+        return
+      }
+
       const savedAt = new Date().toISOString()
 
       saveAdDraft({
@@ -164,7 +186,7 @@ export function useAdDraft({
       debouncedSave.cancel()
       valuesSubscription.unsubscribe()
     }
-  }, [ad, form, itemId, serverHash])
+  }, [ad, form, itemId, serverHash, serverSnapshot])
 
   const restoreDraft = useCallback(() => {
     if (restoreCandidate === null) {
