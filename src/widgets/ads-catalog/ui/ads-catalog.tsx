@@ -48,11 +48,11 @@ function AdsGrid({ ads, navigationState }: AdsListContentProps) {
           key={ad.id}
           to={`/ads/${ad.id}`}
           state={navigationState}
-          className="group focus-visible:ring-ring rounded-md focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none"
+          className="focus-visible:ring-ring block rounded-md focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none"
         >
           <AdCard
             ad={ad}
-            className="h-full transition-all duration-200 group-hover:-translate-y-0.5 group-hover:shadow-md group-hover:shadow-black/5 group-hover:dark:shadow-black/30"
+            className="h-full transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md hover:shadow-black/5 hover:dark:shadow-black/30"
           />
         </Link>
       ))}
@@ -68,11 +68,11 @@ function AdsList({ ads, navigationState }: AdsListContentProps) {
           key={ad.id}
           to={`/ads/${ad.id}`}
           state={navigationState}
-          className="group focus-visible:ring-ring block rounded-md focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none"
+          className="focus-visible:ring-ring block rounded-md focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none"
         >
           <AdCardListItem
             ad={ad}
-            className="transition-all duration-200 group-hover:shadow-md group-hover:shadow-black/5 group-hover:dark:shadow-black/30"
+            className="transition-all duration-200 hover:shadow-md hover:shadow-black/5 hover:dark:shadow-black/30"
           />
         </Link>
       ))}
