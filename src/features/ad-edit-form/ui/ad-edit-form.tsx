@@ -33,6 +33,8 @@ import { getCategoryDefaultParams } from "./category-fields-config"
 type FormSubmitHandler = (
   values: AdEditFormValues
 ) => Promise<void> | void | undefined
+const NUMBER_INPUT_NO_SPINNERS_CLASS =
+  "[appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
 
 export interface AdEditFormActionButtonProps {
   disabled: boolean
@@ -199,6 +201,7 @@ export function AdEditForm({
                 <FormLabel>Цена</FormLabel>
                 <FormControl>
                   <Input
+                    className={NUMBER_INPUT_NO_SPINNERS_CLASS}
                     inputMode="numeric"
                     type="number"
                     {...field}
@@ -232,7 +235,7 @@ export function AdEditForm({
             <FormItem>
               <FormLabel>Описание</FormLabel>
               <FormControl>
-                <Textarea rows={6} {...field} value={field.value} />
+                <Textarea rows={4} {...field} value={field.value} />
               </FormControl>
               <FormMessage />
             </FormItem>

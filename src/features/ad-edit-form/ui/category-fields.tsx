@@ -41,6 +41,8 @@ interface CategoryFieldRendererProps<
 }
 
 const OPTIONAL_FIELD_WARNING_TEXT = "Рекомендуем заполнить поле"
+const NUMBER_INPUT_NO_SPINNERS_CLASS =
+  "[appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
 
 function hasFieldValue(value: unknown): boolean {
   if (typeof value === "string") {
@@ -60,19 +62,20 @@ function WarningLabel({
   onClear: () => void
 }) {
   return (
-    <div className="flex items-center justify-between gap-2">
+    <div className="grid h-7 grid-cols-[1fr_auto] items-center gap-2">
       <FormLabel>{label}</FormLabel>
-      {hasValue ? (
-        <Button
-          type="button"
-          variant="ghost"
-          size="sm"
-          className="h-auto px-2 py-0.5 text-xs"
-          onClick={onClear}
-        >
-          Очистить
-        </Button>
-      ) : null}
+      <Button
+        type="button"
+        variant="ghost"
+        size="sm"
+        className={cn(
+          "h-auto px-2 py-0.5 text-xs",
+          !hasValue && "pointer-events-none invisible"
+        )}
+        onClick={onClear}
+      >
+        Очистить
+      </Button>
     </div>
   )
 }
@@ -112,11 +115,18 @@ function CategoryTextField({
                 )}
               />
             </FormControl>
-            {shouldShowWarning ? (
-              <FormDescription className="text-amber-700 dark:text-amber-400">
+            {fieldState.error ? null : (
+              <FormDescription
+                className={cn(
+                  "min-h-5",
+                  shouldShowWarning
+                    ? "text-amber-700 dark:text-amber-400"
+                    : "invisible"
+                )}
+              >
                 {OPTIONAL_FIELD_WARNING_TEXT}
               </FormDescription>
-            ) : null}
+            )}
             <FormMessage />
           </FormItem>
         )
@@ -157,16 +167,24 @@ function CategoryNumberField({
                 {...field}
                 value={field.value ?? ""}
                 className={cn(
+                  NUMBER_INPUT_NO_SPINNERS_CLASS,
                   shouldShowWarning &&
                     "border-amber-400/70 focus-visible:border-amber-500 focus-visible:ring-amber-500/30 dark:border-amber-500/60"
                 )}
               />
             </FormControl>
-            {shouldShowWarning ? (
-              <FormDescription className="text-amber-700 dark:text-amber-400">
+            {fieldState.error ? null : (
+              <FormDescription
+                className={cn(
+                  "min-h-5",
+                  shouldShowWarning
+                    ? "text-amber-700 dark:text-amber-400"
+                    : "invisible"
+                )}
+              >
                 {OPTIONAL_FIELD_WARNING_TEXT}
               </FormDescription>
-            ) : null}
+            )}
             <FormMessage />
           </FormItem>
         )
@@ -222,11 +240,18 @@ function CategorySelectField({
                 ))}
               </SelectContent>
             </Select>
-            {shouldShowWarning ? (
-              <FormDescription className="text-amber-700 dark:text-amber-400">
+            {fieldState.error ? null : (
+              <FormDescription
+                className={cn(
+                  "min-h-5",
+                  shouldShowWarning
+                    ? "text-amber-700 dark:text-amber-400"
+                    : "invisible"
+                )}
+              >
                 {OPTIONAL_FIELD_WARNING_TEXT}
               </FormDescription>
-            ) : null}
+            )}
             <FormMessage />
           </FormItem>
         )
