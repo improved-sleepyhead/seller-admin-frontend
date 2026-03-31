@@ -1,4 +1,8 @@
-import { useQuery, useQueryClient } from "@tanstack/react-query"
+import {
+  keepPreviousData,
+  useQuery,
+  useQueryClient
+} from "@tanstack/react-query"
 import { useEffect, useMemo } from "react"
 
 import {
@@ -49,7 +53,8 @@ export function AdsListPage() {
 
   const adsQuery = useQuery({
     ...adsListQuery(listQueryParams),
-    enabled: isHydrated
+    enabled: isHydrated,
+    placeholderData: keepPreviousData
   })
 
   useEffect(() => {
@@ -62,7 +67,7 @@ export function AdsListPage() {
   }, [listQueryKey, queryClient])
 
   const catalogContent = (() => {
-    if (!isHydrated || adsQuery.isPending) {
+    if (!isHydrated || (adsQuery.isPending && !adsQuery.data)) {
       return <AdsCatalogSkeleton layout={layout} />
     }
 

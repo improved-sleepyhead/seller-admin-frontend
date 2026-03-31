@@ -37,15 +37,15 @@ describe("parseAdsSearchParams", () => {
 })
 
 describe("mapAdsUrlParamsToBackendQuery", () => {
-  it("should map page 2 to skip 10 and limit 10", () => {
+  it("should map page 2 to skip 9 and limit 9", () => {
     const query = mapAdsUrlParamsToBackendQuery({
       ...ADS_LIST_DEFAULT_URL_PARAMS,
       page: 2
     })
 
     expect(query).toMatchObject({
-      limit: 10,
-      skip: 10
+      limit: 9,
+      skip: 9
     })
   })
 
@@ -58,7 +58,7 @@ describe("mapAdsUrlParamsToBackendQuery", () => {
       needsRevision: undefined,
       sortColumn: "createdAt",
       sortDirection: "desc",
-      limit: 10,
+      limit: 9,
       skip: 0
     })
   })
