@@ -11,7 +11,7 @@ export function AdsLayoutSwitch() {
     <div
       role="group"
       aria-label="Переключение режима отображения"
-      className="flex items-center gap-2"
+      className="hidden items-center gap-2 sm:flex"
     >
       <Button
         type="button"
