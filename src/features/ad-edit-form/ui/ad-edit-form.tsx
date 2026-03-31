@@ -235,7 +235,7 @@ export function AdEditForm({
             <FormItem>
               <FormLabel>Описание</FormLabel>
               <FormControl>
-                <Textarea rows={5} {...field} value={field.value} />
+                <Textarea rows={4} {...field} value={field.value} />
               </FormControl>
               <FormMessage />
             </FormItem>
