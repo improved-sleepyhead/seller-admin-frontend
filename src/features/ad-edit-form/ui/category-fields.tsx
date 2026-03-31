@@ -1,8 +1,11 @@
 import { type UseFormReturn } from "react-hook-form"
 
 import type { AdEditFormValues } from "@/entities/ad"
+import { cn } from "@/shared/lib/cn"
 import {
+  Button,
   FormControl,
+  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -37,6 +40,43 @@ interface CategoryFieldRendererProps<
   form: UseFormReturn<AdEditFormValues, unknown, AdEditFormValues>
 }
 
+const OPTIONAL_FIELD_WARNING_TEXT = "Рекомендуем заполнить поле"
+
+function hasFieldValue(value: unknown): boolean {
+  if (typeof value === "string") {
+    return value.trim().length > 0
+  }
+
+  return value !== null && value !== undefined
+}
+
+function WarningLabel({
+  hasValue,
+  label,
+  onClear
+}: {
+  hasValue: boolean
+  label: string
+  onClear: () => void
+}) {
+  return (
+    <div className="flex items-center justify-between gap-2">
+      <FormLabel>{label}</FormLabel>
+      {hasValue ? (
+        <Button
+          type="button"
+          variant="ghost"
+          size="sm"
+          className="h-auto px-2 py-0.5 text-xs"
+          onClick={onClear}
+        >
+          Очистить
+        </Button>
+      ) : null}
+    </div>
+  )
+}
+
 function CategoryTextField({
   config,
   form
@@ -47,14 +87,32 @@ function CategoryTextField({
       name={config.name}
       render={({ field }) => (
         <FormItem>
-          <FormLabel>{config.label}</FormLabel>
+          <WarningLabel
+            label={config.label}
+            hasValue={hasFieldValue(field.value)}
+            onClear={() => {
+              form.setValue(config.name, "", {
+                shouldDirty: true,
+                shouldTouch: true
+              })
+            }}
+          />
           <FormControl>
             <Input
               {...field}
               placeholder={config.placeholder}
               value={field.value ?? ""}
+              className={cn(
+                !hasFieldValue(field.value) &&
+                  "border-amber-400/70 focus-visible:border-amber-500 focus-visible:ring-amber-500/30 dark:border-amber-500/60"
+              )}
             />
           </FormControl>
+          {!hasFieldValue(field.value) ? (
+            <FormDescription className="text-amber-700 dark:text-amber-400">
+              {OPTIONAL_FIELD_WARNING_TEXT}
+            </FormDescription>
+          ) : null}
           <FormMessage />
         </FormItem>
       )}
@@ -72,7 +130,16 @@ function CategoryNumberField({
       name={config.name}
       render={({ field }) => (
         <FormItem>
-          <FormLabel>{config.label}</FormLabel>
+          <WarningLabel
+            label={config.label}
+            hasValue={hasFieldValue(field.value)}
+            onClear={() => {
+              form.setValue(config.name, "", {
+                shouldDirty: true,
+                shouldTouch: true
+              })
+            }}
+          />
           <FormControl>
             <Input
               inputMode="numeric"
@@ -80,8 +147,17 @@ function CategoryNumberField({
               type="number"
               {...field}
               value={field.value ?? ""}
+              className={cn(
+                !hasFieldValue(field.value) &&
+                  "border-amber-400/70 focus-visible:border-amber-500 focus-visible:ring-amber-500/30 dark:border-amber-500/60"
+              )}
             />
           </FormControl>
+          {!hasFieldValue(field.value) ? (
+            <FormDescription className="text-amber-700 dark:text-amber-400">
+              {OPTIONAL_FIELD_WARNING_TEXT}
+            </FormDescription>
+          ) : null}
           <FormMessage />
         </FormItem>
       )}
@@ -99,13 +175,28 @@ function CategorySelectField({
       name={config.name}
       render={({ field }) => (
         <FormItem>
-          <FormLabel>{config.label}</FormLabel>
+          <WarningLabel
+            label={config.label}
+            hasValue={hasFieldValue(field.value)}
+            onClear={() => {
+              form.setValue(config.name, "", {
+                shouldDirty: true,
+                shouldTouch: true
+              })
+            }}
+          />
           <Select
             value={typeof field.value === "string" ? field.value : ""}
             onValueChange={field.onChange}
           >
             <FormControl>
-              <SelectTrigger className="w-full">
+              <SelectTrigger
+                className={cn(
+                  "w-full",
+                  !hasFieldValue(field.value) &&
+                    "border-amber-400/70 focus-visible:border-amber-500 focus-visible:ring-amber-500/30 dark:border-amber-500/60"
+                )}
+              >
                 <SelectValue placeholder={config.placeholder} />
               </SelectTrigger>
             </FormControl>
@@ -117,6 +208,11 @@ function CategorySelectField({
               ))}
             </SelectContent>
           </Select>
+          {!hasFieldValue(field.value) ? (
+            <FormDescription className="text-amber-700 dark:text-amber-400">
+              {OPTIONAL_FIELD_WARNING_TEXT}
+            </FormDescription>
+          ) : null}
           <FormMessage />
         </FormItem>
       )}

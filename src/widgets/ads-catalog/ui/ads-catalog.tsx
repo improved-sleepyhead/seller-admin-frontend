@@ -48,11 +48,11 @@ function AdsGrid({ ads, navigationState }: AdsListContentProps) {
           key={ad.id}
           to={`/ads/${ad.id}`}
           state={navigationState}
-          className="focus-visible:ring-ring rounded-md focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none"
+          className="focus-visible:ring-ring block rounded-md focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none"
         >
           <AdCard
             ad={ad}
-            className="h-full transition-transform hover:-translate-y-0.5"
+            className="h-full transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md hover:shadow-black/5 hover:dark:shadow-black/30"
           />
         </Link>
       ))}
@@ -72,7 +72,7 @@ function AdsList({ ads, navigationState }: AdsListContentProps) {
         >
           <AdCardListItem
             ad={ad}
-            className="transition-shadow hover:shadow-md"
+            className="transition-all duration-200 hover:shadow-md hover:shadow-black/5 hover:dark:shadow-black/30"
           />
         </Link>
       ))}
@@ -109,10 +109,17 @@ export function AdsCatalog({ ads, layout }: AdsCatalogProps) {
     sortDirection
   ])
 
-  return layout === "list" ? (
-    <AdsList ads={ads} navigationState={navigationState} />
-  ) : (
-    <AdsGrid ads={ads} navigationState={navigationState} />
+  return (
+    <div
+      key={layout}
+      className="motion-safe:animate-in motion-safe:fade-in-0 motion-safe:duration-200"
+    >
+      {layout === "list" ? (
+        <AdsList ads={ads} navigationState={navigationState} />
+      ) : (
+        <AdsGrid ads={ads} navigationState={navigationState} />
+      )}
+    </div>
   )
 }
 
@@ -127,10 +134,15 @@ export function AdsCatalogSkeleton({ layout }: AdsCatalogSkeletonProps) {
           >
             <div className="flex flex-col sm:flex-row">
               <Skeleton className="h-48 w-full shrink-0 sm:h-auto sm:w-56" />
-              <CardContent className="flex-1 space-y-3 p-4">
-                <Skeleton className="h-5 w-2/3" />
-                <Skeleton className="h-5 w-1/3" />
-                <Skeleton className="h-5 w-1/2" />
+              <CardContent className="flex min-w-0 flex-1 flex-col justify-between gap-3 p-4">
+                <div className="space-y-2">
+                  <Skeleton className="h-5 w-2/3" />
+                  <Skeleton className="h-5 w-1/3" />
+                </div>
+                <div className="flex flex-wrap items-center gap-2">
+                  <Skeleton className="h-5 w-24 rounded-full" />
+                  <Skeleton className="h-5 w-32 rounded-full" />
+                </div>
               </CardContent>
             </div>
           </Card>
@@ -153,7 +165,10 @@ export function AdsCatalogSkeleton({ layout }: AdsCatalogSkeletonProps) {
           <CardContent className="space-y-3 p-4">
             <Skeleton className="h-5 w-3/4" />
             <Skeleton className="h-5 w-1/2" />
-            <Skeleton className="h-5 w-2/3" />
+            <div className="flex flex-wrap items-center gap-2">
+              <Skeleton className="h-5 w-24 rounded-full" />
+              <Skeleton className="h-5 w-32 rounded-full" />
+            </div>
           </CardContent>
         </Card>
       ))}

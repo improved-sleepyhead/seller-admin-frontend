@@ -15,7 +15,12 @@ interface AdCardProps {
 
 export function AdCard({ ad, className }: AdCardProps) {
   return (
-    <Card className={cn("gap-0 overflow-hidden py-0", className)}>
+    <Card
+      className={cn(
+        "gap-0 overflow-hidden py-0 transition-colors duration-200",
+        className
+      )}
+    >
       <div className="aspect-[4/3] w-full">
         <AdImage src={ad.previewImageSrc} alt={ad.title} />
       </div>
