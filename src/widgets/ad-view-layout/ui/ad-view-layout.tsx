@@ -6,10 +6,10 @@ import {
   AdImage,
   AdPrice,
   AdRevisionBadge,
-  AdSpecsList,
-  type AdDetailsVM,
-  type AdsListNavigationState
-} from "@/entities/ad"
+  AdSpecsList
+} from "@/entities/ad/ui"
+import type { AdDetailsVM } from "@/entities/ad/api"
+import type { AdsListNavigationState } from "@/entities/ad/model"
 import {
   Button,
   Card,

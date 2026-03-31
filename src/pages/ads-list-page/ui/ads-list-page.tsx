@@ -8,9 +8,9 @@ import { useEffect, useMemo } from "react"
 import {
   adsListQuery,
   adsKeys,
-  mapAdsUrlParamsToListQuery,
-  useAdsListState
-} from "@/entities/ad"
+  mapAdsUrlParamsToListQuery
+} from "@/entities/ad/api"
+import { useAdsListState } from "@/entities/ad/model"
 import { AdsPagination } from "@/features/ads-pagination"
 import { isAppApiError } from "@/shared/api/error"
 import {
