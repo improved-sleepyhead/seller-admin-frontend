@@ -9,7 +9,7 @@ import {
 } from "./ad.contracts"
 
 export const ADS_LAYOUTS = ["grid", "list"] as const
-export const ADS_LIST_PAGE_SIZE = 10
+export const ADS_LIST_PAGE_SIZE = 9
 const DEFAULT_PAGE = 1
 
 export type AdsLayout = (typeof ADS_LAYOUTS)[number]

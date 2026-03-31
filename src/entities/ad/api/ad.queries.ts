@@ -11,7 +11,7 @@ import type {
 import type { AdDetailsVM, AdsListItemVM } from "./ad.mapper"
 
 const ADS_ROOT_KEY = ["ads"] as const
-const DEFAULT_LIMIT = 10
+const DEFAULT_LIMIT = 9
 const DEFAULT_SKIP = 0
 
 interface NormalizedAdsListParams {
