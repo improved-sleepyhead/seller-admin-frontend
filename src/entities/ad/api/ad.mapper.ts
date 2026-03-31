@@ -5,7 +5,7 @@ import {
   getMissingFields
 } from "../model"
 
-import type { FilledSpec, Ad } from "../model"
+import type { Ad, FilledSpec } from "../model"
 import type { AdDetailsDto, AdListItemDto } from "./ad.contracts"
 
 const priceFormatter = new Intl.NumberFormat("ru-RU", {

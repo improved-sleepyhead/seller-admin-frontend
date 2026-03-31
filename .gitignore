@@ -25,6 +25,7 @@ dist-ssr
 
 # Progress / local task tracking
 progress.md
+refactor-audit.md
 tasks.json
 INSTALL.md
 API_CONTRACT.md
