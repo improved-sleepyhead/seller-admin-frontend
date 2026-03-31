@@ -15,7 +15,12 @@ interface AdCardListItemProps {
 
 export function AdCardListItem({ ad, className }: AdCardListItemProps) {
   return (
-    <Card className={cn("overflow-hidden py-0", className)}>
+    <Card
+      className={cn(
+        "overflow-hidden py-0 transition-colors duration-200",
+        className
+      )}
+    >
       <div className="flex flex-col sm:flex-row">
         <div className="h-48 w-full shrink-0 sm:h-auto sm:w-56">
           <AdImage
