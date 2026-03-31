@@ -19,6 +19,7 @@ export function CancelEditButton({
   return (
     <Button
       disabled={disabled}
+      size="sm"
       type="button"
       variant="outline"
       onClick={() => {

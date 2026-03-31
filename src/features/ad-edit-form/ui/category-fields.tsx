@@ -85,37 +85,42 @@ function CategoryTextField({
     <FormField
       control={form.control}
       name={config.name}
-      render={({ field }) => (
-        <FormItem>
-          <WarningLabel
-            label={config.label}
-            hasValue={hasFieldValue(field.value)}
-            onClear={() => {
-              form.setValue(config.name, "", {
-                shouldDirty: true,
-                shouldTouch: true
-              })
-            }}
-          />
-          <FormControl>
-            <Input
-              {...field}
-              placeholder={config.placeholder}
-              value={field.value ?? ""}
-              className={cn(
-                !hasFieldValue(field.value) &&
-                  "border-amber-400/70 focus-visible:border-amber-500 focus-visible:ring-amber-500/30 dark:border-amber-500/60"
-              )}
+      render={({ field, fieldState }) => {
+        const shouldShowWarning =
+          !fieldState.error && !hasFieldValue(field.value)
+
+        return (
+          <FormItem>
+            <WarningLabel
+              label={config.label}
+              hasValue={hasFieldValue(field.value)}
+              onClear={() => {
+                form.setValue(config.name, "", {
+                  shouldDirty: true,
+                  shouldTouch: true
+                })
+              }}
             />
-          </FormControl>
-          {!hasFieldValue(field.value) ? (
-            <FormDescription className="text-amber-700 dark:text-amber-400">
-              {OPTIONAL_FIELD_WARNING_TEXT}
-            </FormDescription>
-          ) : null}
-          <FormMessage />
-        </FormItem>
-      )}
+            <FormControl>
+              <Input
+                {...field}
+                placeholder={config.placeholder}
+                value={field.value ?? ""}
+                className={cn(
+                  shouldShowWarning &&
+                    "border-amber-400/70 focus-visible:border-amber-500 focus-visible:ring-amber-500/30 dark:border-amber-500/60"
+                )}
+              />
+            </FormControl>
+            {shouldShowWarning ? (
+              <FormDescription className="text-amber-700 dark:text-amber-400">
+                {OPTIONAL_FIELD_WARNING_TEXT}
+              </FormDescription>
+            ) : null}
+            <FormMessage />
+          </FormItem>
+        )
+      }}
     />
   )
 }
@@ -128,39 +133,44 @@ function CategoryNumberField({
     <FormField
       control={form.control}
       name={config.name}
-      render={({ field }) => (
-        <FormItem>
-          <WarningLabel
-            label={config.label}
-            hasValue={hasFieldValue(field.value)}
-            onClear={() => {
-              form.setValue(config.name, "", {
-                shouldDirty: true,
-                shouldTouch: true
-              })
-            }}
-          />
-          <FormControl>
-            <Input
-              inputMode="numeric"
-              placeholder={config.placeholder}
-              type="number"
-              {...field}
-              value={field.value ?? ""}
-              className={cn(
-                !hasFieldValue(field.value) &&
-                  "border-amber-400/70 focus-visible:border-amber-500 focus-visible:ring-amber-500/30 dark:border-amber-500/60"
-              )}
+      render={({ field, fieldState }) => {
+        const shouldShowWarning =
+          !fieldState.error && !hasFieldValue(field.value)
+
+        return (
+          <FormItem>
+            <WarningLabel
+              label={config.label}
+              hasValue={hasFieldValue(field.value)}
+              onClear={() => {
+                form.setValue(config.name, "", {
+                  shouldDirty: true,
+                  shouldTouch: true
+                })
+              }}
             />
-          </FormControl>
-          {!hasFieldValue(field.value) ? (
-            <FormDescription className="text-amber-700 dark:text-amber-400">
-              {OPTIONAL_FIELD_WARNING_TEXT}
-            </FormDescription>
-          ) : null}
-          <FormMessage />
-        </FormItem>
-      )}
+            <FormControl>
+              <Input
+                inputMode="numeric"
+                placeholder={config.placeholder}
+                type="number"
+                {...field}
+                value={field.value ?? ""}
+                className={cn(
+                  shouldShowWarning &&
+                    "border-amber-400/70 focus-visible:border-amber-500 focus-visible:ring-amber-500/30 dark:border-amber-500/60"
+                )}
+              />
+            </FormControl>
+            {shouldShowWarning ? (
+              <FormDescription className="text-amber-700 dark:text-amber-400">
+                {OPTIONAL_FIELD_WARNING_TEXT}
+              </FormDescription>
+            ) : null}
+            <FormMessage />
+          </FormItem>
+        )
+      }}
     />
   )
 }
@@ -173,49 +183,54 @@ function CategorySelectField({
     <FormField
       control={form.control}
       name={config.name}
-      render={({ field }) => (
-        <FormItem>
-          <WarningLabel
-            label={config.label}
-            hasValue={hasFieldValue(field.value)}
-            onClear={() => {
-              form.setValue(config.name, "", {
-                shouldDirty: true,
-                shouldTouch: true
-              })
-            }}
-          />
-          <Select
-            value={typeof field.value === "string" ? field.value : ""}
-            onValueChange={field.onChange}
-          >
-            <FormControl>
-              <SelectTrigger
-                className={cn(
-                  "w-full",
-                  !hasFieldValue(field.value) &&
-                    "border-amber-400/70 focus-visible:border-amber-500 focus-visible:ring-amber-500/30 dark:border-amber-500/60"
-                )}
-              >
-                <SelectValue placeholder={config.placeholder} />
-              </SelectTrigger>
-            </FormControl>
-            <SelectContent>
-              {config.options.map(option => (
-                <SelectItem key={option.value} value={option.value}>
-                  {option.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          {!hasFieldValue(field.value) ? (
-            <FormDescription className="text-amber-700 dark:text-amber-400">
-              {OPTIONAL_FIELD_WARNING_TEXT}
-            </FormDescription>
-          ) : null}
-          <FormMessage />
-        </FormItem>
-      )}
+      render={({ field, fieldState }) => {
+        const shouldShowWarning =
+          !fieldState.error && !hasFieldValue(field.value)
+
+        return (
+          <FormItem>
+            <WarningLabel
+              label={config.label}
+              hasValue={hasFieldValue(field.value)}
+              onClear={() => {
+                form.setValue(config.name, "", {
+                  shouldDirty: true,
+                  shouldTouch: true
+                })
+              }}
+            />
+            <Select
+              value={typeof field.value === "string" ? field.value : ""}
+              onValueChange={field.onChange}
+            >
+              <FormControl>
+                <SelectTrigger
+                  className={cn(
+                    "w-full",
+                    shouldShowWarning &&
+                      "border-amber-400/70 focus-visible:border-amber-500 focus-visible:ring-amber-500/30 dark:border-amber-500/60"
+                  )}
+                >
+                  <SelectValue placeholder={config.placeholder} />
+                </SelectTrigger>
+              </FormControl>
+              <SelectContent>
+                {config.options.map(option => (
+                  <SelectItem key={option.value} value={option.value}>
+                    {option.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            {shouldShowWarning ? (
+              <FormDescription className="text-amber-700 dark:text-amber-400">
+                {OPTIONAL_FIELD_WARNING_TEXT}
+              </FormDescription>
+            ) : null}
+            <FormMessage />
+          </FormItem>
+        )
+      }}
     />
   )
 }

@@ -25,8 +25,8 @@ export function AdEditLayout({ aiArea, footer, formArea }: AdEditLayoutProps) {
       <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,2fr)_minmax(320px,1fr)]">
         <div className="space-y-6">
           {formArea}
-          <Card>
-            <CardFooter className="flex justify-end gap-2 pt-6">
+          <Card className="bg-card/95 sticky bottom-2 z-10 gap-0 py-0 backdrop-blur-sm">
+            <CardFooter className="flex w-full justify-between gap-3 px-4 py-3 sm:justify-end sm:px-5">
               {footer}
             </CardFooter>
           </Card>
@@ -53,9 +53,9 @@ export function AdEditLayoutSkeleton() {
           </Card>
 
           <Card>
-            <CardFooter className="flex justify-end gap-2 pt-6">
-              <Skeleton className="h-10 w-32" />
-              <Skeleton className="h-10 w-32" />
+            <CardFooter className="flex w-full justify-between gap-3 px-4 py-3 sm:justify-end sm:px-5">
+              <Skeleton className="h-8 w-28" />
+              <Skeleton className="h-8 w-28" />
             </CardFooter>
           </Card>
         </div>
