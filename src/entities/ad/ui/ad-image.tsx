@@ -1,3 +1,5 @@
+import { useEffect, useState } from "react"
+
 import { cn } from "@/shared/lib/cn"
 import { ImagePlaceholder } from "@/shared/ui/placeholders"
 
@@ -12,7 +14,13 @@ function hasImage(src: string | null | undefined): src is string {
 }
 
 export function AdImage({ alt, className, src }: AdImageProps) {
-  if (!hasImage(src)) {
+  const [hasLoadError, setHasLoadError] = useState(false)
+
+  useEffect(() => {
+    setHasLoadError(false)
+  }, [src])
+
+  if (!hasImage(src) || hasLoadError) {
     return <ImagePlaceholder className={className} />
   }
 
@@ -20,6 +28,9 @@ export function AdImage({ alt, className, src }: AdImageProps) {
     <img
       src={src}
       alt={alt}
+      onError={() => {
+        setHasLoadError(true)
+      }}
       className={cn("h-full w-full rounded-md object-cover", className)}
       loading="lazy"
     />
