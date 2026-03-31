@@ -8,7 +8,7 @@ export interface SaveAdButtonProps {
 
 export function SaveAdButton({ disabled, form, isPending }: SaveAdButtonProps) {
   return (
-    <Button disabled={disabled} form={form} type="submit">
+    <Button disabled={disabled} form={form} size="sm" type="submit">
       {isPending ? "Сохраняем..." : "Сохранить"}
     </Button>
   )
