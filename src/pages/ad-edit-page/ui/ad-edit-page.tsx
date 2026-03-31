@@ -2,15 +2,13 @@ import { useQuery, useQueryClient } from "@tanstack/react-query"
 import { useEffect, useState } from "react"
 import { useLocation, useParams } from "react-router-dom"
 
+import { adEditDetailQuery, adsKeys, aiStatusQuery } from "@/entities/ad/api"
 import {
-  adEditDetailQuery,
-  adsKeys,
-  aiStatusQuery,
   buildAdsListHrefFromNavigationState,
   resolveAdsSearchFromNavigationState,
   type AdEditFormValues,
   type AdsListNavigationState
-} from "@/entities/ad"
+} from "@/entities/ad/model"
 import { AdAiChat } from "@/features/ad-ai-chat"
 import { AiDescriptionAction } from "@/features/ad-ai-description"
 import { AiPriceAction } from "@/features/ad-ai-price"

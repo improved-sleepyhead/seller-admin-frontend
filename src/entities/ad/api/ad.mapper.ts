@@ -1,9 +1,6 @@
-import {
-  AD_CATEGORY_LABELS,
-  doesNeedRevision,
-  getFilledSpecs,
-  getMissingFields
-} from "../model"
+import { AD_CATEGORY_LABELS } from "../model"
+import { doesNeedRevision, getMissingFields } from "../model/ad.revision"
+import { getFilledSpecs } from "../model/ad.specs"
 
 import type { Ad, FilledSpec } from "../model"
 import type { AdDetailsDto, AdListItemDto } from "./ad.contracts"

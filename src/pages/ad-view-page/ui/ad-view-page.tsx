@@ -2,13 +2,12 @@ import { useQuery, useQueryClient } from "@tanstack/react-query"
 import { useEffect } from "react"
 import { useLocation, useParams } from "react-router-dom"
 
+import { adDetailQuery, adsKeys } from "@/entities/ad/api"
 import {
-  adDetailQuery,
-  adsKeys,
   buildAdsListHrefFromNavigationState,
   resolveAdsSearchFromNavigationState,
   type AdsListNavigationState
-} from "@/entities/ad"
+} from "@/entities/ad/model"
 import { isAppApiError } from "@/shared/api/error"
 import {
   AdViewErrorState,
