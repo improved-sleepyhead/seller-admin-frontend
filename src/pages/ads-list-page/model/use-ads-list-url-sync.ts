@@ -6,8 +6,9 @@ import {
   serializeAdsListUrlParams
 } from "@/entities/ad/api"
 import {
-  adsListStateStore,
-  getAdsListUrlParamsFromState
+  getAdsListUrlParamsFromState,
+  hydrateAdsListStateFromUrl,
+  subscribeToAdsListState
 } from "@/entities/ad/model"
 
 function toSearchWithoutPrefix(search: string): string {
@@ -31,7 +32,7 @@ export function useAdsListUrlSync(): { isHydrated: boolean } {
   }, [isHydrated])
 
   useEffect(() => {
-    const unsubscribe = adsListStateStore.subscribe(() => {
+    const unsubscribe = subscribeToAdsListState(() => {
       if (!isHydratedRef.current || isHydratingFromUrlRef.current) {
         return
       }
@@ -61,7 +62,7 @@ export function useAdsListUrlSync(): { isHydrated: boolean } {
     syncedSearchRef.current = canonicalSearch
     isHydratingFromUrlRef.current = true
 
-    adsListStateStore.getState().hydrateFromUrl(normalizedParams)
+    hydrateAdsListStateFromUrl(normalizedParams)
 
     isHydratingFromUrlRef.current = false
     setIsHydrated(true)
