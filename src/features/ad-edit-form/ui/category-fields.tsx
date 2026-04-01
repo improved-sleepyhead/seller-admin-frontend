@@ -1,6 +1,6 @@
 import { type UseFormReturn } from "react-hook-form"
 
-import type { AdEditFormValues } from "@/entities/ad"
+import type { AdEditFormValues } from "@/entities/ad/model"
 import { cn } from "@/shared/lib/cn"
 import {
   Button,

@@ -103,6 +103,9 @@ export default defineConfig(
       "dist/**",
       "coverage/**",
       "node_modules/**",
+      ".agents/**",
+      ".claude/**",
+      ".codex/**",
       "public/config.js",
       "*.d.ts",
       "eslint.config.mjs"
@@ -241,6 +244,7 @@ export default defineConfig(
             "widgets/*",
             "features/*",
             "entities/*",
+            "entities/*/{api,model,ui,lib,config}",
 
             "@/app/*",
             "@/app/**",
@@ -248,6 +252,7 @@ export default defineConfig(
             "@/widgets/*",
             "@/features/*",
             "@/entities/*",
+            "@/entities/*/{api,model,ui,lib,config}",
 
             "shared/ui/**",
             "shared/lib/**",

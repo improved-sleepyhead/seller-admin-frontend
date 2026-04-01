@@ -2,11 +2,13 @@ import { useEffect, useRef, useState } from "react"
 import { useLocation, useSearchParams } from "react-router-dom"
 
 import {
-  adsListStateStore,
-  getAdsListUrlParamsFromState,
   parseAdsSearchParams,
   serializeAdsListUrlParams
-} from "@/entities/ad"
+} from "@/entities/ad/api"
+import {
+  adsListStateStore,
+  getAdsListUrlParamsFromState
+} from "@/entities/ad/model"
 
 function toSearchWithoutPrefix(search: string): string {
   return search.startsWith("?") ? search.slice(1) : search

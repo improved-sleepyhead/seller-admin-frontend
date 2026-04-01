@@ -1,8 +1,12 @@
-import { AD_CATEGORY_LABELS } from "../model"
-import { doesNeedRevision, getMissingFields } from "../model/ad.revision"
-import { getFilledSpecs } from "../model/ad.specs"
+import {
+  AD_CATEGORY_LABELS,
+  doesNeedRevision,
+  getFilledSpecs,
+  getMissingFields,
+  type Ad,
+  type FilledSpec
+} from "../model"
 
-import type { Ad, FilledSpec } from "../model"
 import type { AdDetailsDto, AdListItemDto } from "./ad.contracts"
 
 const priceFormatter = new Intl.NumberFormat("ru-RU", {

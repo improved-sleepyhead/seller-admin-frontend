@@ -1,6 +1,6 @@
 import { Loader2Icon } from "lucide-react"
 
-import { type AdEditFormApi, type AiChatMessage } from "@/entities/ad"
+import { type AdEditFormApi, type AiChatMessage } from "@/entities/ad/model"
 import { cn } from "@/shared/lib/cn"
 import { Badge, Button, Label, Textarea } from "@/shared/ui/shadcn"
 

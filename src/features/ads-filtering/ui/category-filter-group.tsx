@@ -1,4 +1,5 @@
-import { AD_CATEGORIES, AD_CATEGORY_LABELS } from "@/entities/ad"
+import { AD_CATEGORIES } from "@/entities/ad/api"
+import { AD_CATEGORY_LABELS } from "@/entities/ad/model"
 import { Checkbox, Label } from "@/shared/ui/shadcn"
 
 import { useAdsFiltering } from "../model"

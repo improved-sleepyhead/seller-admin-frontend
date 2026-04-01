@@ -1,13 +1,13 @@
 import { useMemo } from "react"
 import { Link } from "react-router-dom"
 
-import { AdCard, AdCardListItem } from "@/entities/ad/ui"
+import type { AdsLayout, AdsListItemVM } from "@/entities/ad/api"
 import {
   createAdsListNavigationState,
   useAdsListState,
   type AdsListNavigationState
 } from "@/entities/ad/model"
-import type { AdsLayout, AdsListItemVM } from "@/entities/ad/api"
+import { AdCard, AdCardListItem } from "@/entities/ad/ui"
 import { ResetFiltersButton } from "@/features/ads-filtering"
 import {
   Button,

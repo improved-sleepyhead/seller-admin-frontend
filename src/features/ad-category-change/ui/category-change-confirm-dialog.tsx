@@ -1,4 +1,4 @@
-import { AD_CATEGORY_LABELS, type AdEditFormValues } from "@/entities/ad"
+import { AD_CATEGORY_LABELS, type AdEditFormValues } from "@/entities/ad/model"
 import {
   AlertDialog,
   AlertDialogAction,

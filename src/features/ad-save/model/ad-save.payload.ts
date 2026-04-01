@@ -1,10 +1,10 @@
 import type {
-  AdEditFormValues,
   ItemUpdateIn,
   AutoAdParamsWrite,
   RealEstateAdParamsWrite,
   ElectronicsAdParamsWrite
-} from "@/entities/ad"
+} from "@/entities/ad/api"
+import type { AdEditFormValues } from "@/entities/ad/model"
 
 const AUTO_TRANSMISSION_VALUES = ["automatic", "manual"] as const
 const REAL_ESTATE_TYPE_VALUES = ["flat", "house", "room"] as const

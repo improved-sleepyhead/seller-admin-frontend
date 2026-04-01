@@ -12,8 +12,9 @@ import { useState, type ReactElement } from "react"
 import { useForm } from "react-hook-form"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 
-vi.mock("@/entities/ad", async () => {
-  const actual = await vi.importActual<Record<string, unknown>>("@/entities/ad")
+vi.mock("@/entities/ad/api", async () => {
+  const actual =
+    await vi.importActual<Record<string, unknown>>("@/entities/ad/api")
 
   return {
     ...actual,
@@ -21,7 +22,8 @@ vi.mock("@/entities/ad", async () => {
   }
 })
 
-import { requestAiPrice, type AdEditFormValues } from "@/entities/ad"
+import { requestAiPrice } from "@/entities/ad/api"
+import type { AdEditFormValues } from "@/entities/ad/model"
 
 import { AiPriceAction } from "../ai-price-action"
 

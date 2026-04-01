@@ -3,12 +3,8 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import { useEffect, type ComponentType } from "react"
 import { useForm, type UseFormReturn } from "react-hook-form"
 
-import {
-  AD_CATEGORIES,
-  AD_CATEGORY_LABELS,
-  type AdDetailsDto,
-  type AdEditFormValues
-} from "@/entities/ad"
+import { AD_CATEGORIES, type AdDetailsDto } from "@/entities/ad/api"
+import { AD_CATEGORY_LABELS, type AdEditFormValues } from "@/entities/ad/model"
 import {
   Button,
   Form,

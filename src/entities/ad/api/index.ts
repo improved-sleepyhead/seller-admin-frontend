@@ -40,16 +40,8 @@ export {
   type RealEstateAdParamsWrite,
   type RealEstateItemUpdateIn
 } from "./ad.contracts"
-export {
-  mapToDetailsVM,
-  mapToListItemVM,
-  type AdDetailsVM,
-  type AdsListItemVM
-} from "./ad.mapper"
-export {
-  updateAdMutation,
-  type UpdateAdMutationVariables
-} from "./ad.mutations"
+export { type AdDetailsVM, type AdsListItemVM } from "./ad.mapper"
+export { updateAdMutation } from "./ad.mutations"
 export {
   adDetailQuery,
   adEditDetailQuery,
@@ -71,13 +63,4 @@ export {
   type AdsListBackendQueryParams,
   type AdsListUrlParams
 } from "./ad.search-params"
-export {
-  AdDetailsSchema,
-  AdListItemSchema,
-  AiDescriptionResponseSchema,
-  AiPriceResponseSchema,
-  AiStatusSchema,
-  AiUsageSchema,
-  ItemUpdateInSchema,
-  SuccessSchema
-} from "./ad.schemas"
+export { AiUsageSchema, ItemUpdateInSchema } from "./ad.schemas"
