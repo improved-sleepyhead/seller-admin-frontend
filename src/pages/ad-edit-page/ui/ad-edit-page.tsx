@@ -1,30 +1,11 @@
-import { useQuery, useQueryClient } from "@tanstack/react-query"
-import { useEffect, useState } from "react"
-import { useLocation, useParams } from "react-router-dom"
-
-import { adEditDetailQuery, adsKeys, aiStatusQuery } from "@/entities/ad/api"
-import {
-  buildAdsListHrefFromNavigationState,
-  resolveAdsSearchFromNavigationState,
-  type AdEditFormValues,
-  type AdsListNavigationState
-} from "@/entities/ad/model"
 import { AdAiChat } from "@/features/ad-ai-chat"
 import { AiDescriptionAction } from "@/features/ad-ai-description"
 import { AiPriceAction } from "@/features/ad-ai-price"
 import { CancelEditButton } from "@/features/ad-cancel-edit"
-import {
-  CategoryChangeConfirmDialog,
-  useCategoryChangeConfirm
-} from "@/features/ad-category-change"
-import {
-  DraftRestoreDialog,
-  DraftSavedHint,
-  useAdDraft
-} from "@/features/ad-draft"
+import { CategoryChangeConfirmDialog } from "@/features/ad-category-change"
+import { DraftRestoreDialog, DraftSavedHint } from "@/features/ad-draft"
 import { AdEditForm } from "@/features/ad-edit-form"
-import { SaveAdButton, useSaveAd } from "@/features/ad-save"
-import { isAppApiError } from "@/shared/api/error"
+import { SaveAdButton } from "@/features/ad-save"
 import {
   Badge,
   Card,
@@ -40,190 +21,30 @@ import {
 } from "@/widgets/ad-edit-layout"
 import { AiChatPanel } from "@/widgets/ai-chat-panel"
 
-import type { UseFormReturn } from "react-hook-form"
+import { useAdEditPageModel } from "../model"
 
 const EDIT_FORM_ID = "ad-edit-form"
 
-function parseAdId(rawId: string | undefined): number | null {
-  if (!rawId) {
-    return null
-  }
-
-  const parsedId = Number(rawId)
-
-  if (!Number.isInteger(parsedId) || parsedId < 1) {
-    return null
-  }
-
-  return parsedId
-}
-
 export function AdEditPage() {
-  const queryClient = useQueryClient()
-  const { id } = useParams<{ id: string }>()
-  const location = useLocation()
-  const adId = parseAdId(id)
-  const backHref = buildAdsListHrefFromNavigationState(location.state)
-  const [editEntryRevision, setEditEntryRevision] = useState(0)
-  const adsSearch = resolveAdsSearchFromNavigationState(location.state)
-  const navigationState: AdsListNavigationState | undefined =
-    adsSearch === null ? undefined : { adsSearch }
-  const [editForm, setEditForm] = useState<UseFormReturn<
-    AdEditFormValues,
-    unknown,
-    AdEditFormValues
-  > | null>(null)
-  const { isSavePending, saveAd } = useSaveAd({
-    itemId: adId ?? 0,
-    navigationState
-  })
-  const {
-    cancelCategoryChange,
-    confirmCategoryChange,
-    isCategoryChangeDialogOpen,
-    requestCategoryChange,
-    requestedCategory
-  } = useCategoryChangeConfirm()
-  const detailQuery = useQuery({
-    ...adEditDetailQuery(adId ?? 0),
-    enabled: adId !== null
-  })
-  const aiStatusResult = useQuery({
-    ...aiStatusQuery(),
-    enabled: adId !== null
-  })
-  const { draftSavedAt, isRestoreDialogOpen, restoreDraft, useServerVersion } =
-    useAdDraft({
-      ad: detailQuery.data ?? null,
-      entryRevision: editEntryRevision,
-      form: editForm,
-      itemId: adId ?? 0
-    })
+  const model = useAdEditPageModel()
 
-  useEffect(() => {
-    if (!location.pathname.endsWith("/edit")) {
-      return
-    }
-
-    setEditEntryRevision(previousRevision => previousRevision + 1)
-  }, [location.pathname])
-
-  useEffect(() => {
-    if (adId === null) {
-      return
-    }
-
-    const detailQueryKey = adsKeys.editDetail(adId)
-    const aiStatusQueryKey = adsKeys.aiStatus()
-
-    return () => {
-      void queryClient.cancelQueries({
-        exact: true,
-        queryKey: detailQueryKey
-      })
-      void queryClient.cancelQueries({
-        exact: true,
-        queryKey: aiStatusQueryKey
-      })
-    }
-  }, [adId, queryClient])
-
-  if (adId === null) {
-    return <AdEditNotFoundState backHref={backHref} />
+  if (model.state === "not-found") {
+    return <AdEditNotFoundState backHref={model.backHref} />
   }
 
-  if (detailQuery.isPending) {
+  if (model.state === "loading") {
     return <AdEditLayoutSkeleton />
   }
 
-  if (detailQuery.isError) {
-    if (
-      isAppApiError(detailQuery.error) &&
-      detailQuery.error.code === "NOT_FOUND"
-    ) {
-      return <AdEditNotFoundState backHref={backHref} />
-    }
-
+  if (model.state === "error") {
     return (
       <AdEditErrorState
-        backHref={backHref}
-        message={
-          isAppApiError(detailQuery.error)
-            ? detailQuery.error.message
-            : undefined
-        }
-        onRetry={() => {
-          void detailQuery.refetch()
-        }}
+        backHref={model.backHref}
+        message={model.message}
+        onRetry={model.onRetry}
       />
     )
   }
-
-  const aiStatus = aiStatusResult.data ?? null
-  const aiFeatures = aiStatus?.features ?? {
-    chat: false,
-    description: false,
-    price: false
-  }
-  const aiEnabled =
-    aiStatusResult.isSuccess &&
-    aiStatus?.enabled === true &&
-    !aiStatusResult.isError
-  const isDescriptionEnabled = aiEnabled && aiFeatures.description
-  const isPriceEnabled = aiEnabled && aiFeatures.price
-  const isChatEnabled = aiEnabled && aiFeatures.chat
-
-  const partiallyDisabledFeatures = aiEnabled
-    ? [
-        !aiFeatures.description ? "описание" : null,
-        !aiFeatures.price ? "цена" : null,
-        !aiFeatures.chat ? "чат" : null
-      ].filter((value): value is string => value !== null)
-    : []
-
-  const aiStatusBadgeVariant = (() => {
-    if (aiStatusResult.isError) {
-      return "destructive" as const
-    }
-
-    if (aiEnabled) {
-      return "default" as const
-    }
-
-    return "secondary" as const
-  })()
-
-  const aiStatusLabel = (() => {
-    if (aiStatusResult.isPending) {
-      return "Проверка AI..."
-    }
-
-    if (aiStatusResult.isError) {
-      return "AI недоступен"
-    }
-
-    return aiEnabled ? "AI доступен" : "AI недоступен"
-  })()
-
-  const aiStatusMessage = (() => {
-    if (aiStatusResult.isPending) {
-      return "Проверяем доступность AI. До завершения проверки AI-контролы отключены."
-    }
-
-    if (aiStatusResult.isError) {
-      return "Не удалось загрузить AI-статус. AI-контролы временно отключены."
-    }
-
-    if (!aiEnabled) {
-      return "AI отключен в текущем окружении. Основное редактирование доступно без ограничений."
-    }
-
-    if (partiallyDisabledFeatures.length > 0) {
-      return `Частично недоступно: ${partiallyDisabledFeatures.join(", ")}.`
-    }
-
-    return "Все AI-инструменты доступны."
-  })()
 
   const aiArea = (
     <div className="space-y-6">
@@ -233,22 +54,29 @@ export function AdEditPage() {
         </CardHeader>
         <CardContent className="space-y-3">
           <AiDescriptionAction
-            disabled={!isDescriptionEnabled}
-            form={editForm}
+            disabled={!model.ai.descriptionEnabled}
+            form={model.editForm}
           />
-          <AiPriceAction disabled={!isPriceEnabled} form={editForm} />
+          <AiPriceAction
+            disabled={!model.ai.priceEnabled}
+            form={model.editForm}
+          />
           <div className="space-y-2">
-            <Badge variant={aiStatusBadgeVariant}>{aiStatusLabel}</Badge>
-            <p className="text-muted-foreground text-sm">{aiStatusMessage}</p>
+            <Badge variant={model.ai.badgeVariant}>{model.ai.label}</Badge>
+            <p className="text-muted-foreground text-sm">{model.ai.message}</p>
             <p className="text-muted-foreground text-sm">
-              Модель: {aiStatus?.model ?? "не указана"}
+              Модель: {model.ai.model}
             </p>
           </div>
         </CardContent>
       </Card>
 
-      <AiChatPanel disabled={!isChatEnabled}>
-        <AdAiChat disabled={!isChatEnabled} form={editForm} itemId={adId} />
+      <AiChatPanel disabled={!model.ai.chatEnabled}>
+        <AdAiChat
+          disabled={!model.ai.chatEnabled}
+          form={model.editForm}
+          itemId={model.adId}
+        />
       </AiChatPanel>
     </div>
   )
@@ -259,20 +87,20 @@ export function AdEditPage() {
         <CardTitle>Редактирование объявления</CardTitle>
       </CardHeader>
       <CardContent className="space-y-3">
-        <DraftSavedHint savedAt={draftSavedAt} />
+        <DraftSavedHint savedAt={model.draft.draftSavedAt} />
         <AdEditForm
-          ad={detailQuery.data}
+          ad={model.ad}
           formId={EDIT_FORM_ID}
           hideActions
-          isSavePending={isSavePending}
+          isSavePending={model.savePending}
           onCategoryChangeRequest={({ applyCategoryChange, nextCategory }) => {
-            requestCategoryChange({
+            model.categoryChange.requestCategoryChange({
               nextCategory,
               onConfirm: applyCategoryChange
             })
           }}
-          onFormReady={setEditForm}
-          onSubmit={saveAd}
+          onFormReady={model.onFormReady}
+          onSubmit={model.onSubmit}
         />
       </CardContent>
     </Card>
@@ -285,14 +113,14 @@ export function AdEditPage() {
         footer={
           <>
             <CancelEditButton
-              disabled={isSavePending}
-              itemId={adId}
-              navigationState={navigationState}
+              disabled={model.savePending}
+              itemId={model.adId}
+              navigationState={model.navigationState}
             />
             <SaveAdButton
-              disabled={isSavePending}
+              disabled={model.savePending}
               form={EDIT_FORM_ID}
-              isPending={isSavePending}
+              isPending={model.savePending}
             />
           </>
         }
@@ -300,16 +128,16 @@ export function AdEditPage() {
       />
 
       <CategoryChangeConfirmDialog
-        nextCategory={requestedCategory}
-        onCancel={cancelCategoryChange}
-        onConfirm={confirmCategoryChange}
-        open={isCategoryChangeDialogOpen}
+        nextCategory={model.categoryChange.requestedCategory}
+        onCancel={model.categoryChange.cancelCategoryChange}
+        onConfirm={model.categoryChange.confirmCategoryChange}
+        open={model.categoryChange.isCategoryChangeDialogOpen}
       />
 
       <DraftRestoreDialog
-        onRestoreDraft={restoreDraft}
-        onUseServerVersion={useServerVersion}
-        open={isRestoreDialogOpen}
+        onRestoreDraft={model.draft.restoreDraft}
+        onUseServerVersion={model.draft.useServerVersion}
+        open={model.draft.isRestoreDialogOpen}
       />
     </div>
   )
