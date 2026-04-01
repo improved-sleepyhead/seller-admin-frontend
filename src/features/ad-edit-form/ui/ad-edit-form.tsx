@@ -69,8 +69,12 @@ function DefaultSubmitButton({
   isPending
 }: AdEditFormActionButtonProps) {
   return (
-    <Button disabled={disabled} type="submit">
-      {isPending ? "Сохраняем..." : "Сохранить"}
+    <Button
+      className="min-w-28 justify-center"
+      disabled={disabled || isPending}
+      type="submit"
+    >
+      Сохранить
     </Button>
   )
 }

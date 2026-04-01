@@ -1,4 +1,5 @@
 export {
+  apiPatch,
   apiClient,
   apiDelete,
   apiGet,

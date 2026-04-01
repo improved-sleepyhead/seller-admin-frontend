@@ -1,4 +1,4 @@
-import { apiGet, apiPost, apiPut } from "shared/api/client"
+import { apiGet, apiPatch, apiPost } from "shared/api/client"
 import { normalizeApiError } from "shared/api/error"
 import { parseApiResponse } from "shared/api/zod-parser"
 
@@ -21,6 +21,7 @@ import type {
   AiPriceResponse,
   AiStatusDto,
   ApiSuccessDto,
+  ItemPatchIn,
   ItemUpdateIn
 } from "./ad.contracts"
 
@@ -84,13 +85,13 @@ export async function getAdById(
   }
 }
 
-export async function putAd(
+export async function patchAd(
   id: number,
-  item: ItemUpdateIn,
+  item: ItemPatchIn,
   signal: AbortSignal
 ): Promise<ApiSuccessDto> {
   try {
-    const payload = await apiPut<unknown, ItemUpdateIn>(
+    const payload = await apiPatch<unknown, ItemPatchIn>(
       `/items/${id}`,
       item,
       signal

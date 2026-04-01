@@ -123,6 +123,33 @@ export type ItemUpdateIn =
   | RealEstateItemUpdateIn
   | ElectronicsItemUpdateIn
 
+export interface ItemPatchBase {
+  category: AdCategory
+  title?: string
+  description?: string
+  price?: number
+}
+
+export interface AutoItemPatchIn extends ItemPatchBase {
+  category: "auto"
+  params?: Partial<AutoAdParamsWrite>
+}
+
+export interface RealEstateItemPatchIn extends ItemPatchBase {
+  category: "real_estate"
+  params?: Partial<RealEstateAdParamsWrite>
+}
+
+export interface ElectronicsItemPatchIn extends ItemPatchBase {
+  category: "electronics"
+  params?: Partial<ElectronicsAdParamsWrite>
+}
+
+export type ItemPatchIn =
+  | AutoItemPatchIn
+  | RealEstateItemPatchIn
+  | ElectronicsItemPatchIn
+
 export interface ApiSuccessDto {
   success: true
 }

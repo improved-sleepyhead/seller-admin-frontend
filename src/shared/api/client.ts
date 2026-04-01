@@ -91,3 +91,18 @@ export function apiPut<TResponse, TData = unknown>(
     url
   })
 }
+
+export function apiPatch<TResponse, TData = unknown>(
+  url: string,
+  data: TData,
+  signal: AbortSignal,
+  config?: Omit<AxiosRequestConfig<TData>, "url" | "method" | "data" | "signal">
+): Promise<TResponse> {
+  return apiRequest<TResponse, TData>({
+    ...(config ?? {}),
+    data,
+    method: "patch",
+    signal,
+    url
+  })
+}

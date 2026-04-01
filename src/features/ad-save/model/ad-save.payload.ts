@@ -1,6 +1,6 @@
 import type {
-  ItemUpdateIn,
   AutoAdParamsWrite,
+  ItemPatchIn,
   RealEstateAdParamsWrite,
   ElectronicsAdParamsWrite
 } from "@/entities/ad/api"
@@ -23,6 +23,11 @@ function toTrimmedString(value: unknown): string {
   return ""
 }
 
+function toOptionalTrimmedString(value: unknown): string | undefined {
+  const trimmedValue = toTrimmedString(value)
+  return trimmedValue.length > 0 ? trimmedValue : undefined
+}
+
 function toNumber(value: unknown): number {
   if (typeof value === "number") {
     return Number.isFinite(value) ? value : 0
@@ -42,91 +47,92 @@ function toNumber(value: unknown): number {
   return 0
 }
 
-function toEnumValue<const TValue extends string>(
-  value: unknown,
-  allowedValues: readonly TValue[],
-  fallbackValue: TValue
-): TValue {
-  if (typeof value !== "string") {
-    return fallbackValue
-  }
-
-  return allowedValues.includes(value as TValue)
-    ? (value as TValue)
-    : fallbackValue
+function toPositiveNumber(value: unknown): number | undefined {
+  const parsedValue = toNumber(value)
+  return parsedValue > 0 ? parsedValue : undefined
 }
 
-function mapAutoParams(values: AdEditFormValues["params"]): AutoAdParamsWrite {
+function toOptionalEnumValue<const TValue extends string>(
+  value: unknown,
+  allowedValues: readonly TValue[]
+): TValue | undefined {
+  if (typeof value !== "string") {
+    return undefined
+  }
+
+  return allowedValues.includes(value as TValue) ? (value as TValue) : undefined
+}
+
+function mapAutoParams(
+  values: AdEditFormValues["params"]
+): Partial<AutoAdParamsWrite> {
   return {
-    brand: toTrimmedString(values.brand),
-    model: toTrimmedString(values.model),
-    yearOfManufacture: toNumber(values.yearOfManufacture),
-    transmission: toEnumValue(
+    brand: toOptionalTrimmedString(values.brand),
+    model: toOptionalTrimmedString(values.model),
+    yearOfManufacture: toPositiveNumber(values.yearOfManufacture),
+    transmission: toOptionalEnumValue(
       values.transmission,
-      AUTO_TRANSMISSION_VALUES,
-      "automatic"
+      AUTO_TRANSMISSION_VALUES
     ),
-    mileage: toNumber(values.mileage),
-    enginePower: toNumber(values.enginePower)
+    mileage: toPositiveNumber(values.mileage),
+    enginePower: toPositiveNumber(values.enginePower)
   }
 }
 
 function mapRealEstateParams(
   values: AdEditFormValues["params"]
-): RealEstateAdParamsWrite {
+): Partial<RealEstateAdParamsWrite> {
   return {
-    type: toEnumValue(values.type, REAL_ESTATE_TYPE_VALUES, "flat"),
-    address: toTrimmedString(values.address),
-    area: toNumber(values.area),
-    floor: toNumber(values.floor)
+    type: toOptionalEnumValue(values.type, REAL_ESTATE_TYPE_VALUES),
+    address: toOptionalTrimmedString(values.address),
+    area: toPositiveNumber(values.area),
+    floor: toPositiveNumber(values.floor)
   }
 }
 
 function mapElectronicsParams(
   values: AdEditFormValues["params"]
-): ElectronicsAdParamsWrite {
+): Partial<ElectronicsAdParamsWrite> {
   return {
-    type: toEnumValue(values.type, ELECTRONICS_TYPE_VALUES, "phone"),
-    brand: toTrimmedString(values.brand),
-    model: toTrimmedString(values.model),
-    condition: toEnumValue(
+    type: toOptionalEnumValue(values.type, ELECTRONICS_TYPE_VALUES),
+    brand: toOptionalTrimmedString(values.brand),
+    model: toOptionalTrimmedString(values.model),
+    condition: toOptionalEnumValue(
       values.condition,
-      ELECTRONICS_CONDITION_VALUES,
-      "new"
+      ELECTRONICS_CONDITION_VALUES
     ),
-    color: toTrimmedString(values.color)
+    color: toOptionalTrimmedString(values.color)
   }
 }
 
-export function mapAdEditFormValuesToItemUpdateIn(
+export function mapAdEditFormValuesToItemPatchIn(
   values: AdEditFormValues
-): ItemUpdateIn {
-  const description = values.description.trim()
+): ItemPatchIn {
   const basePayload = {
+    description: values.description.trim(),
     title: values.title.trim(),
-    description: description.length > 0 ? description : undefined,
     price: toNumber(values.price)
   }
 
   if (values.category === "auto") {
     return {
-      ...basePayload,
       category: "auto",
+      ...basePayload,
       params: mapAutoParams(values.params)
     }
   }
 
   if (values.category === "real_estate") {
     return {
-      ...basePayload,
       category: "real_estate",
+      ...basePayload,
       params: mapRealEstateParams(values.params)
     }
   }
 
   return {
-    ...basePayload,
     category: "electronics",
+    ...basePayload,
     params: mapElectronicsParams(values.params)
   }
 }
