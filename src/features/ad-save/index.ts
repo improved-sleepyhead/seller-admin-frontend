@@ -1,2 +1,2 @@
-export { mapAdEditFormValuesToItemUpdateIn, useSaveAd } from "./model"
+export { mapAdEditFormValuesToItemPatchIn, useSaveAd } from "./model"
 export { SaveAdButton } from "./ui"

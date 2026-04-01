@@ -18,6 +18,7 @@ export function CancelEditButton({
 
   return (
     <Button
+      className="min-w-28"
       disabled={disabled}
       size="sm"
       type="button"

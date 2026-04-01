@@ -1,4 +1,4 @@
-export { mapAdEditFormValuesToItemUpdateIn } from "./ad-save.payload"
+export { mapAdEditFormValuesToItemPatchIn } from "./ad-save.payload"
 export {
   clearAdDraftAndChatStorage,
   getAdAiChatStorageKey,
