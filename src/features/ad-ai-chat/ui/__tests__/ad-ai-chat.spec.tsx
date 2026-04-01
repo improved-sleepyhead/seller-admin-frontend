@@ -12,8 +12,7 @@ import { type ReactElement } from "react"
 import { useForm } from "react-hook-form"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 
-import type { AdEditFormValues } from "@/entities/ad/model"
-import { draftRegistryStore } from "@/shared/lib/draft-registry-store"
+import { draftRegistryStore, type AdEditFormValues } from "@/entities/ad/model"
 
 import { AdAiChat } from "../ad-ai-chat"
 
