@@ -8,13 +8,19 @@ export {
 } from "./ads-list-navigation-state"
 export type { AdsListNavigationState } from "./ads-list-navigation-state"
 export {
-  adsListStateStore,
   getAdsListUrlParamsFromState,
+  hydrateAdsListStateFromUrl,
+  subscribeToAdsListState,
   useAdsListState
 } from "./ads-list-state.store"
 export type { AdsListState } from "./ads-list-state.store"
 export { doesNeedRevision, getMissingFields } from "./ad.revision"
-export { draftRegistryStore } from "./draft-registry.store"
+export {
+  clearDraftRegistryMeta,
+  getDraftRegistryMeta,
+  resetDraftRegistryStore,
+  upsertDraftRegistryMeta
+} from "./draft-registry.store"
 export { getFilledSpecs } from "./ad.specs"
 export type {
   Ad,

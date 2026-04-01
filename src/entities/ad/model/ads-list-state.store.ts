@@ -32,7 +32,6 @@ export interface AdsListState extends AdsListUrlParams {
 }
 
 type AdsListStateStoreApi = StoreApi<AdsListState>
-const ADS_LIST_STATE_STORE_KEY = "__SELLER_ADMIN_ADS_LIST_STATE_STORE__"
 
 function createInitialUrlParams(): AdsListUrlParams {
   return {
@@ -142,13 +141,7 @@ function createAdsListStateStore(): AdsListStateStoreApi {
   }))
 }
 
-const storeRegistry = globalThis as typeof globalThis & {
-  [ADS_LIST_STATE_STORE_KEY]?: AdsListStateStoreApi
-}
-
-storeRegistry[ADS_LIST_STATE_STORE_KEY] ??= createAdsListStateStore()
-
-export const adsListStateStore = storeRegistry[ADS_LIST_STATE_STORE_KEY]
+const adsListStateStore = createAdsListStateStore()
 
 export function useAdsListState<Selected>(
   selector: (state: AdsListState) => Selected
@@ -158,4 +151,12 @@ export function useAdsListState<Selected>(
 
 export function getAdsListUrlParamsFromState(): AdsListUrlParams {
   return selectUrlParams(adsListStateStore.getState())
+}
+
+export function hydrateAdsListStateFromUrl(nextParams: AdsListUrlParams): void {
+  adsListStateStore.getState().hydrateFromUrl(nextParams)
+}
+
+export function subscribeToAdsListState(listener: () => void): () => void {
+  return adsListStateStore.subscribe(listener)
 }

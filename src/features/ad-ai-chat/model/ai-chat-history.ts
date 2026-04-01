@@ -1,6 +1,11 @@
 import { z } from "zod/v4"
 
-import { draftRegistryStore, type AiChatMessage } from "@/entities/ad/model"
+import {
+  clearDraftRegistryMeta,
+  getDraftRegistryMeta,
+  upsertDraftRegistryMeta,
+  type AiChatMessage
+} from "@/entities/ad/model"
 
 const AI_CHAT_STORAGE_KEY_PREFIX = "ad-ai-chat:v1:"
 const LEGACY_AI_CHAT_STORAGE_KEY_PREFIX = "ad-ai-chat:"
@@ -47,11 +52,11 @@ function normalizeStreamingMessage(message: AiChatMessage): AiChatMessage {
 }
 
 function syncChatMetadata(itemId: number, hasChatHistory: boolean): void {
-  const draftMeta = draftRegistryStore.getState().drafts[itemId]
+  const draftMeta = getDraftRegistryMeta(itemId)
   const hasDraft = draftMeta?.hasDraft ?? false
 
   if (hasChatHistory) {
-    draftRegistryStore.getState().upsertDraftMeta(itemId, {
+    upsertDraftRegistryMeta(itemId, {
       hasChatHistory: true,
       hasDraft,
       updatedAt: new Date().toISOString()
@@ -61,11 +66,11 @@ function syncChatMetadata(itemId: number, hasChatHistory: boolean): void {
   }
 
   if (!hasDraft) {
-    draftRegistryStore.getState().clearDraftMeta(itemId)
+    clearDraftRegistryMeta(itemId)
     return
   }
 
-  draftRegistryStore.getState().upsertDraftMeta(itemId, {
+  upsertDraftRegistryMeta(itemId, {
     hasChatHistory: false,
     hasDraft: true,
     updatedAt: new Date().toISOString()

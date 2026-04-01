@@ -12,7 +12,10 @@ import { type ReactElement } from "react"
 import { useForm } from "react-hook-form"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 
-import { draftRegistryStore, type AdEditFormValues } from "@/entities/ad/model"
+import {
+  resetDraftRegistryStore,
+  type AdEditFormValues
+} from "@/entities/ad/model"
 
 import { AdAiChat } from "../ad-ai-chat"
 
@@ -102,7 +105,7 @@ describe("AdAiChat", () => {
 
     window.localStorage.clear()
     window.sessionStorage.clear()
-    draftRegistryStore.setState({ drafts: {} })
+    resetDraftRegistryStore()
   })
 
   afterEach(() => {

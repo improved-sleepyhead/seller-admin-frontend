@@ -19,7 +19,6 @@ interface AdDraftState {
 }
 
 type AdDraftStateStoreApi = StoreApi<AdDraftState>
-const AD_DRAFT_STATE_STORE_KEY = "__SELLER_ADMIN_AD_DRAFT_STATE_STORE__"
 
 const INITIAL_SESSION_STATE: AdDraftSessionState = {
   draftSavedAt: null,
@@ -131,13 +130,7 @@ function createAdDraftStateStore(): AdDraftStateStoreApi {
   }))
 }
 
-const storeRegistry = globalThis as typeof globalThis & {
-  [AD_DRAFT_STATE_STORE_KEY]?: AdDraftStateStoreApi
-}
-
-storeRegistry[AD_DRAFT_STATE_STORE_KEY] ??= createAdDraftStateStore()
-
-export const adDraftStateStore = storeRegistry[AD_DRAFT_STATE_STORE_KEY]
+const adDraftStateStore = createAdDraftStateStore()
 
 export function useAdDraftSessionSelector<Selected>(
   itemId: number,
@@ -146,4 +139,27 @@ export function useAdDraftSessionSelector<Selected>(
   return useStore(adDraftStateStore, state =>
     selector(state.byItemId[itemId] ?? INITIAL_SESSION_STATE)
   )
+}
+
+export function closeAdDraftRestoreDialog(itemId: number): void {
+  adDraftStateStore.getState().closeRestoreDialog(itemId)
+}
+
+export function markAdDraftRestorePending(itemId: number): void {
+  adDraftStateStore.getState().markRestorePending(itemId)
+}
+
+export function openAdDraftRestoreDialog(itemId: number, draft: AdDraft): void {
+  adDraftStateStore.getState().openRestoreDialog(itemId, draft)
+}
+
+export function resetAdDraftSession(itemId: number): void {
+  adDraftStateStore.getState().resetSession(itemId)
+}
+
+export function setAdDraftSavedAt(
+  itemId: number,
+  savedAt: string | null
+): void {
+  adDraftStateStore.getState().setDraftSavedAt(itemId, savedAt)
 }

@@ -2,11 +2,20 @@ import { debounce } from "lodash"
 import { useCallback, useEffect, useMemo } from "react"
 
 import type { AdDetailsDto } from "@/entities/ad/api"
-import { draftRegistryStore, type AdEditFormValues } from "@/entities/ad/model"
+import {
+  clearDraftRegistryMeta,
+  getDraftRegistryMeta,
+  upsertDraftRegistryMeta,
+  type AdEditFormValues
+} from "@/entities/ad/model"
 import { consumeSkipNextDraftAutosave } from "@/shared/lib/draft-autosave-guard"
 
 import {
-  adDraftStateStore,
+  closeAdDraftRestoreDialog,
+  markAdDraftRestorePending,
+  openAdDraftRestoreDialog,
+  resetAdDraftSession,
+  setAdDraftSavedAt,
   useAdDraftSessionSelector
 } from "./ad-draft-state.store"
 import {
@@ -41,9 +50,9 @@ function cloneDraftValues(values: AdEditFormValues): AdEditFormValues {
 }
 
 function upsertDraftMetadata(itemId: number, savedAt: string) {
-  const existingMeta = draftRegistryStore.getState().drafts[itemId]
+  const existingMeta = getDraftRegistryMeta(itemId)
 
-  draftRegistryStore.getState().upsertDraftMeta(itemId, {
+  upsertDraftRegistryMeta(itemId, {
     hasChatHistory: existingMeta?.hasChatHistory ?? false,
     hasDraft: true,
     updatedAt: savedAt
@@ -51,14 +60,14 @@ function upsertDraftMetadata(itemId: number, savedAt: string) {
 }
 
 function clearDraftMetadata(itemId: number) {
-  const existingMeta = draftRegistryStore.getState().drafts[itemId]
+  const existingMeta = getDraftRegistryMeta(itemId)
 
   if (!existingMeta?.hasChatHistory) {
-    draftRegistryStore.getState().clearDraftMeta(itemId)
+    clearDraftRegistryMeta(itemId)
     return
   }
 
-  draftRegistryStore.getState().upsertDraftMeta(itemId, {
+  upsertDraftRegistryMeta(itemId, {
     hasChatHistory: true,
     hasDraft: false,
     updatedAt: new Date().toISOString()
@@ -111,17 +120,17 @@ export function useAdDraft({
     const draft = readAdDraft(itemId)
 
     if (draft === null) {
-      adDraftStateStore.getState().resetSession(itemId)
+      resetAdDraftSession(itemId)
       return
     }
 
-    adDraftStateStore.getState().setDraftSavedAt(itemId, draft.savedAt)
+    setAdDraftSavedAt(itemId, draft.savedAt)
 
     if (!isDraftDifferentFromServer(draft.form, serverSnapshot)) {
       return
     }
 
-    adDraftStateStore.getState().openRestoreDialog(itemId, draft)
+    openAdDraftRestoreDialog(itemId, draft)
   }, [ad, entryRevision, itemId, serverHash, serverSnapshot])
 
   useEffect(() => {
@@ -138,14 +147,14 @@ export function useAdDraft({
       if (consumeSkipNextDraftAutosave(itemId)) {
         removeAdDraft(itemId)
         clearDraftMetadata(itemId)
-        adDraftStateStore.getState().setDraftSavedAt(itemId, null)
+        setAdDraftSavedAt(itemId, null)
         return
       }
 
       if (!isDraftDifferentFromServer(values, serverSnapshot)) {
         removeAdDraft(itemId)
         clearDraftMetadata(itemId)
-        adDraftStateStore.getState().setDraftSavedAt(itemId, null)
+        setAdDraftSavedAt(itemId, null)
         return
       }
 
@@ -158,7 +167,7 @@ export function useAdDraft({
         serverHash
       })
       upsertDraftMetadata(itemId, savedAt)
-      adDraftStateStore.getState().setDraftSavedAt(itemId, savedAt)
+      setAdDraftSavedAt(itemId, savedAt)
     }
 
     const debouncedSave = debounce((values: AdEditFormValues) => {
@@ -194,15 +203,13 @@ export function useAdDraft({
     }
 
     if (form === null) {
-      adDraftStateStore.getState().markRestorePending(itemId)
+      markAdDraftRestorePending(itemId)
       return
     }
 
     form.reset(restoreCandidate.form)
-    adDraftStateStore
-      .getState()
-      .setDraftSavedAt(itemId, restoreCandidate.savedAt)
-    adDraftStateStore.getState().closeRestoreDialog(itemId)
+    setAdDraftSavedAt(itemId, restoreCandidate.savedAt)
+    closeAdDraftRestoreDialog(itemId)
   }, [form, itemId, restoreCandidate])
 
   useEffect(() => {
@@ -211,16 +218,14 @@ export function useAdDraft({
     }
 
     form.reset(restoreCandidate.form)
-    adDraftStateStore
-      .getState()
-      .setDraftSavedAt(itemId, restoreCandidate.savedAt)
-    adDraftStateStore.getState().closeRestoreDialog(itemId)
+    setAdDraftSavedAt(itemId, restoreCandidate.savedAt)
+    closeAdDraftRestoreDialog(itemId)
   }, [form, itemId, pendingRestore, restoreCandidate])
 
   const useServerVersion = useCallback(() => {
     removeAdDraft(itemId)
     clearDraftMetadata(itemId)
-    adDraftStateStore.getState().resetSession(itemId)
+    resetAdDraftSession(itemId)
   }, [itemId])
 
   return {

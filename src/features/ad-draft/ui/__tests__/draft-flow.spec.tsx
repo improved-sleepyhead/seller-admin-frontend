@@ -13,7 +13,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 
 import type { AdDetailsDto } from "@/entities/ad/api"
 import {
-  draftRegistryStore,
+  resetDraftRegistryStore,
   type AdDraft,
   type AdEditFormValues
 } from "@/entities/ad/model"
@@ -123,7 +123,7 @@ describe("Draft restore flow", () => {
     vi.useRealTimers()
     window.localStorage.clear()
     window.sessionStorage.clear()
-    draftRegistryStore.setState({ drafts: {} })
+    resetDraftRegistryStore()
   })
 
   afterEach(() => {

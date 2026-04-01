@@ -15,7 +15,6 @@ export interface DraftRegistryState {
 }
 
 type DraftRegistryStoreApi = StoreApi<DraftRegistryState>
-const DRAFT_REGISTRY_STORE_KEY = "__SELLER_ADMIN_DRAFT_REGISTRY_STORE__"
 
 function mergeDraftMeta(
   existingMeta: DraftMeta | undefined,
@@ -53,10 +52,23 @@ function createDraftRegistryStore(): DraftRegistryStoreApi {
   }))
 }
 
-const storeRegistry = globalThis as typeof globalThis & {
-  [DRAFT_REGISTRY_STORE_KEY]?: DraftRegistryStoreApi
+const draftRegistryStore = createDraftRegistryStore()
+
+export function getDraftRegistryMeta(itemId: number): DraftMeta | undefined {
+  return draftRegistryStore.getState().drafts[itemId]
 }
 
-storeRegistry[DRAFT_REGISTRY_STORE_KEY] ??= createDraftRegistryStore()
+export function upsertDraftRegistryMeta(
+  itemId: number,
+  metaPatch: DraftMetaPatch
+): void {
+  draftRegistryStore.getState().upsertDraftMeta(itemId, metaPatch)
+}
 
-export const draftRegistryStore = storeRegistry[DRAFT_REGISTRY_STORE_KEY]
+export function clearDraftRegistryMeta(itemId: number): void {
+  draftRegistryStore.getState().clearDraftMeta(itemId)
+}
+
+export function resetDraftRegistryStore(): void {
+  draftRegistryStore.setState({ drafts: {} })
+}
