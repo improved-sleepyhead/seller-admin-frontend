@@ -28,27 +28,13 @@ interface AiDescriptionActionProps {
 }
 
 interface AiDescriptionResultContentProps {
-  applySuggestion: () => void
-  cancelRequest: () => void
-  closeResult: () => void
-  errorMessage: string | null
-  isPending: boolean
-  retrySuggestion: () => Promise<void>
-  suggestionText: string | null
-  viewDiff: () => void
+  action: ReturnType<typeof useAiDescriptionAction>
 }
 
 function AiDescriptionResultContent({
-  applySuggestion,
-  cancelRequest,
-  closeResult,
-  errorMessage,
-  isPending,
-  retrySuggestion,
-  suggestionText,
-  viewDiff
+  action
 }: AiDescriptionResultContentProps) {
-  if (isPending) {
+  if (action.request.isPending) {
     return (
       <div className="space-y-4">
         <p className="flex items-center gap-2 text-sm">
@@ -59,7 +45,7 @@ function AiDescriptionResultContent({
           className="w-full"
           type="button"
           variant="outline"
-          onClick={cancelRequest}
+          onClick={action.request.cancel}
         >
           Отменить запрос
         </Button>
@@ -67,16 +53,18 @@ function AiDescriptionResultContent({
     )
   }
 
-  if (errorMessage !== null) {
+  if (action.request.errorMessage !== null) {
     return (
       <div className="space-y-4">
-        <p className="text-destructive text-sm">{errorMessage}</p>
+        <p className="text-destructive text-sm">
+          {action.request.errorMessage}
+        </p>
         <div className="flex flex-col gap-2">
           <Button
             className="w-full"
             type="button"
             onClick={() => {
-              void retrySuggestion()
+              void action.request.retry()
             }}
           >
             Повторить запрос
@@ -85,7 +73,7 @@ function AiDescriptionResultContent({
             className="w-full"
             type="button"
             variant="outline"
-            onClick={closeResult}
+            onClick={action.panel.close}
           >
             Закрыть
           </Button>
@@ -94,7 +82,7 @@ function AiDescriptionResultContent({
     )
   }
 
-  if (suggestionText === null) {
+  if (action.suggestion.text === null) {
     return null
   }
 
@@ -102,17 +90,21 @@ function AiDescriptionResultContent({
     <div className="space-y-4">
       <div className="space-y-1">
         <p className="text-muted-foreground text-xs">Предложенный текст</p>
-        <p className="text-sm whitespace-pre-wrap">{suggestionText}</p>
+        <p className="text-sm whitespace-pre-wrap">{action.suggestion.text}</p>
       </div>
       <div className="flex flex-col gap-2">
-        <Button className="w-full" type="button" onClick={applySuggestion}>
+        <Button
+          className="w-full"
+          type="button"
+          onClick={action.suggestion.apply}
+        >
           Применить
         </Button>
         <Button
           className="w-full"
           type="button"
           variant="outline"
-          onClick={viewDiff}
+          onClick={action.diff.open}
         >
           Сравнить изменения
         </Button>
@@ -120,7 +112,7 @@ function AiDescriptionResultContent({
           className="w-full"
           type="button"
           variant="secondary"
-          onClick={closeResult}
+          onClick={action.panel.close}
         >
           Закрыть
         </Button>
@@ -133,24 +125,7 @@ export function AiDescriptionAction({
   disabled,
   form
 }: AiDescriptionActionProps) {
-  const {
-    applySuggestion,
-    cancelRequest,
-    canRequestSuggestion,
-    closeDiffViewer,
-    closeResult,
-    errorMessage,
-    isDiffViewerOpen,
-    isMobile,
-    isPending,
-    isResultOpen,
-    requestSuggestion,
-    retrySuggestion,
-    setResultOpen,
-    suggestionText,
-    viewDiff,
-    visibleDiff
-  } = useAiDescriptionAction({
+  const action = useAiDescriptionAction({
     disabled,
     form
   })
@@ -158,14 +133,14 @@ export function AiDescriptionAction({
   const triggerButton = (
     <Button
       className="w-full"
-      disabled={!canRequestSuggestion}
+      disabled={!action.request.canStart}
       type="button"
       variant="outline"
       onClick={() => {
-        void requestSuggestion()
+        void action.request.start()
       }}
     >
-      {isPending ? (
+      {action.request.isPending ? (
         <>
           <Loader2Icon className="size-4 animate-spin" />
           Генерируем описание...
@@ -176,25 +151,14 @@ export function AiDescriptionAction({
     </Button>
   )
 
-  const resultContent = (
-    <AiDescriptionResultContent
-      applySuggestion={applySuggestion}
-      cancelRequest={cancelRequest}
-      closeResult={closeResult}
-      errorMessage={errorMessage}
-      isPending={isPending}
-      retrySuggestion={retrySuggestion}
-      suggestionText={suggestionText}
-      viewDiff={viewDiff}
-    />
-  )
+  const resultContent = <AiDescriptionResultContent action={action} />
 
   return (
     <>
-      {isMobile ? (
+      {action.panel.isMobile ? (
         <>
           {triggerButton}
-          <Sheet open={isResultOpen} onOpenChange={setResultOpen}>
+          <Sheet open={action.panel.isOpen} onOpenChange={action.panel.setOpen}>
             <SheetContent side="bottom">
               <SheetHeader>
                 <SheetTitle>AI-улучшение описания</SheetTitle>
@@ -208,7 +172,7 @@ export function AiDescriptionAction({
           </Sheet>
         </>
       ) : (
-        <Popover open={isResultOpen} onOpenChange={setResultOpen}>
+        <Popover open={action.panel.isOpen} onOpenChange={action.panel.setOpen}>
           <PopoverAnchor asChild>{triggerButton}</PopoverAnchor>
           <PopoverContent align="start" className="w-[26rem] space-y-4">
             <div className="space-y-1">
@@ -223,16 +187,16 @@ export function AiDescriptionAction({
       )}
 
       <Suspense fallback={null}>
-        {isDiffViewerOpen ? (
+        {action.diff.isOpen ? (
           <LazyAdDiffViewer
-            diff={visibleDiff}
-            isMobile={isMobile}
+            diff={action.diff.value}
+            isMobile={action.panel.isMobile}
             onOpenChange={nextOpen => {
               if (!nextOpen) {
-                closeDiffViewer()
+                action.diff.close()
               }
             }}
-            open={isDiffViewerOpen}
+            open={action.diff.isOpen}
           />
         ) : null}
       </Suspense>
