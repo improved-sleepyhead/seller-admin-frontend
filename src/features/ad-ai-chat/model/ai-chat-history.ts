@@ -1,7 +1,6 @@
 import { z } from "zod/v4"
 
-import type { AiChatMessage } from "@/entities/ad/model"
-import { draftRegistryStore } from "@/shared/lib/draft-registry-store"
+import { draftRegistryStore, type AiChatMessage } from "@/entities/ad/model"
 
 const AI_CHAT_STORAGE_KEY_PREFIX = "ad-ai-chat:v1:"
 const LEGACY_AI_CHAT_STORAGE_KEY_PREFIX = "ad-ai-chat:"

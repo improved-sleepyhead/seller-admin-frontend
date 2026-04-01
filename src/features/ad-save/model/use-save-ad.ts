@@ -5,11 +5,11 @@ import { toast } from "sonner"
 
 import { adsKeys, updateAdMutation } from "@/entities/ad/api"
 import {
+  draftRegistryStore,
   type AdEditFormValues,
   type AdsListNavigationState
 } from "@/entities/ad/model"
 import { isAppApiError } from "@/shared/api/error"
-import { draftRegistryStore } from "@/shared/lib/draft-registry-store"
 
 import { mapAdEditFormValuesToItemUpdateIn } from "./ad-save.payload"
 import { clearAdDraftAndChatStorage } from "./ad-save.storage"

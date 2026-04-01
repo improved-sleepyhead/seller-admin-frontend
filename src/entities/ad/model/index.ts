@@ -14,6 +14,7 @@ export {
 } from "./ads-list-state.store"
 export type { AdsListState } from "./ads-list-state.store"
 export { doesNeedRevision, getMissingFields } from "./ad.revision"
+export { draftRegistryStore } from "./draft-registry.store"
 export { getFilledSpecs } from "./ad.specs"
 export type {
   Ad,
@@ -22,3 +23,8 @@ export type {
   AiChatMessage,
   FilledSpec
 } from "./ad.types"
+export type {
+  DraftMeta,
+  DraftMetaPatch,
+  DraftRegistryState
+} from "./draft-registry.store"
