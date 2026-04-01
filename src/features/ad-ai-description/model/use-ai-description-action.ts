@@ -21,23 +21,39 @@ interface UseAiDescriptionActionOptions {
   form: AdEditFormApi | null
 }
 
-interface UseAiDescriptionActionResult {
-  applySuggestion: () => void
-  cancelRequest: () => void
-  canRequestSuggestion: boolean
-  closeDiffViewer: () => void
-  closeResult: () => void
+interface AiDescriptionRequestController {
+  canStart: boolean
+  cancel: () => void
   errorMessage: string | null
-  isDiffViewerOpen: boolean
-  isMobile: boolean
   isPending: boolean
-  isResultOpen: boolean
-  requestSuggestion: () => Promise<void>
-  retrySuggestion: () => Promise<void>
-  setResultOpen: (nextOpen: boolean) => void
-  suggestionText: string | null
-  viewDiff: () => void
-  visibleDiff: DescriptionDiffModel | null
+  retry: () => Promise<void>
+  start: () => Promise<void>
+}
+
+interface AiDescriptionPanelController {
+  close: () => void
+  isMobile: boolean
+  isOpen: boolean
+  setOpen: (nextOpen: boolean) => void
+}
+
+interface AiDescriptionSuggestionController {
+  apply: () => void
+  text: string | null
+}
+
+interface AiDescriptionDiffController {
+  close: () => void
+  isOpen: boolean
+  open: () => void
+  value: DescriptionDiffModel | null
+}
+
+interface UseAiDescriptionActionResult {
+  diff: AiDescriptionDiffController
+  panel: AiDescriptionPanelController
+  request: AiDescriptionRequestController
+  suggestion: AiDescriptionSuggestionController
 }
 
 function getAiDescriptionErrorMessage(error: unknown): string {
@@ -241,23 +257,31 @@ export function useAiDescriptionAction({
   }, [])
 
   return {
-    applySuggestion,
-    cancelRequest,
-    canRequestSuggestion:
-      !disabled && form !== null && !mutation.isPending && !isPreparing,
-    closeDiffViewer,
-    closeResult,
-    errorMessage,
-    isDiffViewerOpen,
-    isMobile,
-    isPending: mutation.isPending || isPreparing,
-    isResultOpen,
-    requestSuggestion,
-    retrySuggestion,
-    setResultOpen,
-    suggestionText: response?.suggestion ?? null,
-    viewDiff,
-    visibleDiff
+    diff: {
+      close: closeDiffViewer,
+      isOpen: isDiffViewerOpen,
+      open: viewDiff,
+      value: visibleDiff
+    },
+    panel: {
+      close: closeResult,
+      isMobile,
+      isOpen: isResultOpen,
+      setOpen: setResultOpen
+    },
+    request: {
+      canStart:
+        !disabled && form !== null && !mutation.isPending && !isPreparing,
+      cancel: cancelRequest,
+      errorMessage,
+      isPending: mutation.isPending || isPreparing,
+      retry: retrySuggestion,
+      start: requestSuggestion
+    },
+    suggestion: {
+      apply: applySuggestion,
+      text: response?.suggestion ?? null
+    }
   }
 }
 

@@ -16,19 +16,31 @@ interface UseAiPriceActionOptions {
   form: AdEditFormApi | null
 }
 
-interface UseAiPriceActionResult {
-  applySuggestion: () => void
-  canRequestSuggestion: boolean
-  cancelRequest: () => void
-  closeResult: () => void
+interface AiPriceRequestController {
+  canStart: boolean
+  cancel: () => void
   errorMessage: string | null
-  isMobile: boolean
   isPending: boolean
-  isResultOpen: boolean
-  requestSuggestion: () => Promise<void>
+  retry: () => Promise<void>
+  start: () => Promise<void>
+}
+
+interface AiPricePanelController {
+  close: () => void
+  isMobile: boolean
+  isOpen: boolean
+  setOpen: (nextOpen: boolean) => void
+}
+
+interface AiPriceSuggestionController {
+  apply: () => void
   response: AiPriceResponse | null
-  retrySuggestion: () => Promise<void>
-  setResultOpen: (nextOpen: boolean) => void
+}
+
+interface UseAiPriceActionResult {
+  panel: AiPricePanelController
+  request: AiPriceRequestController
+  suggestion: AiPriceSuggestionController
 }
 
 function getAiPriceErrorMessage(error: unknown): string {
@@ -199,19 +211,25 @@ export function useAiPriceAction({
   }, [])
 
   return {
-    applySuggestion,
-    canRequestSuggestion:
-      !disabled && form !== null && !mutation.isPending && !isPreparing,
-    cancelRequest,
-    closeResult,
-    errorMessage,
-    isMobile,
-    isPending: mutation.isPending || isPreparing,
-    isResultOpen,
-    requestSuggestion,
-    response,
-    retrySuggestion,
-    setResultOpen
+    panel: {
+      close: closeResult,
+      isMobile,
+      isOpen: isResultOpen,
+      setOpen: setResultOpen
+    },
+    request: {
+      canStart:
+        !disabled && form !== null && !mutation.isPending && !isPreparing,
+      cancel: cancelRequest,
+      errorMessage,
+      isPending: mutation.isPending || isPreparing,
+      retry: retrySuggestion,
+      start: requestSuggestion
+    },
+    suggestion: {
+      apply: applySuggestion,
+      response
+    }
   }
 }
 
