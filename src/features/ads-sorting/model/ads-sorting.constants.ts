@@ -1,4 +1,4 @@
-import type { AdSortColumn, AdSortDirection } from "@/entities/ad"
+import type { AdSortColumn, AdSortDirection } from "@/entities/ad/api"
 
 interface SortColumnOption {
   label: string

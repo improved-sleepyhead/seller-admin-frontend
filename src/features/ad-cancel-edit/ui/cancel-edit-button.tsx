@@ -1,4 +1,4 @@
-import type { AdsListNavigationState } from "@/entities/ad"
+import type { AdsListNavigationState } from "@/entities/ad/model"
 import { Button } from "@/shared/ui/shadcn"
 
 import { useCancelEdit } from "../model"

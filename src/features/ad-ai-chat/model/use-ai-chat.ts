@@ -1,11 +1,11 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 
+import type { AiChatRequest } from "@/entities/ad/api"
 import {
   ensureValidAiPayload,
   type AdEditFormApi,
-  type AiChatMessage,
-  type AiChatRequest
-} from "@/entities/ad"
+  type AiChatMessage
+} from "@/entities/ad/model"
 import { isAppApiError } from "@/shared/api/error"
 
 import { readAdAiChatHistory, saveAdAiChatHistory } from "./ai-chat-history"

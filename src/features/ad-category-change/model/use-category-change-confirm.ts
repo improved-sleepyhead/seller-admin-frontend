@@ -1,6 +1,6 @@
 import { useCallback, useState } from "react"
 
-import type { AdEditFormValues } from "@/entities/ad"
+import type { AdEditFormValues } from "@/entities/ad/model"
 
 interface CategoryChangeRequest {
   nextCategory: AdEditFormValues["category"]

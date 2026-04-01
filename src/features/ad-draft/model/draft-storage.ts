@@ -1,4 +1,4 @@
-import type { AdDraft } from "@/entities/ad"
+import type { AdDraft } from "@/entities/ad/model"
 
 import { AdDraftSchema } from "./ad-draft.schema"
 import { getAdDraftStorageKey, getLegacyAdDraftStorageKey } from "./draft-keys"

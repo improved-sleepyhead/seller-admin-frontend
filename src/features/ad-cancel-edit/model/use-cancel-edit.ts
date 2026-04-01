@@ -1,7 +1,7 @@
 import { useCallback } from "react"
 import { useNavigate } from "react-router-dom"
 
-import type { AdsListNavigationState } from "@/entities/ad"
+import type { AdsListNavigationState } from "@/entities/ad/model"
 
 interface UseCancelEditOptions {
   itemId: number

@@ -1,6 +1,8 @@
 import { AlertTriangle } from "lucide-react"
 import { Link } from "react-router-dom"
 
+import type { AdDetailsVM } from "@/entities/ad/api"
+import type { AdsListNavigationState } from "@/entities/ad/model"
 import {
   AdDescription,
   AdImage,
@@ -8,8 +10,6 @@ import {
   AdRevisionBadge,
   AdSpecsList
 } from "@/entities/ad/ui"
-import type { AdDetailsVM } from "@/entities/ad/api"
-import type { AdsListNavigationState } from "@/entities/ad/model"
 import {
   Button,
   Card,

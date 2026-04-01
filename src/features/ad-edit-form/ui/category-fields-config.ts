@@ -1,4 +1,4 @@
-import type { AdEditFormValues } from "@/entities/ad"
+import type { AdEditFormValues } from "@/entities/ad/model"
 
 export type AdCategory = AdEditFormValues["category"]
 

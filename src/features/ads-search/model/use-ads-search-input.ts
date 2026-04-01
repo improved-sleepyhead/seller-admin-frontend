@@ -1,7 +1,7 @@
 import { debounce } from "lodash"
 import { useCallback, useEffect, useMemo, useState } from "react"
 
-import { useAdsListState } from "@/entities/ad"
+import { useAdsListState } from "@/entities/ad/model"
 
 const SEARCH_DEBOUNCE_MS = 400
 

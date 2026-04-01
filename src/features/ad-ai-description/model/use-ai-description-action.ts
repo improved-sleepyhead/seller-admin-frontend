@@ -2,12 +2,11 @@ import { useMutation } from "@tanstack/react-query"
 import { useCallback, useEffect, useRef, useState } from "react"
 
 import {
-  ensureValidAiPayload,
-  type AdEditFormApi,
   requestAiDescription,
   type AiDescriptionResponse,
   type ItemUpdateIn
-} from "@/entities/ad"
+} from "@/entities/ad/api"
+import { ensureValidAiPayload, type AdEditFormApi } from "@/entities/ad/model"
 import { isAppApiError } from "@/shared/api/error"
 
 const MOBILE_MEDIA_QUERY = "(max-width: 767px)"

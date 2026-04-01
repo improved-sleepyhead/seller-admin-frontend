@@ -1,6 +1,6 @@
 import { z } from "zod/v4"
 
-import { AiUsageSchema } from "@/entities/ad"
+import { AiUsageSchema } from "@/entities/ad/api"
 
 import { BackendErrorSchema } from "./ai-chat.transport-errors"
 

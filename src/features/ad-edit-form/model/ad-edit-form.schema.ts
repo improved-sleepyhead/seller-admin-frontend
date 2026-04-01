@@ -1,6 +1,7 @@
 import { z } from "zod/v4"
 
-import { AD_CATEGORIES, type AdEditFormValues } from "@/entities/ad"
+import { AD_CATEGORIES } from "@/entities/ad/api"
+import type { AdEditFormValues } from "@/entities/ad/model"
 
 const PriceSchema = z.union([z.number(), z.string()]).refine(value => {
   if (typeof value === "number") {

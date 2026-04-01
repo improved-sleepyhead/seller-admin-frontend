@@ -3,12 +3,11 @@ import { useCallback } from "react"
 import { useNavigate } from "react-router-dom"
 import { toast } from "sonner"
 
+import { adsKeys, updateAdMutation } from "@/entities/ad/api"
 import {
-  adsKeys,
-  updateAdMutation,
   type AdEditFormValues,
   type AdsListNavigationState
-} from "@/entities/ad"
+} from "@/entities/ad/model"
 import { isAppApiError } from "@/shared/api/error"
 import { draftRegistryStore } from "@/shared/lib/draft-registry-store"
 

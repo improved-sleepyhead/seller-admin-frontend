@@ -1,6 +1,7 @@
 import { useCallback } from "react"
 
-import { AD_CATEGORIES, type AdCategory, useAdsListState } from "@/entities/ad"
+import { AD_CATEGORIES, type AdCategory } from "@/entities/ad/api"
+import { useAdsListState } from "@/entities/ad/model"
 
 interface UseAdsFilteringResult {
   categories: AdCategory[]

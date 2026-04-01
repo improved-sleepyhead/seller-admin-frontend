@@ -1,4 +1,4 @@
-import type { AiChatRequest, AiUsageDto } from "@/entities/ad"
+import type { AiChatRequest, AiUsageDto } from "@/entities/ad/api"
 
 export interface AiChatStreamMetaData {
   model: string

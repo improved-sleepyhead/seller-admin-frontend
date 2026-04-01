@@ -1,7 +1,8 @@
 import { debounce } from "lodash"
 import { useCallback, useEffect, useMemo } from "react"
 
-import type { AdDetailsDto, AdEditFormValues } from "@/entities/ad"
+import type { AdDetailsDto } from "@/entities/ad/api"
+import type { AdEditFormValues } from "@/entities/ad/model"
 import { consumeSkipNextDraftAutosave } from "@/shared/lib/draft-autosave-guard"
 import { draftRegistryStore } from "@/shared/lib/draft-registry-store"
 

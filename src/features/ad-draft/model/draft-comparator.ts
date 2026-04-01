@@ -1,4 +1,5 @@
-import type { AdDetailsDto, AdEditFormValues } from "@/entities/ad"
+import type { AdDetailsDto } from "@/entities/ad/api"
+import type { AdEditFormValues } from "@/entities/ad/model"
 
 const NUMERIC_PARAM_KEYS = new Set([
   "area",

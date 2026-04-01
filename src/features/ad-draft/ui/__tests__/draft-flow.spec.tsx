@@ -11,7 +11,8 @@ import {
 import { useForm } from "react-hook-form"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 
-import type { AdDetailsDto, AdDraft, AdEditFormValues } from "@/entities/ad"
+import type { AdDetailsDto } from "@/entities/ad/api"
+import type { AdDraft, AdEditFormValues } from "@/entities/ad/model"
 import { draftRegistryStore } from "@/shared/lib/draft-registry-store"
 
 import { getAdDraftStorageKey, useAdDraft } from "../../model"

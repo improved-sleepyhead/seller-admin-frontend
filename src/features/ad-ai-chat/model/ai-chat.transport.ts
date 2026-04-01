@@ -1,4 +1,4 @@
-import type { AiChatRequest } from "@/entities/ad"
+import type { AiChatRequest } from "@/entities/ad/api"
 import { apiClient } from "@/shared/api/client"
 import { AppApiError } from "@/shared/api/error"
 

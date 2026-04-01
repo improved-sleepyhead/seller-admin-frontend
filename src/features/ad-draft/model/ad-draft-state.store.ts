@@ -1,6 +1,6 @@
 import { createStore, type StoreApi, useStore } from "zustand"
 
-import type { AdDraft } from "@/entities/ad"
+import type { AdDraft } from "@/entities/ad/model"
 
 interface AdDraftSessionState {
   draftSavedAt: string | null
