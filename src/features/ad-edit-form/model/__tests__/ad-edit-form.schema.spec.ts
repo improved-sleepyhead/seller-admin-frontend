@@ -6,7 +6,12 @@ const validForm = {
   category: "auto" as const,
   description: "Описание",
   params: {
-    brand: "Toyota"
+    brand: "Toyota",
+    enginePower: 150,
+    mileage: 150000,
+    model: "Camry",
+    transmission: "automatic",
+    yearOfManufacture: 2018
   },
   price: 1000000,
   title: "Заголовок"
@@ -71,5 +76,47 @@ describe("AdEditFormSchema", () => {
     })
 
     expect(parseResult.success).toBe(true)
+  })
+
+  it("should reject auto params with empty required strings", () => {
+    const parseResult = AdEditFormSchema.safeParse({
+      ...validForm,
+      params: {
+        ...validForm.params,
+        brand: "   "
+      }
+    })
+
+    expect(parseResult.success).toBe(false)
+  })
+
+  it("should reject auto params with non-positive numbers", () => {
+    const parseResult = AdEditFormSchema.safeParse({
+      ...validForm,
+      params: {
+        ...validForm.params,
+        mileage: 0
+      }
+    })
+
+    expect(parseResult.success).toBe(false)
+  })
+
+  it("should reject electronics params with missing selects", () => {
+    const parseResult = AdEditFormSchema.safeParse({
+      category: "electronics",
+      description: "Описание",
+      params: {
+        brand: "Apple",
+        color: "Белый",
+        condition: "",
+        model: "iPhone",
+        type: ""
+      },
+      price: 1000,
+      title: "Телефон"
+    })
+
+    expect(parseResult.success).toBe(false)
   })
 })

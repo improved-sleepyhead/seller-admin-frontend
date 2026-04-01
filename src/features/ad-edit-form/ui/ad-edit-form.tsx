@@ -1,7 +1,11 @@
 // eslint-disable-next-line import/no-internal-modules -- zod resolver is provided by package subpath
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useEffect, type ComponentType } from "react"
-import { useForm, type UseFormReturn } from "react-hook-form"
+import {
+  useForm,
+  type Resolver,
+  type UseFormReturn
+} from "react-hook-form"
 
 import { AD_CATEGORIES, type AdDetailsDto } from "@/entities/ad/api"
 import { AD_CATEGORY_LABELS, type AdEditFormValues } from "@/entities/ad/model"
@@ -91,7 +95,11 @@ export function AdEditForm({
     mode: "onBlur",
     reValidateMode: "onBlur",
     shouldUnregister: true,
-    resolver: zodResolver(AdEditFormSchema)
+    resolver: zodResolver(AdEditFormSchema) as unknown as Resolver<
+      AdEditFormValues,
+      unknown,
+      AdEditFormValues
+    >
   })
   const { reset } = form
 
