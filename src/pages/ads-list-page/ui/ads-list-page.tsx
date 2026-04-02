@@ -7,7 +7,7 @@ import { useEffect, useMemo } from "react"
 
 import {
   adsListQuery,
-  adsKeys,
+  cancelAdsListQuery,
   mapAdsUrlParamsToListQuery
 } from "@/entities/ad/api"
 import { useAdsListState } from "@/entities/ad/model"
@@ -46,11 +46,6 @@ export function AdsListPage() {
       sortDirection
     })
   }, [categories, layout, needsRevision, page, q, sortColumn, sortDirection])
-  const listQueryKey = useMemo(
-    () => adsKeys.list(listQueryParams),
-    [listQueryParams]
-  )
-
   const adsQuery = useQuery({
     ...adsListQuery(listQueryParams),
     enabled: isHydrated,
@@ -59,12 +54,9 @@ export function AdsListPage() {
 
   useEffect(() => {
     return () => {
-      void queryClient.cancelQueries({
-        exact: true,
-        queryKey: listQueryKey
-      })
+      void cancelAdsListQuery(queryClient, listQueryParams)
     }
-  }, [listQueryKey, queryClient])
+  }, [listQueryParams, queryClient])
 
   const catalogContent = (() => {
     if (!isHydrated || (adsQuery.isPending && !adsQuery.data)) {
