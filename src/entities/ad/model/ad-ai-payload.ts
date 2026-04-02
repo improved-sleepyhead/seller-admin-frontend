@@ -7,18 +7,16 @@ import type { Path, UseFormReturn } from "react-hook-form"
 type AdEditFormApi = UseFormReturn<AdEditFormValues, unknown, AdEditFormValues>
 type AdEditFormPath = Path<AdEditFormValues>
 
-interface EnsureValidAiPayloadSuccess {
+interface ValidPayload {
   isValid: true
   payload: ItemUpdateIn
 }
 
-interface EnsureValidAiPayloadFailure {
+interface InvalidPayload {
   isValid: false
 }
 
-type EnsureValidAiPayloadResult =
-  | EnsureValidAiPayloadSuccess
-  | EnsureValidAiPayloadFailure
+type AiPayloadResult = ValidPayload | InvalidPayload
 
 const NUMERIC_FIELDS = new Set<AdEditFormPath>([
   "price",
@@ -88,7 +86,7 @@ interface AiPayloadBaseCandidate {
   title: string
 }
 
-const AI_PAYLOAD_CANDIDATE_BUILDERS = {
+const PAYLOAD_BUILDERS = {
   auto: (values: AdEditFormValues, basePayload: AiPayloadBaseCandidate) => ({
     ...basePayload,
     category: "auto",
@@ -133,19 +131,17 @@ const AI_PAYLOAD_CANDIDATE_BUILDERS = {
   (values: AdEditFormValues, basePayload: AiPayloadBaseCandidate) => unknown
 >
 
-function buildAiPayloadCandidate(values: AdEditFormValues): unknown {
+function buildPayload(values: AdEditFormValues): unknown {
   const basePayload = {
     title: values.title.trim(),
     description: toOptionalDescription(values.description),
     price: toStrictNumber(values.price)
   }
 
-  return AI_PAYLOAD_CANDIDATE_BUILDERS[values.category](values, basePayload)
+  return PAYLOAD_BUILDERS[values.category](values, basePayload)
 }
 
-function mapIssuePathToFieldPath(
-  path: readonly PropertyKey[]
-): AdEditFormPath | null {
+function getFieldPath(path: readonly PropertyKey[]): AdEditFormPath | null {
   const [rootSegment, nestedSegment] = path
 
   if (
@@ -184,14 +180,14 @@ function getFieldErrorMessage(fieldPath: AdEditFormPath): string {
   return "Заполните обязательное поле"
 }
 
-function applyPayloadValidationErrors(
+function applyFieldErrors(
   form: AdEditFormApi,
   issues: readonly { path: readonly PropertyKey[] }[]
 ): void {
   const fieldErrors = new Map<AdEditFormPath, string>()
 
   for (const issue of issues) {
-    const fieldPath = mapIssuePathToFieldPath(issue.path)
+    const fieldPath = getFieldPath(issue.path)
 
     if (fieldPath === null || fieldErrors.has(fieldPath)) {
       continue
@@ -218,7 +214,7 @@ function applyPayloadValidationErrors(
 
 export async function ensureValidAiPayload(
   form: AdEditFormApi
-): Promise<EnsureValidAiPayloadResult> {
+): Promise<AiPayloadResult> {
   const requiredFieldPaths = toRequiredFieldPaths(form.getValues("category"))
 
   form.clearErrors(requiredFieldPaths)
@@ -232,11 +228,11 @@ export async function ensureValidAiPayload(
   }
 
   const parseResult = ItemUpdateInSchema.safeParse(
-    buildAiPayloadCandidate(form.getValues())
+    buildPayload(form.getValues())
   )
 
   if (!parseResult.success) {
-    applyPayloadValidationErrors(form, parseResult.error.issues)
+    applyFieldErrors(form, parseResult.error.issues)
 
     return { isValid: false }
   }
@@ -247,4 +243,4 @@ export async function ensureValidAiPayload(
   }
 }
 
-export type { AdEditFormApi, EnsureValidAiPayloadResult }
+export type { AdEditFormApi, AiPayloadResult }

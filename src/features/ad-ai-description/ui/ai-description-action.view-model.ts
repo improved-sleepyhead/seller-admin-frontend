@@ -1,18 +1,16 @@
 import type { useAiDescriptionAction } from "../model"
 import type {
-  AiDescriptionActionViewModel,
-  AiDescriptionContentStatus,
-  AiDescriptionErrorContent,
-  AiDescriptionIdleContent,
-  AiDescriptionPendingContent,
-  AiDescriptionReadyContent
+  ContentStatus,
+  ErrorContent,
+  IdleContent,
+  PendingContent,
+  ReadyContent,
+  ViewModel
 } from "./ai-description-action.contract"
 
-type AiDescriptionActionModel = ReturnType<typeof useAiDescriptionAction>
+type ActionModel = ReturnType<typeof useAiDescriptionAction>
 
-function getAiDescriptionReadyResult(
-  action: AiDescriptionActionModel
-): AiDescriptionReadyContent["result"] | null {
+function getReadyResult(action: ActionModel): ReadyContent["result"] | null {
   if (action.suggestion.text === null) {
     return null
   }
@@ -22,13 +20,13 @@ function getAiDescriptionReadyResult(
   }
 }
 
-const AI_DESCRIPTION_CONTENT_STATUS_RULES = [
+const STATUS_RULES = [
   {
     matches: ({
       action
     }: {
-      action: AiDescriptionActionModel
-      readyResult: AiDescriptionReadyContent["result"] | null
+      action: ActionModel
+      readyResult: ReadyContent["result"] | null
     }) => action.request.isPending,
     status: "pending"
   },
@@ -36,8 +34,8 @@ const AI_DESCRIPTION_CONTENT_STATUS_RULES = [
     matches: ({
       action
     }: {
-      action: AiDescriptionActionModel
-      readyResult: AiDescriptionReadyContent["result"] | null
+      action: ActionModel
+      readyResult: ReadyContent["result"] | null
     }) => action.request.errorMessage !== null,
     status: "error"
   },
@@ -45,26 +43,24 @@ const AI_DESCRIPTION_CONTENT_STATUS_RULES = [
     matches: ({
       readyResult
     }: {
-      action: AiDescriptionActionModel
-      readyResult: AiDescriptionReadyContent["result"] | null
+      action: ActionModel
+      readyResult: ReadyContent["result"] | null
     }) => readyResult !== null,
     status: "ready"
   }
 ] as const satisfies readonly {
   matches: (args: {
-    action: AiDescriptionActionModel
-    readyResult: AiDescriptionReadyContent["result"] | null
+    action: ActionModel
+    readyResult: ReadyContent["result"] | null
   }) => boolean
-  status: AiDescriptionContentStatus
+  status: ContentStatus
 }[]
 
-function getAiDescriptionContentStatus(
-  action: AiDescriptionActionModel
-): AiDescriptionContentStatus {
-  const readyResult = getAiDescriptionReadyResult(action)
+function getContentStatus(action: ActionModel): ContentStatus {
+  const readyResult = getReadyResult(action)
 
   return (
-    AI_DESCRIPTION_CONTENT_STATUS_RULES.find(rule =>
+    STATUS_RULES.find(rule =>
       rule.matches({
         action,
         readyResult
@@ -73,8 +69,8 @@ function getAiDescriptionContentStatus(
   )
 }
 
-const AI_DESCRIPTION_CONTENT_BUILDERS = {
-  error: (action: AiDescriptionActionModel): AiDescriptionErrorContent => ({
+const CONTENT_BUILDERS = {
+  error: (action: ActionModel): ErrorContent => ({
     actions: {
       close: action.panel.close,
       retry: action.request.retry
@@ -82,37 +78,35 @@ const AI_DESCRIPTION_CONTENT_BUILDERS = {
     errorMessage: action.request.errorMessage ?? "",
     status: "error"
   }),
-  idle: (): AiDescriptionIdleContent => ({
+  idle: (): IdleContent => ({
     status: "idle"
   }),
-  pending: (action: AiDescriptionActionModel): AiDescriptionPendingContent => ({
+  pending: (action: ActionModel): PendingContent => ({
     actions: {
       cancel: action.request.cancel
     },
     status: "pending"
   }),
-  ready: (action: AiDescriptionActionModel): AiDescriptionReadyContent => ({
+  ready: (action: ActionModel): ReadyContent => ({
     actions: {
       apply: action.suggestion.apply,
       close: action.panel.close,
       openDiff: action.diff.open
     },
-    result: getAiDescriptionReadyResult(action) ?? {
+    result: getReadyResult(action) ?? {
       text: ""
     },
     status: "ready"
   })
 } satisfies {
-  [Status in AiDescriptionContentStatus]: (
-    action: AiDescriptionActionModel
-  ) => Extract<AiDescriptionActionViewModel["content"], { status: Status }>
+  [Status in ContentStatus]: (
+    action: ActionModel
+  ) => Extract<ViewModel["content"], { status: Status }>
 }
 
-function getAiDescriptionActionViewModel(
-  action: AiDescriptionActionModel
-): AiDescriptionActionViewModel {
-  const contentStatus = getAiDescriptionContentStatus(action)
-  const content = AI_DESCRIPTION_CONTENT_BUILDERS[contentStatus](action)
+function getViewModel(action: ActionModel): ViewModel {
+  const contentStatus = getContentStatus(action)
+  const content = CONTENT_BUILDERS[contentStatus](action)
 
   return {
     content,
@@ -138,4 +132,4 @@ function getAiDescriptionActionViewModel(
   }
 }
 
-export { getAiDescriptionActionViewModel }
+export { getViewModel }

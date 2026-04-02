@@ -2,20 +2,16 @@ import { Loader } from "@/shared/ui/loader"
 import { Button } from "@/shared/ui/shadcn"
 
 import type {
-  AiDescriptionContentStatus,
-  AiDescriptionErrorContent,
-  AiDescriptionIdleContent,
-  AiDescriptionPendingContent,
-  AiDescriptionReadyContent,
-  AiDescriptionResultContentModel,
-  AiDescriptionResultContentProps
+  ContentModel,
+  ContentProps,
+  ContentStatus,
+  ErrorContent,
+  IdleContent,
+  PendingContent,
+  ReadyContent
 } from "./ai-description-action.contract"
 
-function AiDescriptionPendingResultContent({
-  content
-}: {
-  content: AiDescriptionPendingContent
-}) {
+function PendingView({ content }: { content: PendingContent }) {
   return (
     <div className="space-y-4">
       <p className="flex items-center gap-2 text-sm">
@@ -34,11 +30,7 @@ function AiDescriptionPendingResultContent({
   )
 }
 
-function AiDescriptionErrorResultContent({
-  content
-}: {
-  content: AiDescriptionErrorContent
-}) {
+function ErrorView({ content }: { content: ErrorContent }) {
   return (
     <div className="space-y-4">
       <p className="text-destructive text-sm">{content.errorMessage}</p>
@@ -65,11 +57,7 @@ function AiDescriptionErrorResultContent({
   )
 }
 
-function AiDescriptionReadyResultContent({
-  content
-}: {
-  content: AiDescriptionReadyContent
-}) {
+function ReadyView({ content }: { content: ReadyContent }) {
   return (
     <div className="space-y-4">
       <div className="space-y-1">
@@ -105,37 +93,29 @@ function AiDescriptionReadyResultContent({
   )
 }
 
-function AiDescriptionIdleResultContent({
-  content
-}: {
-  content: AiDescriptionIdleContent
-}) {
+function IdleView({ content }: { content: IdleContent }) {
   void content
 
   return null
 }
 
-const AI_DESCRIPTION_RESULT_CONTENT_COMPONENTS = {
-  error: AiDescriptionErrorResultContent,
-  idle: AiDescriptionIdleResultContent,
-  pending: AiDescriptionPendingResultContent,
-  ready: AiDescriptionReadyResultContent
+const RESULT_VIEWS = {
+  error: ErrorView,
+  idle: IdleView,
+  pending: PendingView,
+  ready: ReadyView
 } satisfies {
-  [Status in AiDescriptionContentStatus]: (props: {
-    content: Extract<AiDescriptionResultContentModel, { status: Status }>
-  }) => ReturnType<typeof AiDescriptionPendingResultContent> | null
+  [Status in ContentStatus]: (props: {
+    content: Extract<ContentModel, { status: Status }>
+  }) => ReturnType<typeof PendingView> | null
 }
 
-function AiDescriptionResultContent({
-  content
-}: AiDescriptionResultContentProps) {
-  const ContentComponent = AI_DESCRIPTION_RESULT_CONTENT_COMPONENTS[
-    content.status
-  ] as (props: {
-    content: AiDescriptionResultContentModel
-  }) => ReturnType<typeof AiDescriptionPendingResultContent> | null
+function ResultContent({ content }: ContentProps) {
+  const ContentView = RESULT_VIEWS[content.status] as (props: {
+    content: ContentModel
+  }) => ReturnType<typeof PendingView> | null
 
-  return <ContentComponent content={content} />
+  return <ContentView content={content} />
 }
 
-export { AiDescriptionResultContent }
+export { ResultContent }

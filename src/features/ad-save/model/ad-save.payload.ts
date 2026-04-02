@@ -139,9 +139,7 @@ const AD_SAVE_PAYLOAD_BUILDERS = {
   ) => Extract<ItemPatchIn, { category: Category }>
 }
 
-export function mapAdEditFormValuesToItemPatchIn(
-  values: AdEditFormValues
-): ItemPatchIn {
+export function toItemPatch(values: AdEditFormValues): ItemPatchIn {
   const basePayload = {
     description: values.description.trim(),
     title: values.title.trim(),

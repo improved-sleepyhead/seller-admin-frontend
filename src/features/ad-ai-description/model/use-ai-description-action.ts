@@ -16,12 +16,12 @@ interface DescriptionDiffModel {
   suggestion: string
 }
 
-interface UseAiDescriptionActionOptions {
+interface ActionOptions {
   disabled: boolean
   form: AdEditFormApi | null
 }
 
-interface AiDescriptionRequestController {
+interface RequestState {
   canStart: boolean
   cancel: () => void
   errorMessage: string | null
@@ -30,33 +30,33 @@ interface AiDescriptionRequestController {
   start: () => Promise<void>
 }
 
-interface AiDescriptionPanelController {
+interface PanelState {
   close: () => void
   isMobile: boolean
   isOpen: boolean
   setOpen: (nextOpen: boolean) => void
 }
 
-interface AiDescriptionSuggestionController {
+interface SuggestionState {
   apply: () => void
   text: string | null
 }
 
-interface AiDescriptionDiffController {
+interface DiffState {
   close: () => void
   isOpen: boolean
   open: () => void
   value: DescriptionDiffModel | null
 }
 
-interface UseAiDescriptionActionResult {
-  diff: AiDescriptionDiffController
-  panel: AiDescriptionPanelController
-  request: AiDescriptionRequestController
-  suggestion: AiDescriptionSuggestionController
+interface ActionState {
+  diff: DiffState
+  panel: PanelState
+  request: RequestState
+  suggestion: SuggestionState
 }
 
-function getAiDescriptionErrorMessage(error: unknown): string {
+function getErrorMessage(error: unknown): string {
   if (isAppApiError(error)) {
     return error.message
   }
@@ -101,7 +101,7 @@ function useIsMobile(): boolean {
 export function useAiDescriptionAction({
   disabled,
   form
-}: UseAiDescriptionActionOptions): UseAiDescriptionActionResult {
+}: ActionOptions): ActionState {
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
   const [isPreparing, setIsPreparing] = useState(false)
   const [isDiffViewerOpen, setIsDiffViewerOpen] = useState(false)
@@ -181,7 +181,7 @@ export function useAiDescriptionAction({
         return
       }
 
-      setErrorMessage(getAiDescriptionErrorMessage(error))
+      setErrorMessage(getErrorMessage(error))
     } finally {
       setIsPreparing(false)
       if (abortControllerRef.current === requestAbortController) {

@@ -1,25 +1,25 @@
 import type { DescriptionDiffModel } from "../model"
 
-interface AiDescriptionDiffViewModel {
+interface DiffView {
   close: () => void
   isOpen: boolean
   open: () => void
   value: DescriptionDiffModel
 }
 
-interface AiDescriptionPanelViewModel {
+interface PanelView {
   isMobile: boolean
   isOpen: boolean
   setOpen: (nextOpen: boolean) => void
 }
 
-interface AiDescriptionTriggerViewModel {
+interface TriggerView {
   canStart: boolean
   isPending: boolean
   start: () => Promise<void>
 }
 
-type AiDescriptionResultContentModel =
+type ContentModel =
   | {
       actions: {
         cancel: () => void
@@ -49,42 +49,30 @@ type AiDescriptionResultContentModel =
       status: "idle"
     }
 
-interface AiDescriptionActionViewModel {
-  content: AiDescriptionResultContentModel
-  diff: AiDescriptionDiffViewModel | null
-  panel: AiDescriptionPanelViewModel
-  trigger: AiDescriptionTriggerViewModel
+interface ViewModel {
+  content: ContentModel
+  diff: DiffView | null
+  panel: PanelView
+  trigger: TriggerView
 }
 
-interface AiDescriptionResultContentProps {
-  content: AiDescriptionResultContentModel
+interface ContentProps {
+  content: ContentModel
 }
 
-type AiDescriptionContentStatus = AiDescriptionResultContentModel["status"]
-type AiDescriptionPendingContent = Extract<
-  AiDescriptionResultContentModel,
-  { status: "pending" }
->
-type AiDescriptionErrorContent = Extract<
-  AiDescriptionResultContentModel,
-  { status: "error" }
->
-type AiDescriptionReadyContent = Extract<
-  AiDescriptionResultContentModel,
-  { status: "ready" }
->
-type AiDescriptionIdleContent = Extract<
-  AiDescriptionResultContentModel,
-  { status: "idle" }
->
+type ContentStatus = ContentModel["status"]
+type PendingContent = Extract<ContentModel, { status: "pending" }>
+type ErrorContent = Extract<ContentModel, { status: "error" }>
+type ReadyContent = Extract<ContentModel, { status: "ready" }>
+type IdleContent = Extract<ContentModel, { status: "idle" }>
 
 export type {
-  AiDescriptionActionViewModel,
-  AiDescriptionContentStatus,
-  AiDescriptionErrorContent,
-  AiDescriptionIdleContent,
-  AiDescriptionPendingContent,
-  AiDescriptionReadyContent,
-  AiDescriptionResultContentModel,
-  AiDescriptionResultContentProps
+  ContentModel,
+  ContentProps,
+  ContentStatus,
+  ErrorContent,
+  IdleContent,
+  PendingContent,
+  ReadyContent,
+  ViewModel
 }

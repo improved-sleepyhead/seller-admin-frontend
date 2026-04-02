@@ -8,7 +8,7 @@ import { useEffect, useMemo } from "react"
 import {
   adsListQuery,
   cancelAdsListQuery,
-  mapAdsUrlParamsToListQuery
+  toListQuery
 } from "@/entities/ad/api"
 import { useAdsListState } from "@/entities/ad/model"
 import { AdsPagination } from "@/features/ads-pagination"
@@ -36,7 +36,7 @@ export function AdsListPage() {
   const { isHydrated } = useAdsListUrlSync()
 
   const listQueryParams = useMemo(() => {
-    return mapAdsUrlParamsToListQuery({
+    return toListQuery({
       categories,
       layout,
       needsRevision,

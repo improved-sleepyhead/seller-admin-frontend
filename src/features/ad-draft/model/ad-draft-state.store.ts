@@ -2,15 +2,15 @@ import { createStore, type StoreApi, useStore } from "zustand"
 
 import type { AdDraft } from "@/entities/ad/model"
 
-interface AdDraftSessionState {
+interface SessionState {
   draftSavedAt: string | null
   isRestoreDialogOpen: boolean
   pendingRestore: boolean
   restoreCandidate: AdDraft | null
 }
 
-interface AdDraftState {
-  byItemId: Record<number, AdDraftSessionState>
+interface State {
+  byItemId: Record<number, SessionState>
   closeRestoreDialog: (itemId: number) => void
   markRestorePending: (itemId: number) => void
   openRestoreDialog: (itemId: number, draft: AdDraft) => void
@@ -18,27 +18,25 @@ interface AdDraftState {
   setDraftSavedAt: (itemId: number, savedAt: string | null) => void
 }
 
-type AdDraftStateStoreApi = StoreApi<AdDraftState>
+type StateStore = StoreApi<State>
 
-const INITIAL_SESSION_STATE: AdDraftSessionState = {
+const INITIAL_SESSION: SessionState = {
   draftSavedAt: null,
   isRestoreDialogOpen: false,
   pendingRestore: false,
   restoreCandidate: null
 }
 
-function createSessionState(
-  existing: AdDraftSessionState | undefined
-): AdDraftSessionState {
+function getSessionState(existing: SessionState | undefined): SessionState {
   if (existing) {
     return existing
   }
 
-  return { ...INITIAL_SESSION_STATE }
+  return { ...INITIAL_SESSION }
 }
 
-function createAdDraftStateStore(): AdDraftStateStoreApi {
-  return createStore<AdDraftState>((set, get) => ({
+function createStateStore(): StateStore {
+  return createStore<State>((set, get) => ({
     byItemId: {},
     closeRestoreDialog: itemId => {
       const existingSession = get().byItemId[itemId]
@@ -58,7 +56,7 @@ function createAdDraftStateStore(): AdDraftStateStoreApi {
         byItemId: {
           ...state.byItemId,
           [itemId]: {
-            ...createSessionState(state.byItemId[itemId]),
+            ...getSessionState(state.byItemId[itemId]),
             isRestoreDialogOpen: false,
             pendingRestore: false,
             restoreCandidate: null
@@ -81,7 +79,7 @@ function createAdDraftStateStore(): AdDraftStateStoreApi {
         byItemId: {
           ...state.byItemId,
           [itemId]: {
-            ...createSessionState(state.byItemId[itemId]),
+            ...getSessionState(state.byItemId[itemId]),
             pendingRestore: true
           }
         }
@@ -92,7 +90,7 @@ function createAdDraftStateStore(): AdDraftStateStoreApi {
         byItemId: {
           ...state.byItemId,
           [itemId]: {
-            ...createSessionState(state.byItemId[itemId]),
+            ...getSessionState(state.byItemId[itemId]),
             isRestoreDialogOpen: true,
             pendingRestore: false,
             restoreCandidate: draft
@@ -121,7 +119,7 @@ function createAdDraftStateStore(): AdDraftStateStoreApi {
         byItemId: {
           ...state.byItemId,
           [itemId]: {
-            ...createSessionState(state.byItemId[itemId]),
+            ...getSessionState(state.byItemId[itemId]),
             draftSavedAt: savedAt
           }
         }
@@ -130,36 +128,33 @@ function createAdDraftStateStore(): AdDraftStateStoreApi {
   }))
 }
 
-const adDraftStateStore = createAdDraftStateStore()
+const stateStore = createStateStore()
 
-export function useAdDraftSessionSelector<Selected>(
+export function useDraftSession<Selected>(
   itemId: number,
-  selector: (session: AdDraftSessionState) => Selected
+  selector: (session: SessionState) => Selected
 ): Selected {
-  return useStore(adDraftStateStore, state =>
-    selector(state.byItemId[itemId] ?? INITIAL_SESSION_STATE)
+  return useStore(stateStore, state =>
+    selector(state.byItemId[itemId] ?? INITIAL_SESSION)
   )
 }
 
-export function closeAdDraftRestoreDialog(itemId: number): void {
-  adDraftStateStore.getState().closeRestoreDialog(itemId)
+export function closeRestoreDialog(itemId: number): void {
+  stateStore.getState().closeRestoreDialog(itemId)
 }
 
-export function markAdDraftRestorePending(itemId: number): void {
-  adDraftStateStore.getState().markRestorePending(itemId)
+export function markRestorePending(itemId: number): void {
+  stateStore.getState().markRestorePending(itemId)
 }
 
-export function openAdDraftRestoreDialog(itemId: number, draft: AdDraft): void {
-  adDraftStateStore.getState().openRestoreDialog(itemId, draft)
+export function openRestoreDialog(itemId: number, draft: AdDraft): void {
+  stateStore.getState().openRestoreDialog(itemId, draft)
 }
 
-export function resetAdDraftSession(itemId: number): void {
-  adDraftStateStore.getState().resetSession(itemId)
+export function resetSession(itemId: number): void {
+  stateStore.getState().resetSession(itemId)
 }
 
-export function setAdDraftSavedAt(
-  itemId: number,
-  savedAt: string | null
-): void {
-  adDraftStateStore.getState().setDraftSavedAt(itemId, savedAt)
+export function setDraftSavedAt(itemId: number, savedAt: string | null): void {
+  stateStore.getState().setDraftSavedAt(itemId, savedAt)
 }

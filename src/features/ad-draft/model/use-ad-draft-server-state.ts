@@ -2,10 +2,7 @@ import { useMemo } from "react"
 
 import type { AdDetailsDto } from "@/entities/ad/api"
 
-import {
-  createServerFormSnapshotFromAd,
-  createServerHashFromAd
-} from "./draft-comparator"
+import { getServerHash, toServerForm } from "./draft-comparator"
 
 import type { AdDraftServerState } from "./ad-draft.types"
 
@@ -17,7 +14,7 @@ export function useAdDraftServerState(
       return null
     }
 
-    return createServerHashFromAd(ad)
+    return getServerHash(ad)
   }, [ad])
 
   const serverSnapshot = useMemo(() => {
@@ -25,7 +22,7 @@ export function useAdDraftServerState(
       return null
     }
 
-    return createServerFormSnapshotFromAd(ad)
+    return toServerForm(ad)
   }, [ad])
 
   return {

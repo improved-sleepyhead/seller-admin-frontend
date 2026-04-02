@@ -15,8 +15,8 @@ import {
 } from "@/shared/ui/shadcn"
 
 import { type AdEditFormApi, useAiDescriptionAction } from "../model"
-import { getAiDescriptionActionViewModel } from "./ai-description-action.view-model"
-import { AiDescriptionResultContent } from "./ai-description-result-content"
+import { getViewModel } from "./ai-description-action.view-model"
+import { ResultContent } from "./ai-description-result-content"
 
 const LazyAdDiffViewer = lazy(async () => {
   const module = await import("@/features/ad-diff-viewer")
@@ -37,7 +37,7 @@ export function AiDescriptionAction({
     disabled,
     form
   })
-  const viewModel = getAiDescriptionActionViewModel(action)
+  const viewModel = getViewModel(action)
   const diffViewModel = viewModel.diff
 
   const triggerButton = (
@@ -61,9 +61,7 @@ export function AiDescriptionAction({
     </Button>
   )
 
-  const resultContent = (
-    <AiDescriptionResultContent content={viewModel.content} />
-  )
+  const resultContent = <ResultContent content={viewModel.content} />
 
   return (
     <>

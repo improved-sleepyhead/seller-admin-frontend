@@ -113,9 +113,7 @@ function extractBackendPayload(
   }
 }
 
-function extractFieldErrorsFromValidationDetails(
-  details: unknown
-): AppApiFieldErrors | undefined {
+function extractFieldErrors(details: unknown): AppApiFieldErrors | undefined {
   if (!isRecord(details)) {
     return undefined
   }
@@ -196,7 +194,7 @@ export function normalizeApiError(error: unknown): AppApiError {
 
     return new AppApiError({
       code,
-      fieldErrors: extractFieldErrorsFromValidationDetails(payload?.details),
+      fieldErrors: extractFieldErrors(payload?.details),
       message: payload?.message ?? error.message ?? getDefaultMessage(code),
       raw: error.response.data,
       status

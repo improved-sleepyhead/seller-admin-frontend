@@ -4,12 +4,12 @@ import type { AdDraft } from "@/entities/ad/model"
 
 import { clearAdDraftMetadata } from "./ad-draft-metadata"
 import {
-  closeAdDraftRestoreDialog,
-  markAdDraftRestorePending,
-  openAdDraftRestoreDialog,
-  resetAdDraftSession,
-  setAdDraftSavedAt,
-  useAdDraftSessionSelector
+  closeRestoreDialog,
+  markRestorePending,
+  openRestoreDialog,
+  resetSession,
+  setDraftSavedAt,
+  useDraftSession
 } from "./ad-draft-state.store"
 import { isDraftDifferentFromServer } from "./draft-comparator"
 import { readAdDraft, removeAdDraft } from "./draft-storage"
@@ -31,8 +31,8 @@ function applyRestoreCandidate(
   restoreCandidate: AdDraft
 ): void {
   form.reset(restoreCandidate.form)
-  setAdDraftSavedAt(itemId, restoreCandidate.savedAt)
-  closeAdDraftRestoreDialog(itemId)
+  setDraftSavedAt(itemId, restoreCandidate.savedAt)
+  closeRestoreDialog(itemId)
 }
 
 export function useAdDraftRestore({
@@ -42,19 +42,16 @@ export function useAdDraftRestore({
   serverHash,
   serverSnapshot
 }: UseAdDraftRestoreOptions): UseAdDraftResult {
-  const draftSavedAt = useAdDraftSessionSelector(
-    itemId,
-    session => session.draftSavedAt
-  )
-  const isRestoreDialogOpen = useAdDraftSessionSelector(
+  const draftSavedAt = useDraftSession(itemId, session => session.draftSavedAt)
+  const isRestoreDialogOpen = useDraftSession(
     itemId,
     session => session.isRestoreDialogOpen
   )
-  const pendingRestore = useAdDraftSessionSelector(
+  const pendingRestore = useDraftSession(
     itemId,
     session => session.pendingRestore
   )
-  const restoreCandidate = useAdDraftSessionSelector(
+  const restoreCandidate = useDraftSession(
     itemId,
     session => session.restoreCandidate
   )
@@ -67,17 +64,17 @@ export function useAdDraftRestore({
     const draft = readAdDraft(itemId)
 
     if (draft === null) {
-      resetAdDraftSession(itemId)
+      resetSession(itemId)
       return
     }
 
-    setAdDraftSavedAt(itemId, draft.savedAt)
+    setDraftSavedAt(itemId, draft.savedAt)
 
     if (!isDraftDifferentFromServer(draft.form, serverSnapshot)) {
       return
     }
 
-    openAdDraftRestoreDialog(itemId, draft)
+    openRestoreDialog(itemId, draft)
   }, [entryRevision, itemId, serverHash, serverSnapshot])
 
   const restoreDraft = useCallback(() => {
@@ -86,7 +83,7 @@ export function useAdDraftRestore({
     }
 
     if (form === null) {
-      markAdDraftRestorePending(itemId)
+      markRestorePending(itemId)
       return
     }
 
@@ -104,7 +101,7 @@ export function useAdDraftRestore({
   const useServerVersion = useCallback(() => {
     removeAdDraft(itemId)
     clearAdDraftMetadata(itemId)
-    resetAdDraftSession(itemId)
+    resetSession(itemId)
   }, [itemId])
 
   return {

@@ -1,7 +1,7 @@
 import type { AdDraft } from "@/entities/ad/model"
 
 import { AdDraftSchema } from "./ad-draft.schema"
-import { getAdDraftStorageKey, getLegacyAdDraftStorageKey } from "./draft-keys"
+import { getDraftKey, getLegacyDraftKey } from "./draft-keys"
 
 function isBrowserEnvironment(): boolean {
   return typeof window !== "undefined"
@@ -55,8 +55,8 @@ export function readAdDraft(itemId: number): AdDraft | null {
     return null
   }
 
-  const currentStorageKey = getAdDraftStorageKey(itemId)
-  const legacyStorageKey = getLegacyAdDraftStorageKey(itemId)
+  const currentStorageKey = getDraftKey(itemId)
+  const legacyStorageKey = getLegacyDraftKey(itemId)
   const currentDraft = parseDraftPayload(
     window.localStorage.getItem(currentStorageKey)
   )
@@ -94,10 +94,7 @@ export function saveAdDraft(draft: AdDraft): void {
     return
   }
 
-  window.localStorage.setItem(
-    getAdDraftStorageKey(draft.itemId),
-    JSON.stringify(draft)
-  )
+  window.localStorage.setItem(getDraftKey(draft.itemId), JSON.stringify(draft))
 }
 
 export function removeAdDraft(itemId: number): void {
@@ -105,6 +102,6 @@ export function removeAdDraft(itemId: number): void {
     return
   }
 
-  window.localStorage.removeItem(getAdDraftStorageKey(itemId))
-  window.localStorage.removeItem(getLegacyAdDraftStorageKey(itemId))
+  window.localStorage.removeItem(getDraftKey(itemId))
+  window.localStorage.removeItem(getLegacyDraftKey(itemId))
 }

@@ -18,7 +18,7 @@ import {
   type AdEditFormValues
 } from "@/entities/ad/model"
 
-import { getAdDraftStorageKey, useAdDraft } from "../../model"
+import { getDraftKey, useAdDraft } from "../../model"
 import { DraftRestoreDialog } from "../draft-restore-dialog"
 
 const TIMESTAMP = "2026-03-30T00:00:00.000Z"
@@ -140,7 +140,7 @@ describe("Draft restore flow", () => {
   it("should render restore dialog when draft exists in localStorage", async () => {
     const itemId = 101
     window.localStorage.setItem(
-      getAdDraftStorageKey(itemId),
+      getDraftKey(itemId),
       JSON.stringify(createDraft(itemId, { title: "Черновик" }))
     )
 
@@ -152,7 +152,7 @@ describe("Draft restore flow", () => {
   it("should restore form values when user clicks restore draft", async () => {
     const itemId = 102
     window.localStorage.setItem(
-      getAdDraftStorageKey(itemId),
+      getDraftKey(itemId),
       JSON.stringify(createDraft(itemId, { title: "Заголовок из черновика" }))
     )
 
@@ -169,7 +169,7 @@ describe("Draft restore flow", () => {
 
   it("should remove draft when user opens server version", async () => {
     const itemId = 103
-    const storageKey = getAdDraftStorageKey(itemId)
+    const storageKey = getDraftKey(itemId)
 
     window.localStorage.setItem(
       storageKey,
@@ -189,7 +189,7 @@ describe("Draft restore flow", () => {
     const itemId = 104
 
     window.localStorage.setItem(
-      getAdDraftStorageKey(itemId),
+      getDraftKey(itemId),
       JSON.stringify(createDraft(itemId))
     )
 
@@ -202,7 +202,7 @@ describe("Draft restore flow", () => {
 
   it("should autosave form values to localStorage after debounce", () => {
     const itemId = 105
-    const storageKey = getAdDraftStorageKey(itemId)
+    const storageKey = getDraftKey(itemId)
 
     vi.useFakeTimers()
     render(<DraftFlowHarness ad={createAd(itemId)} itemId={itemId} />)
@@ -226,7 +226,7 @@ describe("Draft restore flow", () => {
 
   it("should remove autosaved draft after form returns to server snapshot", () => {
     const itemId = 106
-    const storageKey = getAdDraftStorageKey(itemId)
+    const storageKey = getDraftKey(itemId)
 
     vi.useFakeTimers()
     render(<DraftFlowHarness ad={createAd(itemId)} itemId={itemId} />)

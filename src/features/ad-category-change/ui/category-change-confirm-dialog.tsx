@@ -10,7 +10,7 @@ import {
   AlertDialogTitle
 } from "@/shared/ui/shadcn"
 
-interface CategoryChangeConfirmDialogProps {
+interface Props {
   nextCategory: AdEditFormValues["category"] | null
   onCancel: () => void
   onConfirm: () => void
@@ -22,7 +22,7 @@ export function CategoryChangeConfirmDialog({
   onCancel,
   onConfirm,
   open
-}: CategoryChangeConfirmDialogProps) {
+}: Props) {
   if (!nextCategory) {
     return null
   }

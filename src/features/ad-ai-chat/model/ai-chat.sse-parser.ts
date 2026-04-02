@@ -9,15 +9,15 @@ import type {
   ParseAiChatSseBufferResult
 } from "./ai-chat.transport.types"
 
-const AiChatStreamMetaDataSchema = z.object({
+const MetaSchema = z.object({
   model: z.string().min(1)
 })
 
-const AiChatStreamChunkDataSchema = z.object({
+const ChunkSchema = z.object({
   content: z.string()
 })
 
-const AiChatStreamDoneDataSchema = z.object({
+const DoneSchema = z.object({
   model: z.string().optional(),
   usage: AiUsageSchema.optional()
 })
@@ -27,12 +27,12 @@ interface ParsedSseFrame {
   event: string | null
 }
 
-interface SplitSsePayloadResult {
+interface SplitPayloadResult {
   blocks: string[]
   remainder: string
 }
 
-function normalizeSsePayload(rawPayload: string): SplitSsePayloadResult {
+function splitPayload(rawPayload: string): SplitPayloadResult {
   const normalizedPayload = rawPayload
     .replace(/\r\n/g, "\n")
     .replace(/\r/g, "\n")
@@ -61,7 +61,7 @@ function normalizeSsePayload(rawPayload: string): SplitSsePayloadResult {
   }
 }
 
-function parseSseFrame(frame: string): ParsedSseFrame {
+function parseFrame(frame: string): ParsedSseFrame {
   let event: string | null = null
   const dataLines: string[] = []
 
@@ -87,7 +87,7 @@ function parseSseFrame(frame: string): ParsedSseFrame {
   }
 }
 
-function parseJsonPayload(rawPayload: string): unknown {
+function parsePayload(rawPayload: string): unknown {
   try {
     return JSON.parse(rawPayload)
   } catch {
@@ -95,33 +95,33 @@ function parseJsonPayload(rawPayload: string): unknown {
   }
 }
 
-function parseSseEvent(frame: string): AiChatStreamEvent | null {
-  const parsedFrame = parseSseFrame(frame)
+function parseEvent(frame: string): AiChatStreamEvent | null {
+  const parsedFrame = parseFrame(frame)
 
   if (parsedFrame.event === null || parsedFrame.dataLines.length === 0) {
     return null
   }
 
   const rawData = parsedFrame.dataLines.join("\n")
-  const payload = parseJsonPayload(rawData)
+  const payload = parsePayload(rawData)
 
   if (parsedFrame.event === "meta") {
     return {
-      data: AiChatStreamMetaDataSchema.parse(payload),
+      data: MetaSchema.parse(payload),
       event: "meta"
     }
   }
 
   if (parsedFrame.event === "chunk") {
     return {
-      data: AiChatStreamChunkDataSchema.parse(payload),
+      data: ChunkSchema.parse(payload),
       event: "chunk"
     }
   }
 
   if (parsedFrame.event === "done") {
     return {
-      data: AiChatStreamDoneDataSchema.parse(payload),
+      data: DoneSchema.parse(payload),
       event: "done"
     }
   }
@@ -139,11 +139,11 @@ function parseSseEvent(frame: string): AiChatStreamEvent | null {
 export function parseAiChatSseBuffer(
   rawPayload: string
 ): ParseAiChatSseBufferResult {
-  const { blocks, remainder } = normalizeSsePayload(rawPayload)
+  const { blocks, remainder } = splitPayload(rawPayload)
   const events: AiChatStreamEvent[] = []
 
   for (const block of blocks) {
-    const parsedEvent = parseSseEvent(block)
+    const parsedEvent = parseEvent(block)
 
     if (parsedEvent !== null) {
       events.push(parsedEvent)

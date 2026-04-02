@@ -4,8 +4,8 @@ import { useLocation, useParams } from "react-router-dom"
 
 import { adDetailQuery, cancelAdDetailQuery } from "@/entities/ad/api"
 import {
-  buildAdsListHrefFromNavigationState,
-  resolveAdsSearchFromNavigationState,
+  getAdsListHref,
+  getAdsSearch,
   type AdsListNavigationState
 } from "@/entities/ad/model"
 import { isAppApiError } from "@/shared/api/error"
@@ -39,8 +39,8 @@ export function AdViewPage() {
   const { id } = useParams<{ id: string }>()
   const location = useLocation()
   const adId = parseAdId(id)
-  const backHref = buildAdsListHrefFromNavigationState(location.state)
-  const adsSearch = resolveAdsSearchFromNavigationState(location.state)
+  const backHref = getAdsListHref(location.state)
+  const adsSearch = getAdsSearch(location.state)
   const editState: AdsListNavigationState | undefined =
     adsSearch === null ? undefined : { adsSearch }
   const detailQuery = useQuery({

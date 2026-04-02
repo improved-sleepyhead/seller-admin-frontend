@@ -13,8 +13,8 @@ import {
 } from "@/shared/ui/shadcn"
 
 import { useAiPriceAction, type AdEditFormApi } from "../model"
-import { getAiPriceActionViewModel } from "./ai-price-action.view-model"
-import { AiPriceResultContent } from "./ai-price-result-content"
+import { getViewModel } from "./ai-price-action.view-model"
+import { ResultContent } from "./ai-price-result-content"
 
 interface AiPriceActionProps {
   disabled: boolean
@@ -26,7 +26,7 @@ export function AiPriceAction({ disabled, form }: AiPriceActionProps) {
     disabled,
     form
   })
-  const viewModel = getAiPriceActionViewModel(action)
+  const viewModel = getViewModel(action)
 
   const triggerButton = (
     <Button
@@ -49,7 +49,7 @@ export function AiPriceAction({ disabled, form }: AiPriceActionProps) {
     </Button>
   )
 
-  const panelContent = <AiPriceResultContent content={viewModel.content} />
+  const panelContent = <ResultContent content={viewModel.content} />
 
   if (viewModel.panel.isMobile) {
     return (

@@ -71,6 +71,6 @@ function buildFormValuesForAd<Category extends AdDetailsDto["category"]>(
   return buildFormValues(ad)
 }
 
-export function mapAdDetailsToFormValues(ad: AdDetailsDto): AdEditFormValues {
+export function toFormValues(ad: AdDetailsDto): AdEditFormValues {
   return buildFormValuesForAd(ad)
 }

@@ -3,7 +3,7 @@ import { Link } from "react-router-dom"
 
 import type { AdsLayout, AdsListItemVM } from "@/entities/ad/api"
 import {
-  createAdsListNavigationState,
+  createAdsNavigationState,
   useAdsListState,
   type AdsListNavigationState
 } from "@/entities/ad/model"
@@ -88,7 +88,7 @@ export function AdsCatalog({ ads, layout }: AdsCatalogProps) {
   const currentLayout = useAdsListState(state => state.layout)
 
   const navigationState = useMemo(() => {
-    return createAdsListNavigationState({
+    return createAdsNavigationState({
       categories,
       layout: currentLayout,
       needsRevision,

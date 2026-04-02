@@ -2,20 +2,16 @@ import { Loader } from "@/shared/ui/loader"
 import { Button } from "@/shared/ui/shadcn"
 
 import type {
-  AiPriceContentStatus,
-  AiPriceErrorContent,
-  AiPriceIdleContent,
-  AiPricePendingContent,
-  AiPriceReadyContent,
-  AiPriceResultContentModel,
-  AiPriceResultContentProps
+  ContentModel,
+  ContentProps,
+  ContentStatus,
+  ErrorContent,
+  IdleContent,
+  PendingContent,
+  ReadyContent
 } from "./ai-price-action.contract"
 
-function AiPricePendingResultContent({
-  content
-}: {
-  content: AiPricePendingContent
-}) {
+function PendingView({ content }: { content: PendingContent }) {
   return (
     <div className="space-y-4">
       <p className="flex items-center gap-2 text-sm">
@@ -36,11 +32,7 @@ function AiPricePendingResultContent({
   )
 }
 
-function AiPriceErrorResultContent({
-  content
-}: {
-  content: AiPriceErrorContent
-}) {
+function ErrorView({ content }: { content: ErrorContent }) {
   return (
     <div className="space-y-4">
       <p className="text-destructive text-sm">{content.errorMessage}</p>
@@ -68,11 +60,7 @@ function AiPriceErrorResultContent({
   )
 }
 
-function AiPriceReadyResultContent({
-  content
-}: {
-  content: AiPriceReadyContent
-}) {
+function ReadyView({ content }: { content: ReadyContent }) {
   return (
     <div className="space-y-4">
       <div className="space-y-1">
@@ -114,35 +102,29 @@ function AiPriceReadyResultContent({
   )
 }
 
-function AiPriceIdleResultContent({
-  content
-}: {
-  content: AiPriceIdleContent
-}) {
+function IdleView({ content }: { content: IdleContent }) {
   void content
 
   return null
 }
 
-const AI_PRICE_RESULT_CONTENT_COMPONENTS = {
-  error: AiPriceErrorResultContent,
-  idle: AiPriceIdleResultContent,
-  pending: AiPricePendingResultContent,
-  ready: AiPriceReadyResultContent
+const RESULT_VIEWS = {
+  error: ErrorView,
+  idle: IdleView,
+  pending: PendingView,
+  ready: ReadyView
 } satisfies {
-  [Status in AiPriceContentStatus]: (props: {
-    content: Extract<AiPriceResultContentModel, { status: Status }>
-  }) => ReturnType<typeof AiPricePendingResultContent> | null
+  [Status in ContentStatus]: (props: {
+    content: Extract<ContentModel, { status: Status }>
+  }) => ReturnType<typeof PendingView> | null
 }
 
-function AiPriceResultContent({ content }: AiPriceResultContentProps) {
-  const ContentComponent = AI_PRICE_RESULT_CONTENT_COMPONENTS[
-    content.status
-  ] as (props: {
-    content: AiPriceResultContentModel
-  }) => ReturnType<typeof AiPricePendingResultContent> | null
+function ResultContent({ content }: ContentProps) {
+  const ContentView = RESULT_VIEWS[content.status] as (props: {
+    content: ContentModel
+  }) => ReturnType<typeof PendingView> | null
 
-  return <ContentComponent content={content} />
+  return <ContentView content={content} />
 }
 
-export { AiPriceResultContent }
+export { ResultContent }

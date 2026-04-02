@@ -179,7 +179,7 @@ export function areAdsListUrlParamsEqual(
   return serializeAdsListUrlParams(left) === serializeAdsListUrlParams(right)
 }
 
-export function mapAdsUrlParamsToBackendQuery(
+export function toBackendQuery(
   params: AdsListUrlParams
 ): AdsListBackendQueryParams {
   const q = params.q.trim()
@@ -196,9 +196,7 @@ export function mapAdsUrlParamsToBackendQuery(
   }
 }
 
-export function mapAdsUrlParamsToListQuery(
-  params: AdsListUrlParams
-): AdsListQueryParams {
+export function toListQuery(params: AdsListUrlParams): AdsListQueryParams {
   return {
     q: params.q,
     categories: [...params.categories],

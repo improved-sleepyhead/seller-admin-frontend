@@ -105,7 +105,7 @@ function toComparableSnapshot(values: AdEditFormValues): string {
   return JSON.stringify(normalizeDraftFormValues(values))
 }
 
-export function createServerHashFromAd(ad: AdDetailsDto): string {
+export function getServerHash(ad: AdDetailsDto): string {
   return `${ad.id}:${ad.updatedAt}`
 }
 
@@ -171,9 +171,7 @@ function buildServerFormSnapshotForAd<
   return buildServerFormSnapshot(ad)
 }
 
-export function createServerFormSnapshotFromAd(
-  ad: AdDetailsDto
-): AdEditFormValues {
+export function toServerForm(ad: AdDetailsDto): AdEditFormValues {
   return buildServerFormSnapshotForAd(ad)
 }
 

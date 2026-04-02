@@ -1,14 +1,14 @@
 import type { useAiPriceAction } from "../model"
 import type {
-  AiPriceActionViewModel,
-  AiPriceContentStatus,
-  AiPriceErrorContent,
-  AiPriceIdleContent,
-  AiPricePendingContent,
-  AiPriceReadyContent
+  ContentStatus,
+  ErrorContent,
+  IdleContent,
+  PendingContent,
+  ReadyContent,
+  ViewModel
 } from "./ai-price-action.contract"
 
-type AiPriceActionModel = ReturnType<typeof useAiPriceAction>
+type ActionModel = ReturnType<typeof useAiPriceAction>
 
 function formatPrice(value: number): string {
   return new Intl.NumberFormat("ru-RU", {
@@ -18,9 +18,7 @@ function formatPrice(value: number): string {
   }).format(value)
 }
 
-function getAiPriceReadyResult(
-  action: AiPriceActionModel
-): AiPriceReadyContent["result"] | null {
+function getReadyResult(action: ActionModel): ReadyContent["result"] | null {
   const response = action.suggestion.response
 
   if (
@@ -36,13 +34,13 @@ function getAiPriceReadyResult(
   }
 }
 
-const AI_PRICE_CONTENT_STATUS_RULES = [
+const STATUS_RULES = [
   {
     matches: ({
       action
     }: {
-      action: AiPriceActionModel
-      readyResult: AiPriceReadyContent["result"] | null
+      action: ActionModel
+      readyResult: ReadyContent["result"] | null
     }) => action.request.isPending,
     status: "pending"
   },
@@ -50,8 +48,8 @@ const AI_PRICE_CONTENT_STATUS_RULES = [
     matches: ({
       action
     }: {
-      action: AiPriceActionModel
-      readyResult: AiPriceReadyContent["result"] | null
+      action: ActionModel
+      readyResult: ReadyContent["result"] | null
     }) => action.request.errorMessage !== null,
     status: "error"
   },
@@ -59,26 +57,24 @@ const AI_PRICE_CONTENT_STATUS_RULES = [
     matches: ({
       readyResult
     }: {
-      action: AiPriceActionModel
-      readyResult: AiPriceReadyContent["result"] | null
+      action: ActionModel
+      readyResult: ReadyContent["result"] | null
     }) => readyResult !== null,
     status: "ready"
   }
 ] as const satisfies readonly {
   matches: (args: {
-    action: AiPriceActionModel
-    readyResult: AiPriceReadyContent["result"] | null
+    action: ActionModel
+    readyResult: ReadyContent["result"] | null
   }) => boolean
-  status: AiPriceContentStatus
+  status: ContentStatus
 }[]
 
-function getAiPriceContentStatus(
-  action: AiPriceActionModel
-): AiPriceContentStatus {
-  const readyResult = getAiPriceReadyResult(action)
+function getContentStatus(action: ActionModel): ContentStatus {
+  const readyResult = getReadyResult(action)
 
   return (
-    AI_PRICE_CONTENT_STATUS_RULES.find(rule =>
+    STATUS_RULES.find(rule =>
       rule.matches({
         action,
         readyResult
@@ -87,8 +83,8 @@ function getAiPriceContentStatus(
   )
 }
 
-const AI_PRICE_CONTENT_BUILDERS = {
-  error: (action: AiPriceActionModel): AiPriceErrorContent => ({
+const CONTENT_BUILDERS = {
+  error: (action: ActionModel): ErrorContent => ({
     actions: {
       close: action.panel.close,
       retry: action.request.retry
@@ -96,38 +92,36 @@ const AI_PRICE_CONTENT_BUILDERS = {
     errorMessage: action.request.errorMessage ?? "",
     status: "error"
   }),
-  idle: (): AiPriceIdleContent => ({
+  idle: (): IdleContent => ({
     status: "idle"
   }),
-  pending: (action: AiPriceActionModel): AiPricePendingContent => ({
+  pending: (action: ActionModel): PendingContent => ({
     actions: {
       cancel: action.request.cancel
     },
     status: "pending"
   }),
-  ready: (action: AiPriceActionModel): AiPriceReadyContent => ({
+  ready: (action: ActionModel): ReadyContent => ({
     actions: {
       apply: action.suggestion.apply,
       close: action.panel.close,
       retry: action.request.retry
     },
-    result: getAiPriceReadyResult(action) ?? {
+    result: getReadyResult(action) ?? {
       priceLabel: "",
       reasoning: ""
     },
     status: "ready"
   })
 } satisfies {
-  [Status in AiPriceContentStatus]: (
-    action: AiPriceActionModel
-  ) => Extract<AiPriceActionViewModel["content"], { status: Status }>
+  [Status in ContentStatus]: (
+    action: ActionModel
+  ) => Extract<ViewModel["content"], { status: Status }>
 }
 
-function getAiPriceActionViewModel(
-  action: AiPriceActionModel
-): AiPriceActionViewModel {
-  const contentStatus = getAiPriceContentStatus(action)
-  const content = AI_PRICE_CONTENT_BUILDERS[contentStatus](action)
+function getViewModel(action: ActionModel): ViewModel {
+  const contentStatus = getContentStatus(action)
+  const content = CONTENT_BUILDERS[contentStatus](action)
 
   return {
     content,
@@ -140,4 +134,4 @@ function getAiPriceActionViewModel(
   }
 }
 
-export { getAiPriceActionViewModel }
+export { getViewModel }

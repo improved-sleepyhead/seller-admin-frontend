@@ -11,7 +11,7 @@ export interface AdsListNavigationState {
   adsSearch: string
 }
 
-export function createAdsListNavigationState(
+export function createAdsNavigationState(
   params: AdsListUrlParams
 ): AdsListNavigationState {
   const serializedSearch = serializeAdsListUrlParams(params)
@@ -21,9 +21,7 @@ export function createAdsListNavigationState(
   }
 }
 
-export function resolveAdsSearchFromNavigationState(
-  state: unknown
-): string | null {
+export function getAdsSearch(state: unknown): string | null {
   if (
     typeof state !== "object" ||
     state === null ||
@@ -46,8 +44,8 @@ export function resolveAdsSearchFromNavigationState(
   return normalizedSearch
 }
 
-export function buildAdsListHrefFromNavigationState(state: unknown): string {
-  const adsSearch = resolveAdsSearchFromNavigationState(state)
+export function getAdsListHref(state: unknown): string {
+  const adsSearch = getAdsSearch(state)
 
   if (adsSearch === null || adsSearch.length === 0) {
     return ADS_LIST_PATH
