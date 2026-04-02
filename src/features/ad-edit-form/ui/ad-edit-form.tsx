@@ -22,7 +22,7 @@ import {
   Textarea
 } from "@/shared/ui/shadcn"
 
-import { mapAdDetailsToFormValues, AdEditFormSchema } from "../model"
+import { AdEditFormSchema, toFormValues } from "../model"
 import { CategoryFields } from "./category-fields"
 import { getCategoryDefaultParams } from "./category-fields-config"
 
@@ -37,27 +37,26 @@ export interface AdEditFormActionButtonProps {
   isPending: boolean
 }
 
-export interface AdEditFormCategoryChangeRequest {
+export interface CategoryChangeRequest {
   applyCategoryChange: () => void
   currentCategory: AdEditFormValues["category"]
   nextCategory: AdEditFormValues["category"]
 }
 
-type AdEditFormActionButtonComponent =
-  ComponentType<AdEditFormActionButtonProps>
+type ActionButtonComponent = ComponentType<AdEditFormActionButtonProps>
 
 interface AdEditFormProps {
   ad: AdDetailsDto
-  CancelButton?: AdEditFormActionButtonComponent
+  CancelButton?: ActionButtonComponent
   formId?: string
   hideActions?: boolean
   isSavePending?: boolean
   onFormReady?: (
     form: UseFormReturn<AdEditFormValues, unknown, AdEditFormValues>
   ) => void
-  onCategoryChangeRequest?: (request: AdEditFormCategoryChangeRequest) => void
+  onCategoryChangeRequest?: (request: CategoryChangeRequest) => void
   onSubmit?: FormSubmitHandler
-  SubmitButton?: AdEditFormActionButtonComponent
+  SubmitButton?: ActionButtonComponent
 }
 
 function isAdCategory(value: string): value is AdEditFormValues["category"] {
@@ -91,7 +90,7 @@ export function AdEditForm({
   SubmitButton = DefaultSubmitButton
 }: AdEditFormProps) {
   const form = useForm<AdEditFormValues, unknown, AdEditFormValues>({
-    defaultValues: mapAdDetailsToFormValues(ad),
+    defaultValues: toFormValues(ad),
     mode: "onBlur",
     reValidateMode: "onBlur",
     shouldUnregister: true,
@@ -100,7 +99,7 @@ export function AdEditForm({
   const { reset } = form
 
   useEffect(() => {
-    reset(mapAdDetailsToFormValues(ad))
+    reset(toFormValues(ad))
   }, [ad, reset])
 
   useEffect(() => {

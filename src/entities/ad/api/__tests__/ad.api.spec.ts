@@ -1,14 +1,13 @@
 import { beforeEach, describe, expect, it, vi } from "vitest"
 
-vi.mock("shared/api/client", () => ({
+vi.mock("@/shared/api/client", () => ({
   apiGet: vi.fn(),
   apiPatch: vi.fn(),
   apiPost: vi.fn()
 }))
 
+import { apiGet, apiPatch, apiPost } from "@/shared/api/client"
 import { AppApiError } from "@/shared/api/error"
-
-import { apiGet, apiPatch, apiPost } from "shared/api/client"
 
 import {
   getAdById,

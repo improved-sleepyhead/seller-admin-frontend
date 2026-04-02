@@ -1,7 +1,7 @@
 export { AdAiChat, AiChatPlaceholder } from "./ui"
 export {
-  getAdAiChatStorageKey,
-  getLegacyAdAiChatStorageKey,
+  getChatKey,
+  getLegacyChatKey,
   parseAiChatSseBuffer,
   readAdAiChatHistory,
   saveAdAiChatHistory,

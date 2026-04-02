@@ -103,11 +103,11 @@ function parseStoredHistory(
   }
 }
 
-export function getAdAiChatStorageKey(itemId: number): string {
+export function getChatKey(itemId: number): string {
   return toStorageKey(itemId)
 }
 
-export function getLegacyAdAiChatStorageKey(itemId: number): string {
+export function getLegacyChatKey(itemId: number): string {
   return toLegacyStorageKey(itemId)
 }
 

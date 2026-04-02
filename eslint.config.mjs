@@ -97,6 +97,20 @@ const higherThanPages = [
   "@/pages/**"
 ]
 
+const sharedPublicSubmoduleEntryPoints = [
+  "@/shared/api/client",
+  "@/shared/api/error",
+  "@/shared/api/zod-parser",
+  "@/shared/config/runtime-config",
+  "@/shared/lib/cn",
+  "@/shared/lib/draft-autosave-guard",
+  "@/shared/ui/loader",
+  "@/shared/ui/page-state",
+  "@/shared/ui/placeholders",
+  "@/shared/ui/shadcn",
+  "@/shared/ui/theme"
+]
+
 export default defineConfig(
   {
     ignores: [
@@ -221,7 +235,7 @@ export default defineConfig(
        * Публичный API:
        * - внутри своего slice используем относительные импорты
        * - между slice/layer используем только public API
-       * - для shared/ui и shared/lib разрешаем подмодули
+       * - для shared разрешены только явно объявленные public submodules
        * - для entities @x оставляем разрешение
        */
       "import/no-internal-modules": [
@@ -253,16 +267,7 @@ export default defineConfig(
             "@/features/*",
             "@/entities/*",
             "@/entities/*/{api,model,ui,lib,config}",
-
-            "shared/ui/**",
-            "shared/lib/**",
-            "shared/api/**",
-            "shared/config/**",
-
-            "@/shared/ui/**",
-            "@/shared/lib/**",
-            "@/shared/api/**",
-            "@/shared/config/**",
+            ...sharedPublicSubmoduleEntryPoints,
 
             "entities/*/@x/*",
             "@/entities/*/@x/*"

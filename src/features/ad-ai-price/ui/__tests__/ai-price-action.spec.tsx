@@ -56,13 +56,13 @@ function createQueryClient(): QueryClient {
   })
 }
 
-function createMatchMedia(): typeof window.matchMedia {
+function createMatchMedia(isMobile = false): typeof window.matchMedia {
   return (query: string): MediaQueryList => {
     return {
       addEventListener: vi.fn(),
       addListener: vi.fn(),
       dispatchEvent: vi.fn(),
-      matches: false,
+      matches: isMobile,
       media: query,
       onchange: null,
       removeEventListener: vi.fn(),
@@ -143,5 +143,29 @@ describe("AiPriceAction", () => {
     )
 
     expect(screen.getByTestId("price-value").textContent).toBe("120000")
+  })
+
+  it("should render result actions inside mobile sheet flow", async () => {
+    Object.defineProperty(window, "matchMedia", {
+      configurable: true,
+      value: createMatchMedia(true),
+      writable: true
+    })
+    requestAiPriceMock.mockResolvedValue({
+      currency: "RUB",
+      reasoning: "Рекомендация для мобильного сценария",
+      suggestedPrice: 165000
+    })
+
+    render(<AiPriceActionHarness />)
+
+    fireEvent.click(screen.getByRole("button", { name: "Предложить цену" }))
+
+    expect(
+      await screen.findByRole("heading", { name: "AI-предложение цены" })
+    ).toBeTruthy()
+    expect(
+      await screen.findByRole("button", { name: "Применить цену" })
+    ).toBeTruthy()
   })
 })

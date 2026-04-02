@@ -1,9 +1,8 @@
-import { Loader2Icon } from "lucide-react"
-
 import { AdsLayoutSwitch } from "@/features/ads-layout-switch"
 import { AdsSearchInput } from "@/features/ads-search"
 import { AdsSortSelect } from "@/features/ads-sorting"
 import { cn } from "@/shared/lib/cn"
+import { Loader } from "@/shared/ui/loader"
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/shadcn"
 
 interface AdsToolbarProps {
@@ -16,11 +15,11 @@ export function AdsToolbar({ isRefreshing = false }: AdsToolbarProps) {
       <CardHeader>
         <div className="flex min-h-5 items-center gap-2">
           <CardTitle>Список объявлений</CardTitle>
-          <Loader2Icon
+          <Loader
             aria-hidden={!isRefreshing}
             className={cn(
-              "text-muted-foreground h-4 w-4",
-              isRefreshing ? "animate-spin opacity-100" : "opacity-0"
+              "text-muted-foreground",
+              isRefreshing ? "opacity-100" : "opacity-0"
             )}
           />
         </div>

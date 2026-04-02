@@ -7,18 +7,16 @@ import type { Path, UseFormReturn } from "react-hook-form"
 type AdEditFormApi = UseFormReturn<AdEditFormValues, unknown, AdEditFormValues>
 type AdEditFormPath = Path<AdEditFormValues>
 
-interface EnsureValidAiPayloadSuccess {
+interface ValidPayload {
   isValid: true
   payload: ItemUpdateIn
 }
 
-interface EnsureValidAiPayloadFailure {
+interface InvalidPayload {
   isValid: false
 }
 
-type EnsureValidAiPayloadResult =
-  | EnsureValidAiPayloadSuccess
-  | EnsureValidAiPayloadFailure
+type AiPayloadResult = ValidPayload | InvalidPayload
 
 const NUMERIC_FIELDS = new Set<AdEditFormPath>([
   "price",
@@ -82,42 +80,29 @@ function toOptionalDescription(value: string): string | undefined {
   return trimmedValue.length > 0 ? trimmedValue : undefined
 }
 
-function buildAiPayloadCandidate(values: AdEditFormValues): unknown {
-  const basePayload = {
-    title: values.title.trim(),
-    description: toOptionalDescription(values.description),
-    price: toStrictNumber(values.price)
-  }
+interface AiPayloadBaseCandidate {
+  description?: string
+  price: number
+  title: string
+}
 
-  if (values.category === "auto") {
-    return {
-      ...basePayload,
-      category: "auto",
-      params: {
-        brand: toStrictTrimmedString(values.params.brand),
-        model: toStrictTrimmedString(values.params.model),
-        yearOfManufacture: toStrictNumber(values.params.yearOfManufacture),
-        transmission: toStrictTrimmedString(values.params.transmission),
-        mileage: toStrictNumber(values.params.mileage),
-        enginePower: toStrictNumber(values.params.enginePower)
-      }
+const PAYLOAD_BUILDERS = {
+  auto: (values: AdEditFormValues, basePayload: AiPayloadBaseCandidate) => ({
+    ...basePayload,
+    category: "auto",
+    params: {
+      brand: toStrictTrimmedString(values.params.brand),
+      model: toStrictTrimmedString(values.params.model),
+      yearOfManufacture: toStrictNumber(values.params.yearOfManufacture),
+      transmission: toStrictTrimmedString(values.params.transmission),
+      mileage: toStrictNumber(values.params.mileage),
+      enginePower: toStrictNumber(values.params.enginePower)
     }
-  }
-
-  if (values.category === "real_estate") {
-    return {
-      ...basePayload,
-      category: "real_estate",
-      params: {
-        type: toStrictTrimmedString(values.params.type),
-        address: toStrictTrimmedString(values.params.address),
-        area: toStrictNumber(values.params.area),
-        floor: toStrictNumber(values.params.floor)
-      }
-    }
-  }
-
-  return {
+  }),
+  electronics: (
+    values: AdEditFormValues,
+    basePayload: AiPayloadBaseCandidate
+  ) => ({
     ...basePayload,
     category: "electronics",
     params: {
@@ -127,12 +112,36 @@ function buildAiPayloadCandidate(values: AdEditFormValues): unknown {
       condition: toStrictTrimmedString(values.params.condition),
       color: toStrictTrimmedString(values.params.color)
     }
+  }),
+  real_estate: (
+    values: AdEditFormValues,
+    basePayload: AiPayloadBaseCandidate
+  ) => ({
+    ...basePayload,
+    category: "real_estate",
+    params: {
+      type: toStrictTrimmedString(values.params.type),
+      address: toStrictTrimmedString(values.params.address),
+      area: toStrictNumber(values.params.area),
+      floor: toStrictNumber(values.params.floor)
+    }
+  })
+} satisfies Record<
+  AdEditFormValues["category"],
+  (values: AdEditFormValues, basePayload: AiPayloadBaseCandidate) => unknown
+>
+
+function buildPayload(values: AdEditFormValues): unknown {
+  const basePayload = {
+    title: values.title.trim(),
+    description: toOptionalDescription(values.description),
+    price: toStrictNumber(values.price)
   }
+
+  return PAYLOAD_BUILDERS[values.category](values, basePayload)
 }
 
-function mapIssuePathToFieldPath(
-  path: readonly PropertyKey[]
-): AdEditFormPath | null {
+function getFieldPath(path: readonly PropertyKey[]): AdEditFormPath | null {
   const [rootSegment, nestedSegment] = path
 
   if (
@@ -171,14 +180,14 @@ function getFieldErrorMessage(fieldPath: AdEditFormPath): string {
   return "Заполните обязательное поле"
 }
 
-function applyPayloadValidationErrors(
+function applyFieldErrors(
   form: AdEditFormApi,
   issues: readonly { path: readonly PropertyKey[] }[]
 ): void {
   const fieldErrors = new Map<AdEditFormPath, string>()
 
   for (const issue of issues) {
-    const fieldPath = mapIssuePathToFieldPath(issue.path)
+    const fieldPath = getFieldPath(issue.path)
 
     if (fieldPath === null || fieldErrors.has(fieldPath)) {
       continue
@@ -205,7 +214,7 @@ function applyPayloadValidationErrors(
 
 export async function ensureValidAiPayload(
   form: AdEditFormApi
-): Promise<EnsureValidAiPayloadResult> {
+): Promise<AiPayloadResult> {
   const requiredFieldPaths = toRequiredFieldPaths(form.getValues("category"))
 
   form.clearErrors(requiredFieldPaths)
@@ -219,11 +228,11 @@ export async function ensureValidAiPayload(
   }
 
   const parseResult = ItemUpdateInSchema.safeParse(
-    buildAiPayloadCandidate(form.getValues())
+    buildPayload(form.getValues())
   )
 
   if (!parseResult.success) {
-    applyPayloadValidationErrors(form, parseResult.error.issues)
+    applyFieldErrors(form, parseResult.error.issues)
 
     return { isValid: false }
   }
@@ -234,4 +243,4 @@ export async function ensureValidAiPayload(
   }
 }
 
-export type { AdEditFormApi, EnsureValidAiPayloadResult }
+export type { AdEditFormApi, AiPayloadResult }

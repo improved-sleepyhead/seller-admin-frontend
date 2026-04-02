@@ -7,7 +7,7 @@ interface CategoryChangeRequest {
   onConfirm: () => void
 }
 
-interface UseCategoryChangeConfirmResult {
+interface Result {
   cancelCategoryChange: () => void
   confirmCategoryChange: () => void
   isCategoryChangeDialogOpen: boolean
@@ -15,7 +15,7 @@ interface UseCategoryChangeConfirmResult {
   requestedCategory: AdEditFormValues["category"] | null
 }
 
-export function useCategoryChangeConfirm(): UseCategoryChangeConfirmResult {
+export function useCategoryChangeConfirm(): Result {
   const [pendingRequest, setPendingRequest] =
     useState<CategoryChangeRequest | null>(null)
 

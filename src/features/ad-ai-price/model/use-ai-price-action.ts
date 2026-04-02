@@ -11,12 +11,12 @@ import { isAppApiError } from "@/shared/api/error"
 
 const MOBILE_MEDIA_QUERY = "(max-width: 767px)"
 
-interface UseAiPriceActionOptions {
+interface ActionOptions {
   disabled: boolean
   form: AdEditFormApi | null
 }
 
-interface AiPriceRequestController {
+interface RequestState {
   canStart: boolean
   cancel: () => void
   errorMessage: string | null
@@ -25,25 +25,25 @@ interface AiPriceRequestController {
   start: () => Promise<void>
 }
 
-interface AiPricePanelController {
+interface PanelState {
   close: () => void
   isMobile: boolean
   isOpen: boolean
   setOpen: (nextOpen: boolean) => void
 }
 
-interface AiPriceSuggestionController {
+interface SuggestionState {
   apply: () => void
   response: AiPriceResponse | null
 }
 
-interface UseAiPriceActionResult {
-  panel: AiPricePanelController
-  request: AiPriceRequestController
-  suggestion: AiPriceSuggestionController
+interface ActionState {
+  panel: PanelState
+  request: RequestState
+  suggestion: SuggestionState
 }
 
-function getAiPriceErrorMessage(error: unknown): string {
+function getErrorMessage(error: unknown): string {
   if (isAppApiError(error)) {
     return error.message
   }
@@ -88,7 +88,7 @@ function useIsMobile(): boolean {
 export function useAiPriceAction({
   disabled,
   form
-}: UseAiPriceActionOptions): UseAiPriceActionResult {
+}: ActionOptions): ActionState {
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
   const [isPreparing, setIsPreparing] = useState(false)
   const [isResultOpen, setIsResultOpen] = useState(false)
@@ -159,7 +159,7 @@ export function useAiPriceAction({
         return
       }
 
-      setErrorMessage(getAiPriceErrorMessage(error))
+      setErrorMessage(getErrorMessage(error))
     } finally {
       setIsPreparing(false)
       if (abortControllerRef.current === requestAbortController) {

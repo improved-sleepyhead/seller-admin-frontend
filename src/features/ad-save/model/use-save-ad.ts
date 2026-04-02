@@ -11,7 +11,7 @@ import {
 } from "@/entities/ad/model"
 import { isAppApiError } from "@/shared/api/error"
 
-import { mapAdEditFormValuesToItemPatchIn } from "./ad-save.payload"
+import { toItemPatch } from "./ad-save.payload"
 import { clearAdDraftAndChatStorage } from "./ad-save.storage"
 
 interface UseSaveAdOptions {
@@ -69,7 +69,7 @@ export function useSaveAd({
       const abortController = new AbortController()
 
       await mutation.mutateAsync({
-        item: mapAdEditFormValuesToItemPatchIn(values),
+        item: toItemPatch(values),
         signal: abortController.signal
       })
     },

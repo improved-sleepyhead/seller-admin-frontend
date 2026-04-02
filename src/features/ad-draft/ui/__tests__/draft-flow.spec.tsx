@@ -18,7 +18,7 @@ import {
   type AdEditFormValues
 } from "@/entities/ad/model"
 
-import { getAdDraftStorageKey, useAdDraft } from "../../model"
+import { getDraftKey, useAdDraft } from "../../model"
 import { DraftRestoreDialog } from "../draft-restore-dialog"
 
 const TIMESTAMP = "2026-03-30T00:00:00.000Z"
@@ -109,6 +109,12 @@ function DraftFlowHarness({
       >
         Изменить заголовок
       </button>
+      <button
+        type="button"
+        onClick={() => form.setValue("title", ad.title, { shouldDirty: true })}
+      >
+        Сбросить заголовок
+      </button>
       <DraftRestoreDialog
         open={isRestoreDialogOpen}
         onRestoreDraft={restoreDraft}
@@ -134,7 +140,7 @@ describe("Draft restore flow", () => {
   it("should render restore dialog when draft exists in localStorage", async () => {
     const itemId = 101
     window.localStorage.setItem(
-      getAdDraftStorageKey(itemId),
+      getDraftKey(itemId),
       JSON.stringify(createDraft(itemId, { title: "Черновик" }))
     )
 
@@ -146,7 +152,7 @@ describe("Draft restore flow", () => {
   it("should restore form values when user clicks restore draft", async () => {
     const itemId = 102
     window.localStorage.setItem(
-      getAdDraftStorageKey(itemId),
+      getDraftKey(itemId),
       JSON.stringify(createDraft(itemId, { title: "Заголовок из черновика" }))
     )
 
@@ -163,7 +169,7 @@ describe("Draft restore flow", () => {
 
   it("should remove draft when user opens server version", async () => {
     const itemId = 103
-    const storageKey = getAdDraftStorageKey(itemId)
+    const storageKey = getDraftKey(itemId)
 
     window.localStorage.setItem(
       storageKey,
@@ -179,9 +185,24 @@ describe("Draft restore flow", () => {
     })
   })
 
-  it("should autosave form values to localStorage after debounce", () => {
+  it("should not open restore dialog when stored draft matches server snapshot", async () => {
     const itemId = 104
-    const storageKey = getAdDraftStorageKey(itemId)
+
+    window.localStorage.setItem(
+      getDraftKey(itemId),
+      JSON.stringify(createDraft(itemId))
+    )
+
+    render(<DraftFlowHarness ad={createAd(itemId)} itemId={itemId} />)
+
+    await expect(
+      screen.findByText("Найден локальный черновик", {}, { timeout: 100 })
+    ).rejects.toThrow()
+  })
+
+  it("should autosave form values to localStorage after debounce", () => {
+    const itemId = 105
+    const storageKey = getDraftKey(itemId)
 
     vi.useFakeTimers()
     render(<DraftFlowHarness ad={createAd(itemId)} itemId={itemId} />)
@@ -201,5 +222,29 @@ describe("Draft restore flow", () => {
 
     const savedDraft = JSON.parse(rawDraft!) as AdDraft
     expect(savedDraft.form.title).toBe("Изменённый заголовок")
+  })
+
+  it("should remove autosaved draft after form returns to server snapshot", () => {
+    const itemId = 106
+    const storageKey = getDraftKey(itemId)
+
+    vi.useFakeTimers()
+    render(<DraftFlowHarness ad={createAd(itemId)} itemId={itemId} />)
+
+    fireEvent.click(screen.getByText("Изменить заголовок"))
+
+    act(() => {
+      vi.advanceTimersByTime(700)
+    })
+
+    expect(window.localStorage.getItem(storageKey)).not.toBeNull()
+
+    fireEvent.click(screen.getByText("Сбросить заголовок"))
+
+    act(() => {
+      vi.advanceTimersByTime(700)
+    })
+
+    expect(window.localStorage.getItem(storageKey)).toBeNull()
   })
 })

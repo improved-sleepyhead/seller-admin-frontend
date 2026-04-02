@@ -6,6 +6,7 @@ import { useAdsSearchInput } from "../model"
 
 export function AdsSearchInput() {
   const { queryValue, setQueryValue } = useAdsSearchInput()
+  const inputId = "ads-search-input"
 
   return (
     <div className="relative w-full">
@@ -15,6 +16,8 @@ export function AdsSearchInput() {
       />
       <Input
         aria-label="Поиск объявлений"
+        id={inputId}
+        name="q"
         placeholder="Поиск по объявлениям"
         value={queryValue}
         onChange={event => setQueryValue(event.target.value)}

@@ -3,7 +3,7 @@ import { useState } from "react"
 import { useLocation, useParams } from "react-router-dom"
 
 import { adEditDetailQuery, aiStatusQuery } from "@/entities/ad/api"
-import { buildAdsListHrefFromNavigationState } from "@/entities/ad/model"
+import { getAdsListHref } from "@/entities/ad/model"
 import { useCategoryChangeConfirm } from "@/features/ad-category-change"
 import { useAdDraft } from "@/features/ad-draft"
 import { useSaveAd } from "@/features/ad-save"
@@ -17,7 +17,7 @@ import {
   parseAdEditPageId,
   resolveAdEditNavigationState
 } from "./ad-edit-page.navigation"
-import { getAdEditPageScreenState } from "./ad-edit-page.screen-state"
+import { getScreenState } from "./ad-edit-page.screen-state"
 
 import type {
   AdEditPageFormApi,
@@ -28,7 +28,7 @@ export function useAdEditPageModel(): AdEditPageModel {
   const { id } = useParams<{ id: string }>()
   const location = useLocation()
   const adId = parseAdEditPageId(id)
-  const backHref = buildAdsListHrefFromNavigationState(location.state)
+  const backHref = getAdsListHref(location.state)
   const navigationState = resolveAdEditNavigationState(location.state)
   const editEntryRevision = useAdEditEntryRevision(location.pathname)
   const [editForm, setEditForm] = useState<AdEditPageFormApi | null>(null)
@@ -53,7 +53,7 @@ export function useAdEditPageModel(): AdEditPageModel {
   })
   useCancelAdEditPageQueries(adId)
 
-  const screenState = getAdEditPageScreenState(adId, backHref, detailQuery)
+  const screenState = getScreenState(adId, backHref, detailQuery)
 
   if (screenState !== null) {
     return screenState

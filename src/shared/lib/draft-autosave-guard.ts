@@ -4,24 +4,24 @@ function isBrowserEnvironment(): boolean {
   return typeof window !== "undefined"
 }
 
-function toSkipNextDraftAutosaveStorageKey(itemId: number): string {
+function getStorageKey(itemId: number): string {
   return `${SKIP_NEXT_DRAFT_AUTOSAVE_KEY_PREFIX}${itemId}`
 }
 
-export function markSkipNextDraftAutosave(itemId: number): void {
+export function markNextAutosaveSkip(itemId: number): void {
   if (!isBrowserEnvironment()) {
     return
   }
 
-  window.sessionStorage.setItem(toSkipNextDraftAutosaveStorageKey(itemId), "1")
+  window.sessionStorage.setItem(getStorageKey(itemId), "1")
 }
 
-export function consumeSkipNextDraftAutosave(itemId: number): boolean {
+export function consumeNextAutosaveSkip(itemId: number): boolean {
   if (!isBrowserEnvironment()) {
     return false
   }
 
-  const storageKey = toSkipNextDraftAutosaveStorageKey(itemId)
+  const storageKey = getStorageKey(itemId)
   const shouldSkip = window.sessionStorage.getItem(storageKey) === "1"
 
   if (!shouldSkip) {

@@ -1,5 +1,5 @@
-import { normalizeApiError } from "shared/api/error"
-import { parseApiResponse } from "shared/api/zod-parser"
+import { normalizeApiError } from "@/shared/api/error"
+import { parseApiResponse } from "@/shared/api/zod-parser"
 
 import type { ZodType } from "zod/v4"
 

@@ -1,5 +1,5 @@
 export { cn } from "./cn"
 export {
-  consumeSkipNextDraftAutosave,
-  markSkipNextDraftAutosave
+  consumeNextAutosaveSkip,
+  markNextAutosaveSkip
 } from "./draft-autosave-guard"

@@ -1,7 +1,6 @@
-import { Loader2Icon } from "lucide-react"
-
 import { type AdEditFormApi, type AiChatMessage } from "@/entities/ad/model"
 import { cn } from "@/shared/lib/cn"
+import { Loader } from "@/shared/ui/loader"
 import { Badge, Button, Label, Textarea } from "@/shared/ui/shadcn"
 
 import { useAiChat } from "../model"
@@ -12,40 +11,43 @@ interface AdAiChatProps {
   itemId: number
 }
 
+const AI_CHAT_ROLE_LABELS = {
+  assistant: "AI",
+  system: "Система",
+  user: "Вы"
+} satisfies Record<AiChatMessage["role"], string>
+
+const AI_CHAT_STATUS_CONFIG = {
+  done: {
+    label: "Готово",
+    variant: "outline"
+  },
+  error: {
+    label: "Ошибка",
+    variant: "destructive"
+  },
+  streaming: {
+    label: "Печатает...",
+    variant: "secondary"
+  }
+} satisfies Record<
+  AiChatMessage["status"],
+  {
+    label: string
+    variant: "destructive" | "outline" | "secondary"
+  }
+>
+
 function getRoleLabel(role: AiChatMessage["role"]): string {
-  if (role === "assistant") {
-    return "AI"
-  }
-
-  if (role === "user") {
-    return "Вы"
-  }
-
-  return "Система"
+  return AI_CHAT_ROLE_LABELS[role]
 }
 
 function getStatusLabel(status: AiChatMessage["status"]): string {
-  if (status === "streaming") {
-    return "Печатает..."
-  }
-
-  if (status === "error") {
-    return "Ошибка"
-  }
-
-  return "Готово"
+  return AI_CHAT_STATUS_CONFIG[status].label
 }
 
 function getStatusBadgeVariant(status: AiChatMessage["status"]) {
-  if (status === "error") {
-    return "destructive" as const
-  }
-
-  if (status === "streaming") {
-    return "secondary" as const
-  }
-
-  return "outline" as const
+  return AI_CHAT_STATUS_CONFIG[status].variant
 }
 
 function ChatMessageItem({ message }: { message: AiChatMessage }) {
@@ -186,7 +188,7 @@ export function AdAiChat({ disabled, form, itemId }: AdAiChatProps) {
           <Button disabled={!canSubmit} type="submit">
             {isPending ? (
               <>
-                <Loader2Icon className="size-4 animate-spin" />
+                <Loader />
                 Генерируем...
               </>
             ) : (

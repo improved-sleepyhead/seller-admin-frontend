@@ -1,2 +1,2 @@
-export { mapAdDetailsToFormValues, AdEditFormSchema } from "./model"
+export { toFormValues, AdEditFormSchema } from "./model"
 export { AdEditForm } from "./ui"

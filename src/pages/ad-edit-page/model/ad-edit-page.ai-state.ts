@@ -2,17 +2,115 @@ import type { AiStatusDto } from "@/entities/ad/api"
 
 import type { AdEditPageAiState } from "./ad-edit-page.contract"
 
-function getPartiallyDisabledFeatures(aiStatus: AiStatusDto | null): string[] {
+type AiStatusKind = "pending" | "error" | "enabled" | "disabled"
+
+interface AiStatusView {
+  badgeVariant: AdEditPageAiState["badgeVariant"]
+  label: string
+  message: string
+}
+
+const AI_FEATURE_LABELS = {
+  chat: "чат",
+  description: "описание",
+  price: "цена"
+} satisfies Record<keyof AiStatusDto["features"], string>
+
+function getDisabledFeatures(aiStatus: AiStatusDto | null): string[] {
   if (aiStatus?.enabled !== true) {
     return []
   }
 
-  return [
-    !aiStatus.features.description ? "описание" : null,
-    !aiStatus.features.price ? "цена" : null,
-    !aiStatus.features.chat ? "чат" : null
-  ].filter((value): value is string => value !== null)
+  return Object.entries(AI_FEATURE_LABELS).flatMap(
+    ([featureKey, featureLabel]) =>
+      aiStatus.features[featureKey as keyof AiStatusDto["features"]]
+        ? []
+        : [featureLabel]
+  )
 }
+
+const AI_STATUS_RULES = [
+  {
+    matches: ({
+      isPending
+    }: {
+      aiEnabled: boolean
+      isError: boolean
+      isPending: boolean
+    }) => isPending,
+    status: "pending"
+  },
+  {
+    matches: ({
+      isError
+    }: {
+      aiEnabled: boolean
+      isError: boolean
+      isPending: boolean
+    }) => isError,
+    status: "error"
+  },
+  {
+    matches: ({
+      aiEnabled
+    }: {
+      aiEnabled: boolean
+      isError: boolean
+      isPending: boolean
+    }) => aiEnabled,
+    status: "enabled"
+  }
+] as const satisfies readonly {
+  matches: (args: {
+    aiEnabled: boolean
+    isError: boolean
+    isPending: boolean
+  }) => boolean
+  status: AiStatusKind
+}[]
+
+function getAiStatusKind(args: {
+  aiEnabled: boolean
+  isError: boolean
+  isPending: boolean
+}): AiStatusKind {
+  return AI_STATUS_RULES.find(rule => rule.matches(args))?.status ?? "disabled"
+}
+
+const AI_STATUS_VIEWS = {
+  disabled: (): AiStatusView => ({
+    badgeVariant: "secondary",
+    label: "AI недоступен",
+    message:
+      "AI отключен в текущем окружении. Основное редактирование доступно без ограничений."
+  }),
+  enabled: ({
+    disabledFeatures
+  }: {
+    disabledFeatures: string[]
+  }): AiStatusView => ({
+    badgeVariant: "default",
+    label: "AI доступен",
+    message:
+      disabledFeatures.length > 0
+        ? `Частично недоступно: ${disabledFeatures.join(", ")}.`
+        : "Все AI-инструменты доступны."
+  }),
+  error: (): AiStatusView => ({
+    badgeVariant: "destructive",
+    label: "AI недоступен",
+    message: "Не удалось загрузить AI-статус. AI-контролы временно отключены."
+  }),
+  pending: (): AiStatusView => ({
+    badgeVariant: "secondary",
+    label: "Проверка AI...",
+    message:
+      "Проверяем доступность AI. До завершения проверки AI-контролы отключены."
+  })
+} satisfies Record<
+  AiStatusKind,
+  (args: { disabledFeatures: string[] }) => AiStatusView
+>
 
 export function getAdEditPageAiState(
   aiStatus: AiStatusDto | null,
@@ -20,36 +118,19 @@ export function getAdEditPageAiState(
   isPending: boolean
 ): AdEditPageAiState {
   const aiEnabled = !isError && aiStatus?.enabled === true
-  const partiallyDisabledFeatures = getPartiallyDisabledFeatures(aiStatus)
-
-  let badgeVariant: AdEditPageAiState["badgeVariant"] = "secondary"
-  let label = "AI недоступен"
-  let message =
-    "AI отключен в текущем окружении. Основное редактирование доступно без ограничений."
-
-  if (isPending) {
-    label = "Проверка AI..."
-    message =
-      "Проверяем доступность AI. До завершения проверки AI-контролы отключены."
-  } else if (isError) {
-    badgeVariant = "destructive"
-    message = "Не удалось загрузить AI-статус. AI-контролы временно отключены."
-  } else if (aiEnabled) {
-    badgeVariant = "default"
-    label = "AI доступен"
-    message =
-      partiallyDisabledFeatures.length > 0
-        ? `Частично недоступно: ${partiallyDisabledFeatures.join(", ")}.`
-        : "Все AI-инструменты доступны."
-  }
+  const disabledFeatures = getDisabledFeatures(aiStatus)
+  const statusKind = getAiStatusKind({
+    aiEnabled,
+    isError,
+    isPending
+  })
+  const view = AI_STATUS_VIEWS[statusKind]({ disabledFeatures })
 
   return {
-    badgeVariant,
-    chatEnabled: aiEnabled && aiStatus.features.chat,
-    descriptionEnabled: aiEnabled && aiStatus.features.description,
-    label,
-    message,
+    ...view,
+    chatEnabled: aiEnabled && aiStatus?.features.chat === true,
+    descriptionEnabled: aiEnabled && aiStatus?.features.description === true,
     model: aiStatus?.model ?? "не указана",
-    priceEnabled: aiEnabled && aiStatus.features.price
+    priceEnabled: aiEnabled && aiStatus?.features.price === true
   }
 }

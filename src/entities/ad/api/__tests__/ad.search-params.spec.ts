@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest"
 
 import {
   ADS_LIST_DEFAULT_URL_PARAMS,
-  mapAdsUrlParamsToBackendQuery,
+  toBackendQuery,
   parseAdsSearchParams
 } from "../ad.search-params"
 
@@ -36,9 +36,9 @@ describe("parseAdsSearchParams", () => {
   })
 })
 
-describe("mapAdsUrlParamsToBackendQuery", () => {
+describe("toBackendQuery", () => {
   it("should map page 2 to skip 9 and limit 9", () => {
-    const query = mapAdsUrlParamsToBackendQuery({
+    const query = toBackendQuery({
       ...ADS_LIST_DEFAULT_URL_PARAMS,
       page: 2
     })
@@ -50,7 +50,7 @@ describe("mapAdsUrlParamsToBackendQuery", () => {
   })
 
   it("should omit optional backend fields for empty values", () => {
-    const query = mapAdsUrlParamsToBackendQuery(ADS_LIST_DEFAULT_URL_PARAMS)
+    const query = toBackendQuery(ADS_LIST_DEFAULT_URL_PARAMS)
 
     expect(query).toEqual({
       q: undefined,

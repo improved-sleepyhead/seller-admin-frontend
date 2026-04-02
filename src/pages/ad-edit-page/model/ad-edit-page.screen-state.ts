@@ -4,7 +4,7 @@ import { isAppApiError } from "@/shared/api/error"
 import type { AdEditPageScreenState } from "./ad-edit-page.contract"
 import type { UseQueryResult } from "@tanstack/react-query"
 
-export function getAdEditPageScreenState(
+export function getScreenState(
   adId: number | null,
   backHref: string,
   detailQuery: UseQueryResult<AdDetailsDto>

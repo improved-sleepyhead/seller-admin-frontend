@@ -1,6 +1,6 @@
 export {
-  getAdAiChatStorageKey,
-  getLegacyAdAiChatStorageKey,
+  getChatKey,
+  getLegacyChatKey,
   readAdAiChatHistory,
   saveAdAiChatHistory
 } from "./ai-chat-history"

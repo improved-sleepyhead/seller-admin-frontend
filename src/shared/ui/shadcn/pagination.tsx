@@ -5,7 +5,8 @@ import {
 } from "lucide-react"
 
 import { cn } from "@/shared/lib/cn"
-import { buttonVariants, type Button } from "@/shared/ui/shadcn/button"
+
+import { buttonVariants, type Button } from "./button"
 
 import type * as React from "react"
 

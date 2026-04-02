@@ -1,1 +1,1 @@
-export {}
+export { PageLoader } from "./page-loader"
