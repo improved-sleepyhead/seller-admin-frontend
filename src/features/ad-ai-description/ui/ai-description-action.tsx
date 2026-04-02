@@ -87,48 +87,128 @@ interface AiDescriptionResultContentProps {
   content: AiDescriptionResultContentModel
 }
 
+type AiDescriptionContentStatus = AiDescriptionResultContentModel["status"]
+type AiDescriptionPendingContent = Extract<
+  AiDescriptionResultContentModel,
+  { status: "pending" }
+>
+type AiDescriptionErrorContent = Extract<
+  AiDescriptionResultContentModel,
+  { status: "error" }
+>
+type AiDescriptionReadyContent = Extract<
+  AiDescriptionResultContentModel,
+  { status: "ready" }
+>
+type AiDescriptionIdleContent = Extract<
+  AiDescriptionResultContentModel,
+  { status: "idle" }
+>
+type AiDescriptionActionModel = ReturnType<typeof useAiDescriptionAction>
+
+function getAiDescriptionReadyResult(
+  action: AiDescriptionActionModel
+): AiDescriptionReadyContent["result"] | null {
+  if (action.suggestion.text === null) {
+    return null
+  }
+
+  return {
+    text: action.suggestion.text
+  }
+}
+
+const AI_DESCRIPTION_CONTENT_STATUS_RULES = [
+  {
+    matches: ({
+      action
+    }: {
+      action: AiDescriptionActionModel
+      readyResult: AiDescriptionReadyContent["result"] | null
+    }) => action.request.isPending,
+    status: "pending"
+  },
+  {
+    matches: ({
+      action
+    }: {
+      action: AiDescriptionActionModel
+      readyResult: AiDescriptionReadyContent["result"] | null
+    }) => action.request.errorMessage !== null,
+    status: "error"
+  },
+  {
+    matches: ({
+      readyResult
+    }: {
+      action: AiDescriptionActionModel
+      readyResult: AiDescriptionReadyContent["result"] | null
+    }) => readyResult !== null,
+    status: "ready"
+  }
+] as const satisfies readonly {
+  matches: (args: {
+    action: AiDescriptionActionModel
+    readyResult: AiDescriptionReadyContent["result"] | null
+  }) => boolean
+  status: AiDescriptionContentStatus
+}[]
+
+function getAiDescriptionContentStatus(
+  action: AiDescriptionActionModel
+): AiDescriptionContentStatus {
+  const readyResult = getAiDescriptionReadyResult(action)
+
+  return (
+    AI_DESCRIPTION_CONTENT_STATUS_RULES.find(rule =>
+      rule.matches({
+        action,
+        readyResult
+      })
+    )?.status ?? "idle"
+  )
+}
+
+const AI_DESCRIPTION_CONTENT_BUILDERS = {
+  error: (action: AiDescriptionActionModel): AiDescriptionErrorContent => ({
+    actions: {
+      close: action.panel.close,
+      retry: action.request.retry
+    },
+    errorMessage: action.request.errorMessage ?? "",
+    status: "error"
+  }),
+  idle: (): AiDescriptionIdleContent => ({
+    status: "idle"
+  }),
+  pending: (action: AiDescriptionActionModel): AiDescriptionPendingContent => ({
+    actions: {
+      cancel: action.request.cancel
+    },
+    status: "pending"
+  }),
+  ready: (action: AiDescriptionActionModel): AiDescriptionReadyContent => ({
+    actions: {
+      apply: action.suggestion.apply,
+      close: action.panel.close,
+      openDiff: action.diff.open
+    },
+    result: getAiDescriptionReadyResult(action) ?? {
+      text: ""
+    },
+    status: "ready"
+  })
+} satisfies {
+  [Status in AiDescriptionContentStatus]: (
+    action: AiDescriptionActionModel
+  ) => Extract<AiDescriptionResultContentModel, { status: Status }>
+}
+
 function getAiDescriptionActionViewModel(
-  action: ReturnType<typeof useAiDescriptionAction>
+  action: AiDescriptionActionModel
 ): AiDescriptionActionViewModel {
-  const content = (() => {
-    if (action.request.isPending) {
-      return {
-        actions: {
-          cancel: action.request.cancel
-        },
-        status: "pending"
-      } satisfies AiDescriptionResultContentModel
-    }
-
-    if (action.request.errorMessage !== null) {
-      return {
-        actions: {
-          close: action.panel.close,
-          retry: action.request.retry
-        },
-        errorMessage: action.request.errorMessage,
-        status: "error"
-      } satisfies AiDescriptionResultContentModel
-    }
-
-    if (action.suggestion.text !== null) {
-      return {
-        actions: {
-          apply: action.suggestion.apply,
-          close: action.panel.close,
-          openDiff: action.diff.open
-        },
-        result: {
-          text: action.suggestion.text
-        },
-        status: "ready"
-      } satisfies AiDescriptionResultContentModel
-    }
-
-    return {
-      status: "idle"
-    } satisfies AiDescriptionResultContentModel
-  })()
+  const contentStatus = getAiDescriptionContentStatus(action)
+  const content = AI_DESCRIPTION_CONTENT_BUILDERS[contentStatus](action)
 
   return {
     content,
@@ -154,59 +234,65 @@ function getAiDescriptionActionViewModel(
   }
 }
 
-function AiDescriptionResultContent({
+function AiDescriptionPendingResultContent({
   content
-}: AiDescriptionResultContentProps) {
-  if (content.status === "pending") {
-    return (
-      <div className="space-y-4">
-        <p className="flex items-center gap-2 text-sm">
-          <Loader2Icon className="size-4 animate-spin" />
-          Генерируем улучшенный текст...
-        </p>
+}: {
+  content: AiDescriptionPendingContent
+}) {
+  return (
+    <div className="space-y-4">
+      <p className="flex items-center gap-2 text-sm">
+        <Loader2Icon className="size-4 animate-spin" />
+        Генерируем улучшенный текст...
+      </p>
+      <Button
+        className="w-full"
+        type="button"
+        variant="outline"
+        onClick={content.actions.cancel}
+      >
+        Отменить запрос
+      </Button>
+    </div>
+  )
+}
+
+function AiDescriptionErrorResultContent({
+  content
+}: {
+  content: AiDescriptionErrorContent
+}) {
+  return (
+    <div className="space-y-4">
+      <p className="text-destructive text-sm">{content.errorMessage}</p>
+      <div className="flex flex-col gap-2">
+        <Button
+          className="w-full"
+          type="button"
+          onClick={() => {
+            void content.actions.retry()
+          }}
+        >
+          Повторить запрос
+        </Button>
         <Button
           className="w-full"
           type="button"
           variant="outline"
-          onClick={content.actions.cancel}
+          onClick={content.actions.close}
         >
-          Отменить запрос
+          Закрыть
         </Button>
       </div>
-    )
-  }
+    </div>
+  )
+}
 
-  if (content.status === "error") {
-    return (
-      <div className="space-y-4">
-        <p className="text-destructive text-sm">{content.errorMessage}</p>
-        <div className="flex flex-col gap-2">
-          <Button
-            className="w-full"
-            type="button"
-            onClick={() => {
-              void content.actions.retry()
-            }}
-          >
-            Повторить запрос
-          </Button>
-          <Button
-            className="w-full"
-            type="button"
-            variant="outline"
-            onClick={content.actions.close}
-          >
-            Закрыть
-          </Button>
-        </div>
-      </div>
-    )
-  }
-
-  if (content.status !== "ready") {
-    return null
-  }
-
+function AiDescriptionReadyResultContent({
+  content
+}: {
+  content: AiDescriptionReadyContent
+}) {
   return (
     <div className="space-y-4">
       <div className="space-y-1">
@@ -240,6 +326,39 @@ function AiDescriptionResultContent({
       </div>
     </div>
   )
+}
+
+function AiDescriptionIdleResultContent({
+  content
+}: {
+  content: AiDescriptionIdleContent
+}) {
+  void content
+
+  return null
+}
+
+const AI_DESCRIPTION_RESULT_CONTENT_COMPONENTS = {
+  error: AiDescriptionErrorResultContent,
+  idle: AiDescriptionIdleResultContent,
+  pending: AiDescriptionPendingResultContent,
+  ready: AiDescriptionReadyResultContent
+} satisfies {
+  [Status in AiDescriptionContentStatus]: (props: {
+    content: Extract<AiDescriptionResultContentModel, { status: Status }>
+  }) => ReturnType<typeof AiDescriptionPendingResultContent> | null
+}
+
+function AiDescriptionResultContent({
+  content
+}: AiDescriptionResultContentProps) {
+  const ContentComponent = AI_DESCRIPTION_RESULT_CONTENT_COMPONENTS[
+    content.status
+  ] as (props: {
+    content: AiDescriptionResultContentModel
+  }) => ReturnType<typeof AiDescriptionPendingResultContent> | null
+
+  return <ContentComponent content={content} />
 }
 
 export function AiDescriptionAction({
