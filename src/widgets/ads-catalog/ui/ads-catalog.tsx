@@ -76,10 +76,7 @@ function AdsList({ ads, navigationState }: AdsListContentProps) {
 
 export function AdsCatalog({ ads, layout, navigationState }: AdsCatalogProps) {
   return (
-    <div
-      key={layout}
-      className="motion-safe:animate-in motion-safe:fade-in-0 motion-safe:duration-200"
-    >
+    <div className="motion-safe:animate-in motion-safe:fade-in-0 motion-safe:duration-200">
       {layout === "list" ? (
         <AdsList ads={ads} navigationState={navigationState} />
       ) : (
