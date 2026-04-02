@@ -10,11 +10,16 @@ export * from "./ad.contracts"
 export { type AdDetailsVM, type AdsListItemVM } from "./ad.mapper"
 export { updateAdMutation } from "./ad.mutations"
 export {
+  ADS_QUERY_POLICY,
   adDetailQuery,
   adEditDetailQuery,
   adsKeys,
   adsListQuery,
-  aiStatusQuery
+  aiStatusQuery,
+  cancelAdDetailQuery,
+  cancelAdEditPageQueries,
+  cancelAdsListQuery,
+  invalidateAdAfterSave
 } from "./ad.queries"
 export {
   ADS_LAYOUTS,

@@ -3,7 +3,7 @@ import { useCallback } from "react"
 import { useNavigate } from "react-router-dom"
 import { toast } from "sonner"
 
-import { adsKeys, updateAdMutation } from "@/entities/ad/api"
+import { invalidateAdAfterSave, updateAdMutation } from "@/entities/ad/api"
 import {
   clearDraftRegistryMeta,
   type AdEditFormValues,
@@ -52,11 +52,7 @@ export function useSaveAd({
       toast.error(getErrorToastMessage(error))
     },
     onSuccess: async () => {
-      await Promise.all([
-        queryClient.invalidateQueries({ queryKey: adsKeys.detail(itemId) }),
-        queryClient.invalidateQueries({ queryKey: adsKeys.editDetail(itemId) }),
-        queryClient.invalidateQueries({ queryKey: adsKeys.lists() })
-      ])
+      await invalidateAdAfterSave(queryClient, itemId)
 
       clearAdDraftAndChatStorage(itemId)
       clearDraftRegistryMeta(itemId)

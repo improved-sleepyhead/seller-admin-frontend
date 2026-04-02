@@ -1,7 +1,7 @@
 import { useQueryClient } from "@tanstack/react-query"
 import { useEffect, useState } from "react"
 
-import { adsKeys } from "@/entities/ad/api"
+import { cancelAdEditPageQueries } from "@/entities/ad/api"
 
 export function useAdEditEntryRevision(pathname: string): number {
   const [editEntryRevision, setEditEntryRevision] = useState(0)
@@ -25,18 +25,8 @@ export function useCancelAdEditPageQueries(adId: number | null): void {
       return
     }
 
-    const detailQueryKey = adsKeys.editDetail(adId)
-    const aiStatusQueryKey = adsKeys.aiStatus()
-
     return () => {
-      void queryClient.cancelQueries({
-        exact: true,
-        queryKey: detailQueryKey
-      })
-      void queryClient.cancelQueries({
-        exact: true,
-        queryKey: aiStatusQueryKey
-      })
+      void cancelAdEditPageQueries(queryClient, adId)
     }
   }, [adId, queryClient])
 }

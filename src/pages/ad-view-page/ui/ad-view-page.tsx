@@ -2,7 +2,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query"
 import { useEffect } from "react"
 import { useLocation, useParams } from "react-router-dom"
 
-import { adDetailQuery, adsKeys } from "@/entities/ad/api"
+import { adDetailQuery, cancelAdDetailQuery } from "@/entities/ad/api"
 import {
   buildAdsListHrefFromNavigationState,
   resolveAdsSearchFromNavigationState,
@@ -53,13 +53,8 @@ export function AdViewPage() {
       return
     }
 
-    const detailQueryKey = adsKeys.detail(adId)
-
     return () => {
-      void queryClient.cancelQueries({
-        exact: true,
-        queryKey: detailQueryKey
-      })
+      void cancelAdDetailQuery(queryClient, adId)
     }
   }, [adId, queryClient])
 
