@@ -112,6 +112,7 @@ export function useAiDescriptionAction({
   )
   const abortControllerRef = useRef<AbortController | null>(null)
   const lastAppliedDiffRef = useRef<DescriptionDiffModel | null>(null)
+  const shouldRestoreResultOnDiffCloseRef = useRef(false)
   const isMobile = useIsMobile()
   const mutation = useMutation({
     mutationFn: ({
@@ -128,6 +129,7 @@ export function useAiDescriptionAction({
       return
     }
 
+    shouldRestoreResultOnDiffCloseRef.current = false
     abortControllerRef.current.abort()
     abortControllerRef.current = null
     setIsPreparing(false)
@@ -136,6 +138,7 @@ export function useAiDescriptionAction({
   }, [mutation, setIsPreparing])
 
   const closeResult = useCallback(() => {
+    shouldRestoreResultOnDiffCloseRef.current = false
     setIsResultOpen(false)
   }, [])
 
@@ -157,6 +160,7 @@ export function useAiDescriptionAction({
 
     const requestAbortController = new AbortController()
     abortControllerRef.current = requestAbortController
+    shouldRestoreResultOnDiffCloseRef.current = false
     setErrorMessage(null)
     setResponse(null)
     setIsResultOpen(true)
@@ -191,20 +195,31 @@ export function useAiDescriptionAction({
   }, [requestSuggestion])
 
   const viewDiff = useCallback(() => {
+    const shouldRestoreResult = !isMobile && isResultOpen
+    shouldRestoreResultOnDiffCloseRef.current = shouldRestoreResult
+
     if (form !== null && response !== null) {
       setVisibleDiff({
         sourceText: form.getValues("description"),
         suggestion: response.suggestion
       })
+
+      if (shouldRestoreResult) {
+        setIsResultOpen(false)
+      }
       setIsDiffViewerOpen(true)
       return
     }
 
     if (lastAppliedDiffRef.current !== null) {
       setVisibleDiff(lastAppliedDiffRef.current)
+
+      if (shouldRestoreResult) {
+        setIsResultOpen(false)
+      }
       setIsDiffViewerOpen(true)
     }
-  }, [form, response])
+  }, [form, isMobile, isResultOpen, response])
 
   const applySuggestion = useCallback(() => {
     if (response === null || form === null) {
@@ -218,6 +233,7 @@ export function useAiDescriptionAction({
     }
 
     lastAppliedDiffRef.current = nextDiff
+    shouldRestoreResultOnDiffCloseRef.current = false
     form.setValue("description", response.suggestion, {
       shouldDirty: true,
       shouldTouch: true,
@@ -245,6 +261,13 @@ export function useAiDescriptionAction({
 
   const closeDiffViewer = useCallback(() => {
     setIsDiffViewerOpen(false)
+    if (shouldRestoreResultOnDiffCloseRef.current) {
+      shouldRestoreResultOnDiffCloseRef.current = false
+      setIsResultOpen(true)
+      return
+    }
+
+    shouldRestoreResultOnDiffCloseRef.current = false
   }, [])
 
   useEffect(() => {

@@ -170,4 +170,30 @@ describe("AiDescriptionAction", () => {
       await screen.findByRole("button", { name: "Сравнить изменения" })
     ).toBeTruthy()
   })
+
+  it("should restore AI result after closing diff viewer on desktop", async () => {
+    requestAiDescriptionMock.mockResolvedValue({
+      suggestion: "AI-описание для diff"
+    })
+
+    render(<AiDescriptionActionHarness />)
+
+    fireEvent.click(screen.getByRole("button", { name: "Улучшить описание" }))
+    fireEvent.click(
+      await screen.findByRole("button", { name: "Сравнить изменения" })
+    )
+
+    expect(
+      await screen.findByRole("heading", { name: "Сравнение описания" })
+    ).toBeTruthy()
+
+    fireEvent.click(screen.getByRole("button", { name: "Close" }))
+
+    expect(
+      await screen.findByRole("button", { name: "Применить" })
+    ).toBeTruthy()
+    expect(
+      screen.getByRole("button", { name: "Сравнить изменения" })
+    ).toBeTruthy()
+  })
 })
