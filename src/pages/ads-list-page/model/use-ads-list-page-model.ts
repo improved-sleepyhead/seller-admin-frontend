@@ -10,7 +10,7 @@ import {
   cancelAdsListQuery,
   toListQuery
 } from "@/entities/ad/api"
-import { useAdsListState } from "@/entities/ad/model"
+import { createAdsNavigationState, useAdsListState } from "@/entities/ad/model"
 
 import { getAdsListPageCatalogState } from "./ads-list-page.catalog-state"
 import { useAdsListUrlSync } from "./use-ads-list-url-sync"
@@ -45,6 +45,17 @@ export function useAdsListPageModel(): AdsListPageModel {
     enabled: isHydrated,
     placeholderData: keepPreviousData
   })
+  const navigationState = useMemo(() => {
+    return createAdsNavigationState({
+      categories,
+      layout,
+      needsRevision,
+      page,
+      q,
+      sortColumn,
+      sortDirection
+    })
+  }, [categories, layout, needsRevision, page, q, sortColumn, sortDirection])
 
   useEffect(() => {
     return () => {
@@ -65,6 +76,7 @@ export function useAdsListPageModel(): AdsListPageModel {
     }),
     isRefreshing: adsQuery.isFetching && !adsQuery.isPending,
     layout,
+    navigationState,
     total: adsQuery.data?.total ?? 0
   }
 }

@@ -1,12 +1,7 @@
-import { useMemo } from "react"
 import { Link } from "react-router-dom"
 
 import type { AdsLayout, AdsListItemVM } from "@/entities/ad/api"
-import {
-  createAdsNavigationState,
-  useAdsListState,
-  type AdsListNavigationState
-} from "@/entities/ad/model"
+import type { AdsListNavigationState } from "@/entities/ad/model"
 import { AdCard, AdCardListItem } from "@/entities/ad/ui"
 import { ResetFiltersButton } from "@/features/ads-filtering"
 import {
@@ -22,6 +17,7 @@ import {
 interface AdsCatalogProps {
   ads: AdsListItemVM[]
   layout: AdsLayout
+  navigationState: AdsListNavigationState
 }
 
 interface AdsCatalogSkeletonProps {
@@ -78,35 +74,7 @@ function AdsList({ ads, navigationState }: AdsListContentProps) {
   )
 }
 
-export function AdsCatalog({ ads, layout }: AdsCatalogProps) {
-  const q = useAdsListState(state => state.q)
-  const categories = useAdsListState(state => state.categories)
-  const needsRevision = useAdsListState(state => state.needsRevision)
-  const sortColumn = useAdsListState(state => state.sortColumn)
-  const sortDirection = useAdsListState(state => state.sortDirection)
-  const page = useAdsListState(state => state.page)
-  const currentLayout = useAdsListState(state => state.layout)
-
-  const navigationState = useMemo(() => {
-    return createAdsNavigationState({
-      categories,
-      layout: currentLayout,
-      needsRevision,
-      page,
-      q,
-      sortColumn,
-      sortDirection
-    })
-  }, [
-    categories,
-    currentLayout,
-    needsRevision,
-    page,
-    q,
-    sortColumn,
-    sortDirection
-  ])
-
+export function AdsCatalog({ ads, layout, navigationState }: AdsCatalogProps) {
   return (
     <div
       key={layout}

@@ -28,7 +28,13 @@ function getCatalogContent(model: AdsListPageModel) {
     case "empty":
       return <AdsEmptyState />
     case "ready":
-      return <AdsCatalog ads={model.catalog.ads} layout={model.layout} />
+      return (
+        <AdsCatalog
+          ads={model.catalog.ads}
+          layout={model.layout}
+          navigationState={model.navigationState}
+        />
+      )
   }
 }
 

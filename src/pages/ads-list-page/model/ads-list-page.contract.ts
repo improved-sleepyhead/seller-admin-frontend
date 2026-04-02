@@ -1,4 +1,5 @@
 import type { AdsLayout, AdsListItemVM } from "@/entities/ad/api"
+import type { AdsListNavigationState } from "@/entities/ad/model"
 
 export interface AdsListPageLoadingState {
   state: "loading"
@@ -29,5 +30,6 @@ export interface AdsListPageModel {
   catalog: AdsListPageCatalogState
   isRefreshing: boolean
   layout: AdsLayout
+  navigationState: AdsListNavigationState
   total: number
 }
