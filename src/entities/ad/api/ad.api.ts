@@ -1,7 +1,6 @@
 import { apiGet, apiPatch, apiPost } from "shared/api/client"
-import { normalizeApiError } from "shared/api/error"
-import { parseApiResponse } from "shared/api/zod-parser"
 
+import { executeApiRequest } from "./ad.request"
 import {
   AdDetailsSchema,
   AdListResponseSchema,
@@ -65,24 +64,20 @@ export async function getAdsList(
   params: AdsListQueryParams,
   signal: AbortSignal
 ): Promise<AdsListResponseDto> {
-  try {
-    const payload = await apiGet<unknown>(buildAdsListUrl(params), signal)
-    return parseApiResponse(AdListResponseSchema, payload)
-  } catch (error) {
-    throw normalizeApiError(error)
-  }
+  return executeApiRequest(
+    () => apiGet<unknown>(buildAdsListUrl(params), signal),
+    AdListResponseSchema
+  )
 }
 
 export async function getAdById(
   id: number,
   signal: AbortSignal
 ): Promise<AdDetailsDto> {
-  try {
-    const payload = await apiGet<unknown>(`/items/${id}`, signal)
-    return parseApiResponse(AdDetailsSchema, payload)
-  } catch (error) {
-    throw normalizeApiError(error)
-  }
+  return executeApiRequest(
+    () => apiGet<unknown>(`/items/${id}`, signal),
+    AdDetailsSchema
+  )
 }
 
 export async function patchAd(
@@ -90,59 +85,44 @@ export async function patchAd(
   item: ItemPatchIn,
   signal: AbortSignal
 ): Promise<ApiSuccessDto> {
-  try {
-    const payload = await apiPatch<unknown, ItemPatchIn>(
-      `/items/${id}`,
-      item,
-      signal
-    )
-    return parseApiResponse(SuccessSchema, payload)
-  } catch (error) {
-    throw normalizeApiError(error)
-  }
+  return executeApiRequest(
+    () => apiPatch<unknown, ItemPatchIn>(`/items/${id}`, item, signal),
+    SuccessSchema
+  )
 }
 
 export async function getAiStatus(signal: AbortSignal): Promise<AiStatusDto> {
-  try {
-    const payload = await apiGet<unknown>("/api/ai/status", signal)
-    return parseApiResponse(AiStatusSchema, payload)
-  } catch (error) {
-    throw normalizeApiError(error)
-  }
+  return executeApiRequest(
+    () => apiGet<unknown>("/api/ai/status", signal),
+    AiStatusSchema
+  )
 }
 
 export async function requestAiDescription(
   item: ItemUpdateIn,
   signal: AbortSignal
 ): Promise<AiDescriptionResponse> {
-  try {
-    const body: AiDescriptionRequest = { item }
-    const payload = await apiPost<unknown, AiDescriptionRequest>(
-      "/api/ai/description",
-      body,
-      signal
-    )
+  const body: AiDescriptionRequest = { item }
 
-    return parseApiResponse(AiDescriptionResponseSchema, payload)
-  } catch (error) {
-    throw normalizeApiError(error)
-  }
+  return executeApiRequest(
+    () =>
+      apiPost<unknown, AiDescriptionRequest>(
+        "/api/ai/description",
+        body,
+        signal
+      ),
+    AiDescriptionResponseSchema
+  )
 }
 
 export async function requestAiPrice(
   item: ItemUpdateIn,
   signal: AbortSignal
 ): Promise<AiPriceResponse> {
-  try {
-    const body: AiPriceRequest = { item }
-    const payload = await apiPost<unknown, AiPriceRequest>(
-      "/api/ai/price",
-      body,
-      signal
-    )
+  const body: AiPriceRequest = { item }
 
-    return parseApiResponse(AiPriceResponseSchema, payload)
-  } catch (error) {
-    throw normalizeApiError(error)
-  }
+  return executeApiRequest(
+    () => apiPost<unknown, AiPriceRequest>("/api/ai/price", body, signal),
+    AiPriceResponseSchema
+  )
 }
