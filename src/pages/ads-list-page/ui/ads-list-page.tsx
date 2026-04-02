@@ -58,7 +58,7 @@ export function AdsListPage() {
     }
   }, [listQueryParams, queryClient])
 
-  const catalogContent = (() => {
+  const renderCatalogContent = () => {
     if (!isHydrated || (adsQuery.isPending && !adsQuery.data)) {
       return <AdsCatalogSkeleton layout={layout} />
     }
@@ -81,7 +81,8 @@ export function AdsListPage() {
     }
 
     return <AdsCatalog ads={adsQuery.data.items} layout={layout} />
-  })()
+  }
+  const catalogContent = renderCatalogContent()
 
   return (
     <div className="mx-auto flex w-full max-w-7xl flex-col gap-6">

@@ -82,42 +82,29 @@ function toOptionalDescription(value: string): string | undefined {
   return trimmedValue.length > 0 ? trimmedValue : undefined
 }
 
-function buildAiPayloadCandidate(values: AdEditFormValues): unknown {
-  const basePayload = {
-    title: values.title.trim(),
-    description: toOptionalDescription(values.description),
-    price: toStrictNumber(values.price)
-  }
+interface AiPayloadBaseCandidate {
+  description?: string
+  price: number
+  title: string
+}
 
-  if (values.category === "auto") {
-    return {
-      ...basePayload,
-      category: "auto",
-      params: {
-        brand: toStrictTrimmedString(values.params.brand),
-        model: toStrictTrimmedString(values.params.model),
-        yearOfManufacture: toStrictNumber(values.params.yearOfManufacture),
-        transmission: toStrictTrimmedString(values.params.transmission),
-        mileage: toStrictNumber(values.params.mileage),
-        enginePower: toStrictNumber(values.params.enginePower)
-      }
+const AI_PAYLOAD_CANDIDATE_BUILDERS = {
+  auto: (values: AdEditFormValues, basePayload: AiPayloadBaseCandidate) => ({
+    ...basePayload,
+    category: "auto",
+    params: {
+      brand: toStrictTrimmedString(values.params.brand),
+      model: toStrictTrimmedString(values.params.model),
+      yearOfManufacture: toStrictNumber(values.params.yearOfManufacture),
+      transmission: toStrictTrimmedString(values.params.transmission),
+      mileage: toStrictNumber(values.params.mileage),
+      enginePower: toStrictNumber(values.params.enginePower)
     }
-  }
-
-  if (values.category === "real_estate") {
-    return {
-      ...basePayload,
-      category: "real_estate",
-      params: {
-        type: toStrictTrimmedString(values.params.type),
-        address: toStrictTrimmedString(values.params.address),
-        area: toStrictNumber(values.params.area),
-        floor: toStrictNumber(values.params.floor)
-      }
-    }
-  }
-
-  return {
+  }),
+  electronics: (
+    values: AdEditFormValues,
+    basePayload: AiPayloadBaseCandidate
+  ) => ({
     ...basePayload,
     category: "electronics",
     params: {
@@ -127,7 +114,33 @@ function buildAiPayloadCandidate(values: AdEditFormValues): unknown {
       condition: toStrictTrimmedString(values.params.condition),
       color: toStrictTrimmedString(values.params.color)
     }
+  }),
+  real_estate: (
+    values: AdEditFormValues,
+    basePayload: AiPayloadBaseCandidate
+  ) => ({
+    ...basePayload,
+    category: "real_estate",
+    params: {
+      type: toStrictTrimmedString(values.params.type),
+      address: toStrictTrimmedString(values.params.address),
+      area: toStrictNumber(values.params.area),
+      floor: toStrictNumber(values.params.floor)
+    }
+  })
+} satisfies Record<
+  AdEditFormValues["category"],
+  (values: AdEditFormValues, basePayload: AiPayloadBaseCandidate) => unknown
+>
+
+function buildAiPayloadCandidate(values: AdEditFormValues): unknown {
+  const basePayload = {
+    title: values.title.trim(),
+    description: toOptionalDescription(values.description),
+    price: toStrictNumber(values.price)
   }
+
+  return AI_PAYLOAD_CANDIDATE_BUILDERS[values.category](values, basePayload)
 }
 
 function mapIssuePathToFieldPath(

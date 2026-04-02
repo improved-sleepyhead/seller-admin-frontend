@@ -105,6 +105,40 @@ function mapElectronicsParams(
   }
 }
 
+type AdSaveBasePayload = Pick<ItemPatchIn, "description" | "price" | "title">
+
+const AD_SAVE_PAYLOAD_BUILDERS = {
+  auto: (
+    values: AdEditFormValues,
+    basePayload: AdSaveBasePayload
+  ): Extract<ItemPatchIn, { category: "auto" }> => ({
+    category: "auto",
+    ...basePayload,
+    params: mapAutoParams(values.params)
+  }),
+  electronics: (
+    values: AdEditFormValues,
+    basePayload: AdSaveBasePayload
+  ): Extract<ItemPatchIn, { category: "electronics" }> => ({
+    category: "electronics",
+    ...basePayload,
+    params: mapElectronicsParams(values.params)
+  }),
+  real_estate: (
+    values: AdEditFormValues,
+    basePayload: AdSaveBasePayload
+  ): Extract<ItemPatchIn, { category: "real_estate" }> => ({
+    category: "real_estate",
+    ...basePayload,
+    params: mapRealEstateParams(values.params)
+  })
+} satisfies {
+  [Category in AdEditFormValues["category"]]: (
+    values: AdEditFormValues,
+    basePayload: AdSaveBasePayload
+  ) => Extract<ItemPatchIn, { category: Category }>
+}
+
 export function mapAdEditFormValuesToItemPatchIn(
   values: AdEditFormValues
 ): ItemPatchIn {
@@ -114,25 +148,5 @@ export function mapAdEditFormValuesToItemPatchIn(
     price: toNumber(values.price)
   }
 
-  if (values.category === "auto") {
-    return {
-      category: "auto",
-      ...basePayload,
-      params: mapAutoParams(values.params)
-    }
-  }
-
-  if (values.category === "real_estate") {
-    return {
-      category: "real_estate",
-      ...basePayload,
-      params: mapRealEstateParams(values.params)
-    }
-  }
-
-  return {
-    category: "electronics",
-    ...basePayload,
-    params: mapElectronicsParams(values.params)
-  }
+  return AD_SAVE_PAYLOAD_BUILDERS[values.category](values, basePayload)
 }

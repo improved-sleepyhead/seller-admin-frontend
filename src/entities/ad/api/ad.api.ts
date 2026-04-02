@@ -24,35 +24,52 @@ import type {
   ItemUpdateIn
 } from "./ad.contracts"
 
+const ADS_LIST_QUERY_PARAM_SETTERS = [
+  (searchParams: URLSearchParams, params: AdsListQueryParams) => {
+    if (typeof params.q === "string" && params.q.length > 0) {
+      searchParams.set("q", params.q)
+    }
+  },
+  (searchParams: URLSearchParams, params: AdsListQueryParams) => {
+    if (params.categories && params.categories.length > 0) {
+      searchParams.set("categories", params.categories.join(","))
+    }
+  },
+  (searchParams: URLSearchParams, params: AdsListQueryParams) => {
+    if (typeof params.needsRevision === "boolean") {
+      searchParams.set("needsRevision", params.needsRevision ? "true" : "false")
+    }
+  },
+  (searchParams: URLSearchParams, params: AdsListQueryParams) => {
+    if (typeof params.limit === "number") {
+      searchParams.set("limit", String(params.limit))
+    }
+  },
+  (searchParams: URLSearchParams, params: AdsListQueryParams) => {
+    if (typeof params.skip === "number") {
+      searchParams.set("skip", String(params.skip))
+    }
+  },
+  (searchParams: URLSearchParams, params: AdsListQueryParams) => {
+    if (params.sortColumn) {
+      searchParams.set("sortColumn", params.sortColumn)
+    }
+  },
+  (searchParams: URLSearchParams, params: AdsListQueryParams) => {
+    if (params.sortDirection) {
+      searchParams.set("sortDirection", params.sortDirection)
+    }
+  }
+] as const satisfies readonly ((
+  searchParams: URLSearchParams,
+  params: AdsListQueryParams
+) => void)[]
+
 function buildAdsListUrl(params: AdsListQueryParams): string {
   const searchParams = new URLSearchParams()
 
-  if (typeof params.q === "string" && params.q.length > 0) {
-    searchParams.set("q", params.q)
-  }
-
-  if (params.categories && params.categories.length > 0) {
-    searchParams.set("categories", params.categories.join(","))
-  }
-
-  if (typeof params.needsRevision === "boolean") {
-    searchParams.set("needsRevision", params.needsRevision ? "true" : "false")
-  }
-
-  if (typeof params.limit === "number") {
-    searchParams.set("limit", String(params.limit))
-  }
-
-  if (typeof params.skip === "number") {
-    searchParams.set("skip", String(params.skip))
-  }
-
-  if (params.sortColumn) {
-    searchParams.set("sortColumn", params.sortColumn)
-  }
-
-  if (params.sortDirection) {
-    searchParams.set("sortDirection", params.sortDirection)
+  for (const setQueryParam of ADS_LIST_QUERY_PARAM_SETTERS) {
+    setQueryParam(searchParams, params)
   }
 
   const query = searchParams.toString()
