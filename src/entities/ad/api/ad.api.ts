@@ -1,4 +1,4 @@
-import { apiGet, apiPatch, apiPost } from "shared/api/client"
+import { apiGet, apiPatch, apiPost } from "@/shared/api/client"
 
 import { executeApiRequest } from "./ad.request"
 import {
