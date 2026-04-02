@@ -11,7 +11,8 @@ import {
 } from "react-hook-form"
 
 import { cn } from "@/shared/lib/cn"
-import { Label } from "@/shared/ui/shadcn/label"
+
+import { Label } from "./label"
 
 import type { Label as LabelPrimitive } from "radix-ui"
 

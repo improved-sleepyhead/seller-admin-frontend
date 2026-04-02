@@ -1,7 +1,8 @@
 import { AlertDialog as AlertDialogPrimitive } from "radix-ui"
 
 import { cn } from "@/shared/lib/cn"
-import { buttonVariants } from "@/shared/ui/shadcn/button"
+
+import { buttonVariants } from "./button"
 
 import type * as React from "react"
 
