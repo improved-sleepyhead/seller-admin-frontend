@@ -112,7 +112,7 @@ export function useAiDescriptionAction({
   )
   const abortControllerRef = useRef<AbortController | null>(null)
   const lastAppliedDiffRef = useRef<DescriptionDiffModel | null>(null)
-  const shouldRestoreResultOnDiffCloseRef = useRef(false)
+  const restoreResultRef = useRef(false)
   const isMobile = useIsMobile()
   const mutation = useMutation({
     mutationFn: ({
@@ -129,7 +129,7 @@ export function useAiDescriptionAction({
       return
     }
 
-    shouldRestoreResultOnDiffCloseRef.current = false
+    restoreResultRef.current = false
     abortControllerRef.current.abort()
     abortControllerRef.current = null
     setIsPreparing(false)
@@ -138,7 +138,7 @@ export function useAiDescriptionAction({
   }, [mutation, setIsPreparing])
 
   const closeResult = useCallback(() => {
-    shouldRestoreResultOnDiffCloseRef.current = false
+    restoreResultRef.current = false
     setIsResultOpen(false)
   }, [])
 
@@ -160,7 +160,7 @@ export function useAiDescriptionAction({
 
     const requestAbortController = new AbortController()
     abortControllerRef.current = requestAbortController
-    shouldRestoreResultOnDiffCloseRef.current = false
+    restoreResultRef.current = false
     setErrorMessage(null)
     setResponse(null)
     setIsResultOpen(true)
@@ -196,7 +196,7 @@ export function useAiDescriptionAction({
 
   const viewDiff = useCallback(() => {
     const shouldRestoreResult = !isMobile && isResultOpen
-    shouldRestoreResultOnDiffCloseRef.current = shouldRestoreResult
+    restoreResultRef.current = shouldRestoreResult
 
     if (form !== null && response !== null) {
       setVisibleDiff({
@@ -233,7 +233,7 @@ export function useAiDescriptionAction({
     }
 
     lastAppliedDiffRef.current = nextDiff
-    shouldRestoreResultOnDiffCloseRef.current = false
+    restoreResultRef.current = false
     form.setValue("description", response.suggestion, {
       shouldDirty: true,
       shouldTouch: true,
@@ -261,13 +261,13 @@ export function useAiDescriptionAction({
 
   const closeDiffViewer = useCallback(() => {
     setIsDiffViewerOpen(false)
-    if (shouldRestoreResultOnDiffCloseRef.current) {
-      shouldRestoreResultOnDiffCloseRef.current = false
+    if (restoreResultRef.current) {
+      restoreResultRef.current = false
       setIsResultOpen(true)
       return
     }
 
-    shouldRestoreResultOnDiffCloseRef.current = false
+    restoreResultRef.current = false
   }, [])
 
   useEffect(() => {

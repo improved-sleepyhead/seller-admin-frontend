@@ -37,27 +37,26 @@ export interface AdEditFormActionButtonProps {
   isPending: boolean
 }
 
-export interface AdEditFormCategoryChangeRequest {
+export interface CategoryChangeRequest {
   applyCategoryChange: () => void
   currentCategory: AdEditFormValues["category"]
   nextCategory: AdEditFormValues["category"]
 }
 
-type AdEditFormActionButtonComponent =
-  ComponentType<AdEditFormActionButtonProps>
+type ActionButtonComponent = ComponentType<AdEditFormActionButtonProps>
 
 interface AdEditFormProps {
   ad: AdDetailsDto
-  CancelButton?: AdEditFormActionButtonComponent
+  CancelButton?: ActionButtonComponent
   formId?: string
   hideActions?: boolean
   isSavePending?: boolean
   onFormReady?: (
     form: UseFormReturn<AdEditFormValues, unknown, AdEditFormValues>
   ) => void
-  onCategoryChangeRequest?: (request: AdEditFormCategoryChangeRequest) => void
+  onCategoryChangeRequest?: (request: CategoryChangeRequest) => void
   onSubmit?: FormSubmitHandler
-  SubmitButton?: AdEditFormActionButtonComponent
+  SubmitButton?: ActionButtonComponent
 }
 
 function isAdCategory(value: string): value is AdEditFormValues["category"] {
