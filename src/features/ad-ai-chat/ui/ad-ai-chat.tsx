@@ -1,7 +1,6 @@
-import { Loader2Icon } from "lucide-react"
-
 import { type AdEditFormApi, type AiChatMessage } from "@/entities/ad/model"
 import { cn } from "@/shared/lib/cn"
+import { Loader } from "@/shared/ui/loader"
 import { Badge, Button, Label, Textarea } from "@/shared/ui/shadcn"
 
 import { useAiChat } from "../model"
@@ -186,7 +185,7 @@ export function AdAiChat({ disabled, form, itemId }: AdAiChatProps) {
           <Button disabled={!canSubmit} type="submit">
             {isPending ? (
               <>
-                <Loader2Icon className="size-4 animate-spin" />
+                <Loader />
                 Генерируем...
               </>
             ) : (

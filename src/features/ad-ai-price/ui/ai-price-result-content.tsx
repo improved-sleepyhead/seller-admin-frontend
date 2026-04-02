@@ -1,5 +1,4 @@
-import { Loader2Icon } from "lucide-react"
-
+import { Loader } from "@/shared/ui/loader"
 import { Button } from "@/shared/ui/shadcn"
 
 import type {
@@ -20,7 +19,7 @@ function AiPricePendingResultContent({
   return (
     <div className="space-y-4">
       <p className="flex items-center gap-2 text-sm">
-        <Loader2Icon className="size-4 animate-spin" />
+        <Loader />
         Подбираем рекомендованную цену...
       </p>
       <div className="flex gap-2">

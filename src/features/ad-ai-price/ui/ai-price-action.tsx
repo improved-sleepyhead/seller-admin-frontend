@@ -1,5 +1,4 @@
-import { Loader2Icon } from "lucide-react"
-
+import { Loader } from "@/shared/ui/loader"
 import {
   Button,
   Popover,
@@ -41,7 +40,7 @@ export function AiPriceAction({ disabled, form }: AiPriceActionProps) {
     >
       {viewModel.trigger.isPending ? (
         <>
-          <Loader2Icon className="size-4 animate-spin" />
+          <Loader />
           Подбираем цену...
         </>
       ) : (
