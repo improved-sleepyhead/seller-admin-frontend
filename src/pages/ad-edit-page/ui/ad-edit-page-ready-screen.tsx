@@ -1,3 +1,5 @@
+import { memo } from "react"
+
 import { AdAiChat } from "@/features/ad-ai-chat"
 import { AiDescriptionAction } from "@/features/ad-ai-description"
 import { AiPriceAction } from "@/features/ad-ai-price"
@@ -20,6 +22,114 @@ import type { AdEditPageReadyState } from "../model"
 
 const EDIT_FORM_ID = "ad-edit-form"
 
+interface AdEditAiToolsSectionProps {
+  adId: number
+  ai: AdEditPageReadyState["ai"]
+  editForm: AdEditPageReadyState["editForm"]
+}
+
+const AdEditAiToolsSection = memo(function AdEditAiToolsSection({
+  adId,
+  ai,
+  editForm
+}: AdEditAiToolsSectionProps) {
+  return (
+    <div className="space-y-6">
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base">AI инструменты</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          <AiDescriptionAction
+            disabled={!ai.descriptionEnabled}
+            form={editForm}
+          />
+          <AiPriceAction disabled={!ai.priceEnabled} form={editForm} />
+          <div className="space-y-2">
+            <Badge variant={ai.badgeVariant}>{ai.label}</Badge>
+            <p className="text-muted-foreground text-sm">{ai.message}</p>
+            <p className="text-muted-foreground text-sm">Модель: {ai.model}</p>
+          </div>
+        </CardContent>
+      </Card>
+
+      <AiChatPanel disabled={!ai.chatEnabled}>
+        <AdAiChat disabled={!ai.chatEnabled} form={editForm} itemId={adId} />
+      </AiChatPanel>
+    </div>
+  )
+})
+
+interface AdEditFooterActionsProps {
+  adId: number
+  navigationState: AdEditPageReadyState["navigationState"]
+  savePending: boolean
+}
+
+const AdEditFooterActions = memo(function AdEditFooterActions({
+  adId,
+  navigationState,
+  savePending
+}: AdEditFooterActionsProps) {
+  return (
+    <>
+      <CancelEditButton
+        disabled={savePending}
+        itemId={adId}
+        navigationState={navigationState}
+      />
+      <SaveAdButton
+        disabled={savePending}
+        form={EDIT_FORM_ID}
+        isPending={savePending}
+      />
+    </>
+  )
+})
+
+interface AdEditFormSectionProps {
+  ad: AdEditPageReadyState["ad"]
+  draftSavedAt: AdEditPageReadyState["draft"]["draftSavedAt"]
+  onCategoryChangeRequest: AdEditPageReadyState["categoryChange"]["requestCategoryChange"]
+  onFormReady: AdEditPageReadyState["onFormReady"]
+  onSubmit: AdEditPageReadyState["onSubmit"]
+  savePending: boolean
+}
+
+const AdEditFormSection = memo(function AdEditFormSection({
+  ad,
+  draftSavedAt,
+  onCategoryChangeRequest,
+  onFormReady,
+  onSubmit,
+  savePending
+}: AdEditFormSectionProps) {
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>Редактирование объявления</CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-3">
+        <DraftSavedHint savedAt={draftSavedAt} />
+        <AdEditForm
+          ad={ad}
+          formId={EDIT_FORM_ID}
+          hideActions
+          isSavePending={savePending}
+          onCategoryChangeRequest={({ applyCategoryChange, nextCategory }) => {
+            onCategoryChangeRequest({
+              nextCategory,
+              onConfirm: applyCategoryChange
+            })
+          }}
+          onFormReady={onFormReady}
+          onSubmit={onSubmit}
+        />
+      </CardContent>
+    </Card>
+  )
+})
+
 interface AdEditPageReadyScreenProps {
   model: AdEditPageReadyState
 }
@@ -29,83 +139,28 @@ export function AdEditPageReadyScreen({ model }: AdEditPageReadyScreenProps) {
     <div>
       <AdEditLayout
         aiArea={
-          <div className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-base">AI инструменты</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                <AiDescriptionAction
-                  disabled={!model.ai.descriptionEnabled}
-                  form={model.editForm}
-                />
-                <AiPriceAction
-                  disabled={!model.ai.priceEnabled}
-                  form={model.editForm}
-                />
-                <div className="space-y-2">
-                  <Badge variant={model.ai.badgeVariant}>
-                    {model.ai.label}
-                  </Badge>
-                  <p className="text-muted-foreground text-sm">
-                    {model.ai.message}
-                  </p>
-                  <p className="text-muted-foreground text-sm">
-                    Модель: {model.ai.model}
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
-
-            <AiChatPanel disabled={!model.ai.chatEnabled}>
-              <AdAiChat
-                disabled={!model.ai.chatEnabled}
-                form={model.editForm}
-                itemId={model.adId}
-              />
-            </AiChatPanel>
-          </div>
+          <AdEditAiToolsSection
+            adId={model.adId}
+            ai={model.ai}
+            editForm={model.editForm}
+          />
         }
         footer={
-          <>
-            <CancelEditButton
-              disabled={model.savePending}
-              itemId={model.adId}
-              navigationState={model.navigationState}
-            />
-            <SaveAdButton
-              disabled={model.savePending}
-              form={EDIT_FORM_ID}
-              isPending={model.savePending}
-            />
-          </>
+          <AdEditFooterActions
+            adId={model.adId}
+            navigationState={model.navigationState}
+            savePending={model.savePending}
+          />
         }
         formArea={
-          <Card>
-            <CardHeader>
-              <CardTitle>Редактирование объявления</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              <DraftSavedHint savedAt={model.draft.draftSavedAt} />
-              <AdEditForm
-                ad={model.ad}
-                formId={EDIT_FORM_ID}
-                hideActions
-                isSavePending={model.savePending}
-                onCategoryChangeRequest={({
-                  applyCategoryChange,
-                  nextCategory
-                }) => {
-                  model.categoryChange.requestCategoryChange({
-                    nextCategory,
-                    onConfirm: applyCategoryChange
-                  })
-                }}
-                onFormReady={model.onFormReady}
-                onSubmit={model.onSubmit}
-              />
-            </CardContent>
-          </Card>
+          <AdEditFormSection
+            ad={model.ad}
+            draftSavedAt={model.draft.draftSavedAt}
+            onCategoryChangeRequest={model.categoryChange.requestCategoryChange}
+            onFormReady={model.onFormReady}
+            onSubmit={model.onSubmit}
+            savePending={model.savePending}
+          />
         }
       />
 
