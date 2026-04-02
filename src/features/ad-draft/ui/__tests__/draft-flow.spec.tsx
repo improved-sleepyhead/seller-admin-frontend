@@ -109,6 +109,12 @@ function DraftFlowHarness({
       >
         Изменить заголовок
       </button>
+      <button
+        type="button"
+        onClick={() => form.setValue("title", ad.title, { shouldDirty: true })}
+      >
+        Сбросить заголовок
+      </button>
       <DraftRestoreDialog
         open={isRestoreDialogOpen}
         onRestoreDraft={restoreDraft}
@@ -179,8 +185,23 @@ describe("Draft restore flow", () => {
     })
   })
 
-  it("should autosave form values to localStorage after debounce", () => {
+  it("should not open restore dialog when stored draft matches server snapshot", async () => {
     const itemId = 104
+
+    window.localStorage.setItem(
+      getAdDraftStorageKey(itemId),
+      JSON.stringify(createDraft(itemId))
+    )
+
+    render(<DraftFlowHarness ad={createAd(itemId)} itemId={itemId} />)
+
+    await expect(
+      screen.findByText("Найден локальный черновик", {}, { timeout: 100 })
+    ).rejects.toThrow()
+  })
+
+  it("should autosave form values to localStorage after debounce", () => {
+    const itemId = 105
     const storageKey = getAdDraftStorageKey(itemId)
 
     vi.useFakeTimers()
@@ -201,5 +222,29 @@ describe("Draft restore flow", () => {
 
     const savedDraft = JSON.parse(rawDraft!) as AdDraft
     expect(savedDraft.form.title).toBe("Изменённый заголовок")
+  })
+
+  it("should remove autosaved draft after form returns to server snapshot", () => {
+    const itemId = 106
+    const storageKey = getAdDraftStorageKey(itemId)
+
+    vi.useFakeTimers()
+    render(<DraftFlowHarness ad={createAd(itemId)} itemId={itemId} />)
+
+    fireEvent.click(screen.getByText("Изменить заголовок"))
+
+    act(() => {
+      vi.advanceTimersByTime(700)
+    })
+
+    expect(window.localStorage.getItem(storageKey)).not.toBeNull()
+
+    fireEvent.click(screen.getByText("Сбросить заголовок"))
+
+    act(() => {
+      vi.advanceTimersByTime(700)
+    })
+
+    expect(window.localStorage.getItem(storageKey)).toBeNull()
   })
 })
