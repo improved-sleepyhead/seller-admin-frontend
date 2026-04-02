@@ -56,13 +56,13 @@ function createQueryClient(): QueryClient {
   })
 }
 
-function createMatchMedia(): typeof window.matchMedia {
+function createMatchMedia(isMobile = false): typeof window.matchMedia {
   return (query: string): MediaQueryList => {
     return {
       addEventListener: vi.fn(),
       addListener: vi.fn(),
       dispatchEvent: vi.fn(),
-      matches: false,
+      matches: isMobile,
       media: query,
       onchange: null,
       removeEventListener: vi.fn(),
@@ -147,5 +147,27 @@ describe("AiDescriptionAction", () => {
     expect(screen.getByTestId("description-value").textContent).toBe(
       "Старое описание"
     )
+  })
+
+  it("should render result actions inside mobile sheet flow", async () => {
+    Object.defineProperty(window, "matchMedia", {
+      configurable: true,
+      value: createMatchMedia(true),
+      writable: true
+    })
+    requestAiDescriptionMock.mockResolvedValue({
+      suggestion: "AI-описание для mobile flow"
+    })
+
+    render(<AiDescriptionActionHarness />)
+
+    fireEvent.click(screen.getByRole("button", { name: "Улучшить описание" }))
+
+    expect(
+      await screen.findByRole("heading", { name: "AI-улучшение описания" })
+    ).toBeTruthy()
+    expect(
+      await screen.findByRole("button", { name: "Сравнить изменения" })
+    ).toBeTruthy()
   })
 })

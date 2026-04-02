@@ -27,14 +27,137 @@ interface AiDescriptionActionProps {
   form: AdEditFormApi | null
 }
 
+interface AiDescriptionDiffViewModel {
+  close: () => void
+  isOpen: boolean
+  open: () => void
+  value: NonNullable<ReturnType<typeof useAiDescriptionAction>["diff"]["value"]>
+}
+
+interface AiDescriptionPanelViewModel {
+  isMobile: boolean
+  isOpen: boolean
+  setOpen: (nextOpen: boolean) => void
+}
+
+interface AiDescriptionTriggerViewModel {
+  canStart: boolean
+  isPending: boolean
+  start: () => Promise<void>
+}
+
+type AiDescriptionResultContentModel =
+  | {
+      actions: {
+        cancel: () => void
+      }
+      status: "pending"
+    }
+  | {
+      actions: {
+        close: () => void
+        retry: () => Promise<void>
+      }
+      errorMessage: string
+      status: "error"
+    }
+  | {
+      actions: {
+        apply: () => void
+        close: () => void
+        openDiff: () => void
+      }
+      result: {
+        text: string
+      }
+      status: "ready"
+    }
+  | {
+      status: "idle"
+    }
+
+interface AiDescriptionActionViewModel {
+  content: AiDescriptionResultContentModel
+  diff: AiDescriptionDiffViewModel | null
+  panel: AiDescriptionPanelViewModel
+  trigger: AiDescriptionTriggerViewModel
+}
+
 interface AiDescriptionResultContentProps {
+  content: AiDescriptionResultContentModel
+}
+
+function getAiDescriptionActionViewModel(
   action: ReturnType<typeof useAiDescriptionAction>
+): AiDescriptionActionViewModel {
+  const content = (() => {
+    if (action.request.isPending) {
+      return {
+        actions: {
+          cancel: action.request.cancel
+        },
+        status: "pending"
+      } satisfies AiDescriptionResultContentModel
+    }
+
+    if (action.request.errorMessage !== null) {
+      return {
+        actions: {
+          close: action.panel.close,
+          retry: action.request.retry
+        },
+        errorMessage: action.request.errorMessage,
+        status: "error"
+      } satisfies AiDescriptionResultContentModel
+    }
+
+    if (action.suggestion.text !== null) {
+      return {
+        actions: {
+          apply: action.suggestion.apply,
+          close: action.panel.close,
+          openDiff: action.diff.open
+        },
+        result: {
+          text: action.suggestion.text
+        },
+        status: "ready"
+      } satisfies AiDescriptionResultContentModel
+    }
+
+    return {
+      status: "idle"
+    } satisfies AiDescriptionResultContentModel
+  })()
+
+  return {
+    content,
+    diff:
+      action.diff.value === null
+        ? null
+        : {
+            close: action.diff.close,
+            isOpen: action.diff.isOpen,
+            open: action.diff.open,
+            value: action.diff.value
+          },
+    panel: {
+      isMobile: action.panel.isMobile,
+      isOpen: action.panel.isOpen,
+      setOpen: action.panel.setOpen
+    },
+    trigger: {
+      canStart: action.request.canStart,
+      isPending: action.request.isPending,
+      start: action.request.start
+    }
+  }
 }
 
 function AiDescriptionResultContent({
-  action
+  content
 }: AiDescriptionResultContentProps) {
-  if (action.request.isPending) {
+  if (content.status === "pending") {
     return (
       <div className="space-y-4">
         <p className="flex items-center gap-2 text-sm">
@@ -45,7 +168,7 @@ function AiDescriptionResultContent({
           className="w-full"
           type="button"
           variant="outline"
-          onClick={action.request.cancel}
+          onClick={content.actions.cancel}
         >
           Отменить запрос
         </Button>
@@ -53,18 +176,16 @@ function AiDescriptionResultContent({
     )
   }
 
-  if (action.request.errorMessage !== null) {
+  if (content.status === "error") {
     return (
       <div className="space-y-4">
-        <p className="text-destructive text-sm">
-          {action.request.errorMessage}
-        </p>
+        <p className="text-destructive text-sm">{content.errorMessage}</p>
         <div className="flex flex-col gap-2">
           <Button
             className="w-full"
             type="button"
             onClick={() => {
-              void action.request.retry()
+              void content.actions.retry()
             }}
           >
             Повторить запрос
@@ -73,7 +194,7 @@ function AiDescriptionResultContent({
             className="w-full"
             type="button"
             variant="outline"
-            onClick={action.panel.close}
+            onClick={content.actions.close}
           >
             Закрыть
           </Button>
@@ -82,7 +203,7 @@ function AiDescriptionResultContent({
     )
   }
 
-  if (action.suggestion.text === null) {
+  if (content.status !== "ready") {
     return null
   }
 
@@ -90,13 +211,13 @@ function AiDescriptionResultContent({
     <div className="space-y-4">
       <div className="space-y-1">
         <p className="text-muted-foreground text-xs">Предложенный текст</p>
-        <p className="text-sm whitespace-pre-wrap">{action.suggestion.text}</p>
+        <p className="text-sm whitespace-pre-wrap">{content.result.text}</p>
       </div>
       <div className="flex flex-col gap-2">
         <Button
           className="w-full"
           type="button"
-          onClick={action.suggestion.apply}
+          onClick={content.actions.apply}
         >
           Применить
         </Button>
@@ -104,7 +225,7 @@ function AiDescriptionResultContent({
           className="w-full"
           type="button"
           variant="outline"
-          onClick={action.diff.open}
+          onClick={content.actions.openDiff}
         >
           Сравнить изменения
         </Button>
@@ -112,7 +233,7 @@ function AiDescriptionResultContent({
           className="w-full"
           type="button"
           variant="secondary"
-          onClick={action.panel.close}
+          onClick={content.actions.close}
         >
           Закрыть
         </Button>
@@ -129,18 +250,20 @@ export function AiDescriptionAction({
     disabled,
     form
   })
+  const viewModel = getAiDescriptionActionViewModel(action)
+  const diffViewModel = viewModel.diff
 
   const triggerButton = (
     <Button
       className="w-full"
-      disabled={!action.request.canStart}
+      disabled={!viewModel.trigger.canStart}
       type="button"
       variant="outline"
       onClick={() => {
-        void action.request.start()
+        void viewModel.trigger.start()
       }}
     >
-      {action.request.isPending ? (
+      {viewModel.trigger.isPending ? (
         <>
           <Loader2Icon className="size-4 animate-spin" />
           Генерируем описание...
@@ -151,14 +274,19 @@ export function AiDescriptionAction({
     </Button>
   )
 
-  const resultContent = <AiDescriptionResultContent action={action} />
+  const resultContent = (
+    <AiDescriptionResultContent content={viewModel.content} />
+  )
 
   return (
     <>
-      {action.panel.isMobile ? (
+      {viewModel.panel.isMobile ? (
         <>
           {triggerButton}
-          <Sheet open={action.panel.isOpen} onOpenChange={action.panel.setOpen}>
+          <Sheet
+            open={viewModel.panel.isOpen}
+            onOpenChange={viewModel.panel.setOpen}
+          >
             <SheetContent side="bottom">
               <SheetHeader>
                 <SheetTitle>AI-улучшение описания</SheetTitle>
@@ -172,7 +300,10 @@ export function AiDescriptionAction({
           </Sheet>
         </>
       ) : (
-        <Popover open={action.panel.isOpen} onOpenChange={action.panel.setOpen}>
+        <Popover
+          open={viewModel.panel.isOpen}
+          onOpenChange={viewModel.panel.setOpen}
+        >
           <PopoverAnchor asChild>{triggerButton}</PopoverAnchor>
           <PopoverContent align="start" className="w-[26rem] space-y-4">
             <div className="space-y-1">
@@ -187,16 +318,16 @@ export function AiDescriptionAction({
       )}
 
       <Suspense fallback={null}>
-        {action.diff.isOpen ? (
+        {diffViewModel?.isOpen ? (
           <LazyAdDiffViewer
-            diff={action.diff.value}
-            isMobile={action.panel.isMobile}
+            diff={diffViewModel.value}
+            isMobile={viewModel.panel.isMobile}
             onOpenChange={nextOpen => {
               if (!nextOpen) {
-                action.diff.close()
+                diffViewModel.close()
               }
             }}
-            open={action.diff.isOpen}
+            open={diffViewModel.isOpen}
           />
         ) : null}
       </Suspense>

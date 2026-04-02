@@ -20,6 +20,56 @@ interface AiPriceActionProps {
   form: AdEditFormApi | null
 }
 
+interface AiPricePanelViewModel {
+  close: () => void
+  isMobile: boolean
+  isOpen: boolean
+  setOpen: (nextOpen: boolean) => void
+}
+
+interface AiPriceTriggerViewModel {
+  canStart: boolean
+  isPending: boolean
+  start: () => Promise<void>
+}
+
+type AiPriceResultContentModel =
+  | {
+      actions: {
+        cancel: () => void
+      }
+      status: "pending"
+    }
+  | {
+      actions: {
+        close: () => void
+        retry: () => Promise<void>
+      }
+      errorMessage: string
+      status: "error"
+    }
+  | {
+      actions: {
+        apply: () => void
+        close: () => void
+        retry: () => Promise<void>
+      }
+      result: {
+        priceLabel: string
+        reasoning: string
+      }
+      status: "ready"
+    }
+  | {
+      status: "idle"
+    }
+
+interface AiPriceActionViewModel {
+  content: AiPriceResultContentModel
+  panel: AiPricePanelViewModel
+  trigger: AiPriceTriggerViewModel
+}
+
 function formatPrice(value: number): string {
   return new Intl.NumberFormat("ru-RU", {
     currency: "RUB",
@@ -29,11 +79,70 @@ function formatPrice(value: number): string {
 }
 
 interface AiPriceResultContentProps {
-  action: ReturnType<typeof useAiPriceAction>
+  content: AiPriceResultContentModel
 }
 
-function AiPriceResultContent({ action }: AiPriceResultContentProps) {
-  if (action.request.isPending) {
+function getAiPriceActionViewModel(
+  action: ReturnType<typeof useAiPriceAction>
+): AiPriceActionViewModel {
+  const response = action.suggestion.response
+  const content = (() => {
+    if (action.request.isPending) {
+      return {
+        actions: {
+          cancel: action.request.cancel
+        },
+        status: "pending"
+      } satisfies AiPriceResultContentModel
+    }
+
+    if (action.request.errorMessage !== null) {
+      return {
+        actions: {
+          close: action.panel.close,
+          retry: action.request.retry
+        },
+        errorMessage: action.request.errorMessage,
+        status: "error"
+      } satisfies AiPriceResultContentModel
+    }
+
+    if (
+      response?.suggestedPrice !== undefined &&
+      response.reasoning !== undefined
+    ) {
+      return {
+        actions: {
+          apply: action.suggestion.apply,
+          close: action.panel.close,
+          retry: action.request.retry
+        },
+        result: {
+          priceLabel: formatPrice(response.suggestedPrice),
+          reasoning: response.reasoning
+        },
+        status: "ready"
+      } satisfies AiPriceResultContentModel
+    }
+
+    return {
+      status: "idle"
+    } satisfies AiPriceResultContentModel
+  })()
+
+  return {
+    content,
+    panel: action.panel,
+    trigger: {
+      canStart: action.request.canStart,
+      isPending: action.request.isPending,
+      start: action.request.start
+    }
+  }
+}
+
+function AiPriceResultContent({ content }: AiPriceResultContentProps) {
+  if (content.status === "pending") {
     return (
       <div className="space-y-4">
         <p className="flex items-center gap-2 text-sm">
@@ -45,7 +154,7 @@ function AiPriceResultContent({ action }: AiPriceResultContentProps) {
             className="w-full"
             type="button"
             variant="outline"
-            onClick={action.request.cancel}
+            onClick={content.actions.cancel}
           >
             Отменить запрос
           </Button>
@@ -54,19 +163,17 @@ function AiPriceResultContent({ action }: AiPriceResultContentProps) {
     )
   }
 
-  if (action.request.errorMessage !== null) {
+  if (content.status === "error") {
     return (
       <div className="space-y-4">
-        <p className="text-destructive text-sm">
-          {action.request.errorMessage}
-        </p>
+        <p className="text-destructive text-sm">{content.errorMessage}</p>
         <div className="flex flex-col gap-2 sm:flex-row">
           <Button
             className="w-full"
             type="button"
             variant="default"
             onClick={() => {
-              void action.request.retry()
+              void content.actions.retry()
             }}
           >
             Повторить запрос
@@ -75,7 +182,7 @@ function AiPriceResultContent({ action }: AiPriceResultContentProps) {
             className="w-full"
             type="button"
             variant="outline"
-            onClick={action.panel.close}
+            onClick={content.actions.close}
           >
             Закрыть
           </Button>
@@ -84,10 +191,7 @@ function AiPriceResultContent({ action }: AiPriceResultContentProps) {
     )
   }
 
-  if (
-    action.suggestion.response?.suggestedPrice === undefined ||
-    action.suggestion.response.reasoning === undefined
-  ) {
+  if (content.status !== "ready") {
     return null
   }
 
@@ -95,19 +199,17 @@ function AiPriceResultContent({ action }: AiPriceResultContentProps) {
     <div className="space-y-4">
       <div className="space-y-1">
         <p className="text-muted-foreground text-xs">Предложенная цена</p>
-        <p className="text-lg font-semibold">
-          {formatPrice(action.suggestion.response.suggestedPrice)}
-        </p>
+        <p className="text-lg font-semibold">{content.result.priceLabel}</p>
       </div>
       <div className="space-y-1">
         <p className="text-muted-foreground text-xs">Обоснование</p>
-        <p className="text-sm">{action.suggestion.response.reasoning}</p>
+        <p className="text-sm">{content.result.reasoning}</p>
       </div>
       <div className="flex flex-col gap-2">
         <Button
           className="w-full"
           type="button"
-          onClick={action.suggestion.apply}
+          onClick={content.actions.apply}
         >
           Применить цену
         </Button>
@@ -115,7 +217,7 @@ function AiPriceResultContent({ action }: AiPriceResultContentProps) {
           className="w-full"
           type="button"
           variant="outline"
-          onClick={action.panel.close}
+          onClick={content.actions.close}
         >
           Оставить текущую
         </Button>
@@ -125,7 +227,7 @@ function AiPriceResultContent({ action }: AiPriceResultContentProps) {
         type="button"
         variant="secondary"
         onClick={() => {
-          void action.request.retry()
+          void content.actions.retry()
         }}
       >
         Повторить запрос
@@ -139,18 +241,19 @@ export function AiPriceAction({ disabled, form }: AiPriceActionProps) {
     disabled,
     form
   })
+  const viewModel = getAiPriceActionViewModel(action)
 
   const triggerButton = (
     <Button
       className="w-full"
-      disabled={!action.request.canStart}
+      disabled={!viewModel.trigger.canStart}
       type="button"
       variant="outline"
       onClick={() => {
-        void action.request.start()
+        void viewModel.trigger.start()
       }}
     >
-      {action.request.isPending ? (
+      {viewModel.trigger.isPending ? (
         <>
           <Loader2Icon className="size-4 animate-spin" />
           Подбираем цену...
@@ -161,13 +264,16 @@ export function AiPriceAction({ disabled, form }: AiPriceActionProps) {
     </Button>
   )
 
-  const panelContent = <AiPriceResultContent action={action} />
+  const panelContent = <AiPriceResultContent content={viewModel.content} />
 
-  if (action.panel.isMobile) {
+  if (viewModel.panel.isMobile) {
     return (
       <>
         {triggerButton}
-        <Sheet open={action.panel.isOpen} onOpenChange={action.panel.setOpen}>
+        <Sheet
+          open={viewModel.panel.isOpen}
+          onOpenChange={viewModel.panel.setOpen}
+        >
           <SheetContent side="bottom">
             <SheetHeader>
               <SheetTitle>AI-предложение цены</SheetTitle>
@@ -184,7 +290,10 @@ export function AiPriceAction({ disabled, form }: AiPriceActionProps) {
   }
 
   return (
-    <Popover open={action.panel.isOpen} onOpenChange={action.panel.setOpen}>
+    <Popover
+      open={viewModel.panel.isOpen}
+      onOpenChange={viewModel.panel.setOpen}
+    >
       <PopoverAnchor asChild>{triggerButton}</PopoverAnchor>
       <PopoverContent align="start" className="w-[24rem] space-y-4">
         <div className="space-y-1">
