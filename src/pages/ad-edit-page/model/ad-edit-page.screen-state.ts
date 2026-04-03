@@ -1,14 +1,14 @@
 import type { AdDetailsDto } from "@/entities/ad/api"
 import { isAppApiError } from "@/shared/api/error"
 
-import type { AdEditPageScreenState } from "./ad-edit-page.contract"
+import type { ScreenState } from "./ad-edit-page.contract"
 import type { UseQueryResult } from "@tanstack/react-query"
 
 export function getScreenState(
   adId: number | null,
   backHref: string,
   detailQuery: UseQueryResult<AdDetailsDto>
-): AdEditPageScreenState | null {
+): ScreenState | null {
   if (adId === null) {
     return {
       backHref,

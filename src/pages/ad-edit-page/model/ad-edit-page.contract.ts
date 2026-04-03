@@ -6,11 +6,7 @@ import type {
 
 import type { UseFormReturn } from "react-hook-form"
 
-export type AdEditPageFormApi = UseFormReturn<
-  AdEditFormValues,
-  unknown,
-  AdEditFormValues
->
+export type FormApi = UseFormReturn<AdEditFormValues, unknown, AdEditFormValues>
 
 export type AdEditAiBadgeVariant = "default" | "destructive" | "secondary"
 
@@ -50,7 +46,7 @@ export interface FormSectionProps {
   ad: AdDetailsDto
   draftSavedAt: string | null
   onCategoryChangeRequest: (request: CategoryChangeRequest) => void
-  onFormReady: (form: AdEditPageFormApi | null) => void
+  onFormReady: (form: FormApi | null) => void
   onSubmit: (values: AdEditFormValues) => Promise<void>
   savePending: boolean
 }
@@ -58,7 +54,7 @@ export interface FormSectionProps {
 export interface AiToolsSectionProps {
   adId: number
   ai: AdEditPageAiState
-  form: AdEditPageFormApi | null
+  form: FormApi | null
 }
 
 export interface FooterActionsProps {
@@ -99,7 +95,7 @@ export type AdEditPageModel =
   | AdEditPageErrorState
   | AdEditPageReadyState
 
-export type AdEditPageScreenState =
+export type ScreenState =
   | AdEditPageLoadingState
   | AdEditPageNotFoundState
   | AdEditPageErrorState

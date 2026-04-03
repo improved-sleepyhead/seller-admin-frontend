@@ -5,11 +5,11 @@ import { useLocation, useParams } from "react-router-dom"
 import { adDetailQuery, cancelAdDetailQuery } from "@/entities/ad/api"
 
 import {
-  buildAdEditHref,
-  parseAdViewPageId,
-  resolveAdViewNavigationState
+  buildEditHref,
+  parseAdId,
+  resolveNavigation
 } from "./ad-view-page.navigation"
-import { getAdViewPageScreenState } from "./ad-view-page.screen-state"
+import { getScreenState } from "./ad-view-page.screen-state"
 
 import type { AdViewPageModel } from "./ad-view-page.contract"
 
@@ -17,8 +17,8 @@ export function useAdViewPageModel(): AdViewPageModel {
   const queryClient = useQueryClient()
   const { id } = useParams<{ id: string }>()
   const location = useLocation()
-  const adId = parseAdViewPageId(id)
-  const { backHref, editState } = resolveAdViewNavigationState(location.state)
+  const adId = parseAdId(id)
+  const { backHref, editState } = resolveNavigation(location.state)
   const detailQuery = useQuery({
     ...adDetailQuery(adId ?? 0),
     enabled: adId !== null
@@ -34,7 +34,7 @@ export function useAdViewPageModel(): AdViewPageModel {
     }
   }, [adId, queryClient])
 
-  const screenState = getAdViewPageScreenState({
+  const screenState = getScreenState({
     ad: detailQuery.data,
     adId,
     backHref,
@@ -62,7 +62,7 @@ export function useAdViewPageModel(): AdViewPageModel {
   return {
     ad,
     backHref,
-    editHref: buildAdEditHref(adId),
+    editHref: buildEditHref(adId),
     editState,
     state: "ready"
   }

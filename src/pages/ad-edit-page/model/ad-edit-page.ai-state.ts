@@ -112,7 +112,7 @@ const AI_STATUS_VIEWS = {
   (args: { disabledFeatures: string[] }) => AiStatusView
 >
 
-export function getAdEditPageAiState(
+export function getAiState(
   aiStatus: AiStatusDto | null,
   isError: boolean,
   isPending: boolean

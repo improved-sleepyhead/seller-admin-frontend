@@ -8,36 +8,27 @@ import { useCategoryChangeConfirm } from "@/features/ad-category-change"
 import { useAdDraft } from "@/features/ad-draft"
 import { useSaveAd } from "@/features/ad-save"
 
-import { getAdEditPageAiState } from "./ad-edit-page.ai-state"
-import {
-  useAdEditEntryRevision,
-  useCancelAdEditPageQueries
-} from "./ad-edit-page.effects"
-import {
-  parseAdEditPageId,
-  resolveAdEditNavigationState
-} from "./ad-edit-page.navigation"
+import { getAiState } from "./ad-edit-page.ai-state"
+import { useCancelPageQueries, useEntryRevision } from "./ad-edit-page.effects"
+import { parseAdId, resolveNavigationState } from "./ad-edit-page.navigation"
 import { getScreenState } from "./ad-edit-page.screen-state"
 
-import type {
-  AdEditPageFormApi,
-  AdEditPageModel
-} from "./ad-edit-page.contract"
+import type { AdEditPageModel, FormApi } from "./ad-edit-page.contract"
 
 export function useAdEditPageModel(): AdEditPageModel {
   const { id } = useParams<{ id: string }>()
   const location = useLocation()
-  const adId = parseAdEditPageId(id)
+  const adId = parseAdId(id)
   const backHref = useMemo(
     () => getAdsListHref(location.state),
     [location.state]
   )
   const navigationState = useMemo(
-    () => resolveAdEditNavigationState(location.state),
+    () => resolveNavigationState(location.state),
     [location.state]
   )
-  const editEntryRevision = useAdEditEntryRevision(location.pathname)
-  const [editForm, setEditForm] = useState<AdEditPageFormApi | null>(null)
+  const entryRevision = useEntryRevision(location.pathname)
+  const [editForm, setEditForm] = useState<FormApi | null>(null)
   const saveState = useSaveAd({
     itemId: adId ?? 0,
     navigationState
@@ -53,16 +44,16 @@ export function useAdEditPageModel(): AdEditPageModel {
   })
   const draft = useAdDraft({
     ad: detailQuery.data ?? null,
-    entryRevision: editEntryRevision,
+    entryRevision,
     form: editForm,
     itemId: adId ?? 0
   })
-  useCancelAdEditPageQueries(adId)
+  useCancelPageQueries(adId)
 
   const ad = detailQuery.data
   const aiState = useMemo(
     () =>
-      getAdEditPageAiState(
+      getAiState(
         aiStatusQueryResult.data ?? null,
         aiStatusQueryResult.isError,
         aiStatusQueryResult.isPending

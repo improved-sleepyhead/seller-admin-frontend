@@ -32,7 +32,7 @@ export type AdViewPageModel =
   | AdViewPageErrorState
   | AdViewPageReadyState
 
-export type AdViewPageScreenState =
+export type ScreenState =
   | AdViewPageLoadingState
   | AdViewPageNotFoundState
   | AdViewPageErrorState
