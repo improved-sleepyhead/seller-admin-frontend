@@ -3,16 +3,10 @@ import type {
   AdEditFormValues,
   AdsListNavigationState
 } from "@/entities/ad/model"
-import type { useCategoryChangeConfirm } from "@/features/ad-category-change"
-import type { useAdDraft } from "@/features/ad-draft"
 
 import type { UseFormReturn } from "react-hook-form"
 
-export type AdEditPageFormApi = UseFormReturn<
-  AdEditFormValues,
-  unknown,
-  AdEditFormValues
->
+export type FormApi = UseFormReturn<AdEditFormValues, unknown, AdEditFormValues>
 
 export type AdEditAiBadgeVariant = "default" | "destructive" | "secondary"
 
@@ -43,18 +37,55 @@ export interface AdEditPageErrorState {
   state: "error"
 }
 
-export interface AdEditPageReadyState {
+export interface CategoryChangeRequest {
+  nextCategory: AdEditFormValues["category"]
+  onConfirm: () => void
+}
+
+export interface FormSectionProps {
   ad: AdDetailsDto
-  adId: number
-  ai: AdEditPageAiState
-  backHref: string
-  categoryChange: ReturnType<typeof useCategoryChangeConfirm>
-  draft: ReturnType<typeof useAdDraft>
-  editForm: AdEditPageFormApi | null
-  navigationState?: AdsListNavigationState
-  onFormReady: (form: AdEditPageFormApi | null) => void
+  draftSavedAt: string | null
+  onCategoryChangeRequest: (request: CategoryChangeRequest) => void
+  onFormReady: (form: FormApi | null) => void
   onSubmit: (values: AdEditFormValues) => Promise<void>
   savePending: boolean
+}
+
+export interface AiToolsSectionProps {
+  adId: number
+  ai: AdEditPageAiState
+  form: FormApi | null
+}
+
+export interface FooterActionsProps {
+  adId: number
+  navigationState?: AdsListNavigationState
+  savePending: boolean
+}
+
+export interface CategoryChangeDialogProps {
+  nextCategory: AdEditFormValues["category"] | null
+  onCancel: () => void
+  onConfirm: () => void
+  open: boolean
+}
+
+export interface DraftRestoreDialogProps {
+  onRestoreDraft: () => void
+  onUseServerVersion: () => void
+  open: boolean
+}
+
+export interface AdEditPageDialogs {
+  categoryChange: CategoryChangeDialogProps
+  draftRestore: DraftRestoreDialogProps
+}
+
+export interface AdEditPageReadyState {
+  aiSection: AiToolsSectionProps
+  dialogs: AdEditPageDialogs
+  footerSection: FooterActionsProps
+  formSection: FormSectionProps
   state: "ready"
 }
 
@@ -64,7 +95,7 @@ export type AdEditPageModel =
   | AdEditPageErrorState
   | AdEditPageReadyState
 
-export type AdEditPageScreenState =
+export type ScreenState =
   | AdEditPageLoadingState
   | AdEditPageNotFoundState
   | AdEditPageErrorState

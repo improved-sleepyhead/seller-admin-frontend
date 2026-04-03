@@ -2,15 +2,12 @@ import { CategoryChangeConfirmDialog } from "@/features/ad-category-change"
 import { DraftRestoreDialog } from "@/features/ad-draft"
 import {
   AdEditErrorState,
-  AdEditLayout,
   AdEditLayoutSkeleton,
   AdEditNotFoundState
 } from "@/widgets/ad-edit-layout"
 
 import { useAdEditPageModel } from "../model"
-import { AdEditAiToolsSection } from "./ad-edit-ai-tools-section"
-import { AdEditFooterActions } from "./ad-edit-footer-actions"
-import { AdEditFormSection } from "./ad-edit-form-section"
+import { AdEditPageReadyContent } from "./ad-edit-page-ready-content"
 
 export function AdEditPage() {
   const model = useAdEditPageModel()
@@ -31,47 +28,15 @@ export function AdEditPage() {
     case "ready":
       return (
         <div>
-          <AdEditLayout
-            aiArea={
-              <AdEditAiToolsSection
-                adId={model.adId}
-                ai={model.ai}
-                editForm={model.editForm}
-              />
-            }
-            footer={
-              <AdEditFooterActions
-                adId={model.adId}
-                navigationState={model.navigationState}
-                savePending={model.savePending}
-              />
-            }
-            formArea={
-              <AdEditFormSection
-                ad={model.ad}
-                draftSavedAt={model.draft.draftSavedAt}
-                onCategoryChangeRequest={
-                  model.categoryChange.requestCategoryChange
-                }
-                onFormReady={model.onFormReady}
-                onSubmit={model.onSubmit}
-                savePending={model.savePending}
-              />
-            }
+          <AdEditPageReadyContent
+            aiSection={model.aiSection}
+            footerSection={model.footerSection}
+            formSection={model.formSection}
           />
 
-          <CategoryChangeConfirmDialog
-            nextCategory={model.categoryChange.requestedCategory}
-            onCancel={model.categoryChange.cancelCategoryChange}
-            onConfirm={model.categoryChange.confirmCategoryChange}
-            open={model.categoryChange.isCategoryChangeDialogOpen}
-          />
+          <CategoryChangeConfirmDialog {...model.dialogs.categoryChange} />
 
-          <DraftRestoreDialog
-            onRestoreDraft={model.draft.restoreDraft}
-            onUseServerVersion={model.draft.useServerVersion}
-            open={model.draft.isRestoreDialogOpen}
-          />
+          <DraftRestoreDialog {...model.dialogs.draftRestore} />
         </div>
       )
   }

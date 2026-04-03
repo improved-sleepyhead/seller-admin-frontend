@@ -1,6 +1,6 @@
 import { getAdsSearch, type AdsListNavigationState } from "@/entities/ad/model"
 
-export function parseAdEditPageId(rawId: string | undefined): number | null {
+export function parseAdId(rawId: string | undefined): number | null {
   if (!rawId) {
     return null
   }
@@ -14,7 +14,7 @@ export function parseAdEditPageId(rawId: string | undefined): number | null {
   return parsedId
 }
 
-export function resolveAdEditNavigationState(
+export function resolveNavigationState(
   state: unknown
 ): AdsListNavigationState | undefined {
   const adsSearch = getAdsSearch(state)
