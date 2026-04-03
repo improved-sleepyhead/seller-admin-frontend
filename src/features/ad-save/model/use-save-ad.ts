@@ -1,5 +1,5 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query"
-import { useCallback } from "react"
+import { useCallback, useMemo } from "react"
 import { useNavigate } from "react-router-dom"
 import { toast } from "sonner"
 
@@ -46,7 +46,7 @@ export function useSaveAd({
 }: UseSaveAdOptions): UseSaveAdResult {
   const queryClient = useQueryClient()
   const navigate = useNavigate()
-  const mutation = useMutation({
+  const { isPending, mutateAsync } = useMutation({
     ...updateAdMutation(itemId),
     onError: error => {
       toast.error(getErrorToastMessage(error))
@@ -68,16 +68,19 @@ export function useSaveAd({
     async (values: AdEditFormValues) => {
       const abortController = new AbortController()
 
-      await mutation.mutateAsync({
+      await mutateAsync({
         item: toItemPatch(values),
         signal: abortController.signal
       })
     },
-    [mutation]
+    [mutateAsync]
   )
 
-  return {
-    isSavePending: mutation.isPending,
-    saveAd
-  }
+  return useMemo(
+    () => ({
+      isSavePending: isPending,
+      saveAd
+    }),
+    [isPending, saveAd]
+  )
 }

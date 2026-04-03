@@ -4,7 +4,7 @@ import {
   type AdsListNavigationState
 } from "@/entities/ad/model"
 
-export function parseAdViewPageId(rawId: string | undefined): number | null {
+export function parseAdId(rawId: string | undefined): number | null {
   if (!rawId) {
     return null
   }
@@ -18,11 +18,11 @@ export function parseAdViewPageId(rawId: string | undefined): number | null {
   return adId
 }
 
-export function buildAdEditHref(adId: number): string {
+export function buildEditHref(adId: number): string {
   return `/ads/${adId}/edit`
 }
 
-export function resolveAdViewNavigationState(locationState: unknown): {
+export function resolveNavigation(locationState: unknown): {
   backHref: string
   editState?: AdsListNavigationState
 } {

@@ -1,10 +1,10 @@
 export { useAdEditPageModel } from "./use-ad-edit-page-model"
 export type {
-  AdEditAiToolsSectionProps,
-  AdEditCategoryChangeDialogProps,
-  AdEditDraftRestoreDialogProps,
-  AdEditFooterActionsProps,
-  AdEditFormSectionProps,
   AdEditPageModel,
-  AdEditPageReadyState
+  AdEditPageReadyState,
+  AiToolsSectionProps,
+  CategoryChangeDialogProps,
+  DraftRestoreDialogProps,
+  FooterActionsProps,
+  FormSectionProps
 } from "./ad-edit-page.contract"

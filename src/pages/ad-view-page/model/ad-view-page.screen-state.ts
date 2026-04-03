@@ -1,9 +1,9 @@
 import type { AdDetailsVM } from "@/entities/ad/api"
 import { isAppApiError } from "@/shared/api/error"
 
-import type { AdViewPageScreenState } from "./ad-view-page.contract"
+import type { ScreenState } from "./ad-view-page.contract"
 
-interface AdViewPageScreenStateParams {
+interface ScreenStateParams {
   ad: AdDetailsVM | undefined
   adId: number | null
   backHref: string
@@ -13,7 +13,7 @@ interface AdViewPageScreenStateParams {
   onRetry: () => void
 }
 
-export function getAdViewPageScreenState({
+export function getScreenState({
   ad,
   adId,
   backHref,
@@ -21,7 +21,7 @@ export function getAdViewPageScreenState({
   isError,
   isPending,
   onRetry
-}: AdViewPageScreenStateParams): AdViewPageScreenState | null {
+}: ScreenStateParams): ScreenState | null {
   if (adId === null) {
     return {
       backHref,

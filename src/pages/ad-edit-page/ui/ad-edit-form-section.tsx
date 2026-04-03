@@ -4,7 +4,7 @@ import { DraftSavedHint } from "@/features/ad-draft"
 import { AdEditForm } from "@/features/ad-edit-form"
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/shadcn"
 
-import type { AdEditFormSectionProps } from "../model"
+import type { FormSectionProps } from "../model"
 
 const EDIT_FORM_ID = "ad-edit-form"
 
@@ -15,7 +15,7 @@ export const AdEditFormSection = memo(function AdEditFormSection({
   onFormReady,
   onSubmit,
   savePending
-}: AdEditFormSectionProps) {
+}: FormSectionProps) {
   return (
     <Card>
       <CardHeader>

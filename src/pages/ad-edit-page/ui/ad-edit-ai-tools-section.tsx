@@ -12,13 +12,13 @@ import {
 } from "@/shared/ui/shadcn"
 import { AiChatPanel } from "@/widgets/ai-chat-panel"
 
-import type { AdEditAiToolsSectionProps } from "../model"
+import type { AiToolsSectionProps } from "../model"
 
 export const AdEditAiToolsSection = memo(function AdEditAiToolsSection({
   adId,
   ai,
   form
-}: AdEditAiToolsSectionProps) {
+}: AiToolsSectionProps) {
   return (
     <div className="space-y-6">
       <Card>
