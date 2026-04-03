@@ -1,5 +1,5 @@
 import { ItemUpdateInSchema, type ItemUpdateIn } from "../api"
-import { AD_REQUIRED_PARAM_KEYS_BY_CATEGORY } from "./ad.constants"
+import { REQUIRED_KEYS_BY_CATEGORY } from "./ad.constants"
 
 import type { AdEditFormValues } from "./ad.types"
 import type { Path, UseFormReturn } from "react-hook-form"
@@ -36,7 +36,7 @@ const SELECT_FIELDS = new Set<AdEditFormPath>([
 function toRequiredFieldPaths(
   category: AdEditFormValues["category"]
 ): AdEditFormPath[] {
-  const categoryFieldPaths = AD_REQUIRED_PARAM_KEYS_BY_CATEGORY[category].map(
+  const categoryFieldPaths = REQUIRED_KEYS_BY_CATEGORY[category].map(
     key => `params.${key}` as AdEditFormPath
   )
 

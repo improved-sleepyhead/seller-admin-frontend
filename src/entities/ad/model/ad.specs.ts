@@ -1,9 +1,9 @@
 import {
-  AD_PARAM_LABELS_BY_CATEGORY,
-  AD_REQUIRED_PARAM_KEYS_BY_CATEGORY,
   AUTO_TRANSMISSION_LABELS,
   ELECTRONICS_CONDITION_LABELS,
   ELECTRONICS_TYPE_LABELS,
+  KEY_LABELS_BY_CATEGORY,
+  REQUIRED_KEYS_BY_CATEGORY,
   REAL_ESTATE_TYPE_LABELS
 } from "./ad.constants"
 
@@ -60,11 +60,11 @@ function formatSpecValue(ad: Ad, key: string, value: unknown): string | null {
 
 export function getFilledSpecs(ad: Ad): FilledSpec[] {
   const specs: FilledSpec[] = []
-  const paramLabelsByKey = AD_PARAM_LABELS_BY_CATEGORY[ad.category] as Record<
+  const paramLabelsByKey = KEY_LABELS_BY_CATEGORY[ad.category] as Record<
     string,
     string
   >
-  const specKeys = AD_REQUIRED_PARAM_KEYS_BY_CATEGORY[ad.category]
+  const specKeys = REQUIRED_KEYS_BY_CATEGORY[ad.category]
   const params = ad.params as Record<string, unknown>
 
   for (const key of specKeys) {

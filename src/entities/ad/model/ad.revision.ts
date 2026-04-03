@@ -1,7 +1,7 @@
 import {
   AD_CORE_FIELD_LABELS,
-  AD_PARAM_LABELS_BY_CATEGORY,
-  AD_REQUIRED_PARAM_KEYS_BY_CATEGORY
+  KEY_LABELS_BY_CATEGORY,
+  REQUIRED_KEYS_BY_CATEGORY
 } from "./ad.constants"
 
 import type { Ad } from "./ad.types"
@@ -33,8 +33,8 @@ export function getMissingFields(ad: Ad): string[] {
     missingFields.push(AD_CORE_FIELD_LABELS.description)
   }
 
-  const requiredParamKeys = AD_REQUIRED_PARAM_KEYS_BY_CATEGORY[ad.category]
-  const paramLabelsByKey = AD_PARAM_LABELS_BY_CATEGORY[ad.category] as Record<
+  const requiredParamKeys = REQUIRED_KEYS_BY_CATEGORY[ad.category]
+  const paramLabelsByKey = KEY_LABELS_BY_CATEGORY[ad.category] as Record<
     string,
     string
   >

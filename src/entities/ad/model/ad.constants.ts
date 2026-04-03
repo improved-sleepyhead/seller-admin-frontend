@@ -19,7 +19,7 @@ export const AD_CORE_FIELD_LABELS = {
   description: "Описание"
 } as const
 
-export const AUTO_REQUIRED_PARAM_KEYS: AutoParamKey[] = [
+export const AUTO_REQUIRED_KEYS: AutoParamKey[] = [
   "brand",
   "model",
   "yearOfManufacture",
@@ -28,14 +28,14 @@ export const AUTO_REQUIRED_PARAM_KEYS: AutoParamKey[] = [
   "enginePower"
 ]
 
-export const REAL_ESTATE_REQUIRED_PARAM_KEYS: RealEstateParamKey[] = [
+export const REAL_ESTATE_REQUIRED_KEYS: RealEstateParamKey[] = [
   "type",
   "address",
   "area",
   "floor"
 ]
 
-export const ELECTRONICS_REQUIRED_PARAM_KEYS: ElectronicsParamKey[] = [
+export const ELECTRONICS_REQUIRED_KEYS: ElectronicsParamKey[] = [
   "type",
   "brand",
   "model",
@@ -43,13 +43,13 @@ export const ELECTRONICS_REQUIRED_PARAM_KEYS: ElectronicsParamKey[] = [
   "color"
 ]
 
-export const AD_REQUIRED_PARAM_KEYS_BY_CATEGORY = {
-  auto: AUTO_REQUIRED_PARAM_KEYS,
-  electronics: ELECTRONICS_REQUIRED_PARAM_KEYS,
-  real_estate: REAL_ESTATE_REQUIRED_PARAM_KEYS
+export const REQUIRED_KEYS_BY_CATEGORY = {
+  auto: AUTO_REQUIRED_KEYS,
+  electronics: ELECTRONICS_REQUIRED_KEYS,
+  real_estate: REAL_ESTATE_REQUIRED_KEYS
 } as const
 
-export const AUTO_PARAM_LABELS: Record<AutoParamKey, string> = {
+export const AUTO_KEY_LABELS: Record<AutoParamKey, string> = {
   brand: "Бренд",
   enginePower: "Мощность двигателя",
   mileage: "Пробег",
@@ -58,14 +58,14 @@ export const AUTO_PARAM_LABELS: Record<AutoParamKey, string> = {
   yearOfManufacture: "Год выпуска"
 }
 
-export const REAL_ESTATE_PARAM_LABELS: Record<RealEstateParamKey, string> = {
+export const REAL_ESTATE_KEY_LABELS: Record<RealEstateParamKey, string> = {
   address: "Адрес",
   area: "Площадь",
   floor: "Этаж",
   type: "Тип недвижимости"
 }
 
-export const ELECTRONICS_PARAM_LABELS: Record<ElectronicsParamKey, string> = {
+export const ELECTRONICS_KEY_LABELS: Record<ElectronicsParamKey, string> = {
   brand: "Бренд",
   color: "Цвет",
   condition: "Состояние",
@@ -73,10 +73,10 @@ export const ELECTRONICS_PARAM_LABELS: Record<ElectronicsParamKey, string> = {
   type: "Тип устройства"
 }
 
-export const AD_PARAM_LABELS_BY_CATEGORY = {
-  auto: AUTO_PARAM_LABELS,
-  electronics: ELECTRONICS_PARAM_LABELS,
-  real_estate: REAL_ESTATE_PARAM_LABELS
+export const KEY_LABELS_BY_CATEGORY = {
+  auto: AUTO_KEY_LABELS,
+  electronics: ELECTRONICS_KEY_LABELS,
+  real_estate: REAL_ESTATE_KEY_LABELS
 } as const
 
 export const AUTO_TRANSMISSION_LABELS: Record<
