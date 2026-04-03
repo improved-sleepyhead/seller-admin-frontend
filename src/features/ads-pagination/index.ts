@@ -1,0 +1,1 @@
+export { AdsPagination } from "./ui"

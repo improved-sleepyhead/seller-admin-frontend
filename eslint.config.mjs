@@ -97,9 +97,33 @@ const higherThanPages = [
   "@/pages/**"
 ]
 
+const sharedPublicSubmoduleEntryPoints = [
+  "@/shared/api/client",
+  "@/shared/api/error",
+  "@/shared/api/zod-parser",
+  "@/shared/config/runtime-config",
+  "@/shared/lib/cn",
+  "@/shared/lib/draft-autosave-guard",
+  "@/shared/ui/loader",
+  "@/shared/ui/page-state",
+  "@/shared/ui/placeholders",
+  "@/shared/ui/shadcn",
+  "@/shared/ui/theme"
+]
+
 export default defineConfig(
   {
-    ignores: ["dist/**", "coverage/**", "node_modules/**", "*.d.ts"]
+    ignores: [
+      "dist/**",
+      "coverage/**",
+      "node_modules/**",
+      ".agents/**",
+      ".claude/**",
+      ".codex/**",
+      "public/config.js",
+      "*.d.ts",
+      "eslint.config.mjs"
+    ]
   },
 
   js.configs.recommended,
@@ -107,7 +131,15 @@ export default defineConfig(
   tseslint.configs.stylisticTypeChecked,
   reactPlugin.configs.flat.recommended,
   reactPlugin.configs.flat["jsx-runtime"],
-  reactHooks.configs.recommended,
+  {
+    plugins: {
+      "react-hooks": reactHooks
+    },
+    rules: {
+      "react-hooks/rules-of-hooks": "error",
+      "react-hooks/exhaustive-deps": "warn"
+    }
+  },
 
   {
     files: ["src/**/*.{ts,tsx}", "vite.config.ts"],
@@ -203,7 +235,7 @@ export default defineConfig(
        * Публичный API:
        * - внутри своего slice используем относительные импорты
        * - между slice/layer используем только public API
-       * - для shared/ui и shared/lib разрешаем подмодули
+       * - для shared разрешены только явно объявленные public submodules
        * - для entities @x оставляем разрешение
        */
       "import/no-internal-modules": [
@@ -217,15 +249,25 @@ export default defineConfig(
             "../../../../**",
             "../../../../../**",
 
-            "shared/ui/**",
-            "shared/lib/**",
-            "shared/api/**",
-            "shared/config/**",
+            "react-dom/*",
+            "zod/*",
 
-            "@/shared/ui/**",
-            "@/shared/lib/**",
-            "@/shared/api/**",
-            "@/shared/config/**",
+            "app/*",
+            "app/**",
+            "pages/*",
+            "widgets/*",
+            "features/*",
+            "entities/*",
+            "entities/*/{api,model,ui,lib,config}",
+
+            "@/app/*",
+            "@/app/**",
+            "@/pages/*",
+            "@/widgets/*",
+            "@/features/*",
+            "@/entities/*",
+            "@/entities/*/{api,model,ui,lib,config}",
+            ...sharedPublicSubmoduleEntryPoints,
 
             "entities/*/@x/*",
             "@/entities/*/@x/*"
@@ -329,6 +371,20 @@ export default defineConfig(
           ]
         }
       ]
+    }
+  },
+
+  // Slice index.ts files re-export from internal segments (ui/, model/, api/, lib/)
+  // This is the standard FSD public API pattern
+  {
+    files: [
+      "src/pages/*/index.ts",
+      "src/widgets/*/index.ts",
+      "src/features/*/index.ts",
+      "src/entities/*/index.ts"
+    ],
+    rules: {
+      "import/no-internal-modules": "off"
     }
   }
 )
