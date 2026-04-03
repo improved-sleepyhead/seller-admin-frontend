@@ -141,6 +141,9 @@ function createAdsListStateStore(): AdsListStateStoreApi {
   }))
 }
 
+// This store is intentionally module-scoped and session-only.
+// URL search params are the persistence layer for list state, so a full reload
+// should rehydrate from the URL rather than from in-memory store persistence.
 const adsListStateStore = createAdsListStateStore()
 
 export function useAdsListState<Selected>(
