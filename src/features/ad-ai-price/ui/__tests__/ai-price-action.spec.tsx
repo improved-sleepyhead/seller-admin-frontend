@@ -168,4 +168,33 @@ describe("AiPriceAction", () => {
       await screen.findByRole("button", { name: "Применить цену" })
     ).toBeTruthy()
   })
+
+  it("should cancel active request and close pending result panel", async () => {
+    let requestSignal: AbortSignal | null = null
+
+    requestAiPriceMock.mockImplementation(async (_item, signal) => {
+      requestSignal = signal
+
+      return await new Promise<never>(() => {
+        void signal
+      })
+    })
+
+    render(<AiPriceActionHarness />)
+
+    fireEvent.click(screen.getByRole("button", { name: "Предложить цену" }))
+
+    expect(
+      await screen.findByRole("button", { name: "Отменить запрос" })
+    ).toBeTruthy()
+
+    fireEvent.click(screen.getByRole("button", { name: "Отменить запрос" }))
+
+    await waitFor(() => {
+      expect(requestSignal?.aborted).toBe(true)
+      expect(
+        screen.queryByRole("button", { name: "Отменить запрос" })
+      ).toBeNull()
+    })
+  })
 })

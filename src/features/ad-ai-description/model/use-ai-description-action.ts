@@ -1,20 +1,12 @@
-import { useMutation } from "@tanstack/react-query"
-import { useCallback, useEffect, useRef, useState } from "react"
+import { useCallback } from "react"
 
+import type { AdEditFormApi } from "@/entities/ad/model"
+
+import { useAiDescriptionRequest } from "./use-ai-description-request"
 import {
-  requestAiDescription,
-  type AiDescriptionResponse,
-  type ItemUpdateIn
-} from "@/entities/ad/api"
-import { ensureValidAiPayload, type AdEditFormApi } from "@/entities/ad/model"
-import { isAppApiError } from "@/shared/api/error"
-
-const MOBILE_MEDIA_QUERY = "(max-width: 767px)"
-
-interface DescriptionDiffModel {
-  sourceText: string
-  suggestion: string
-}
+  useAiDescriptionUiState,
+  type DescriptionDiffModel
+} from "./use-ai-description-ui-state"
 
 interface ActionOptions {
   disabled: boolean
@@ -56,256 +48,54 @@ interface ActionState {
   suggestion: SuggestionState
 }
 
-function getErrorMessage(error: unknown): string {
-  if (isAppApiError(error)) {
-    return error.message
-  }
-
-  if (error instanceof Error && error.message.length > 0) {
-    return error.message
-  }
-
-  return "Не удалось получить AI-предложение описания."
-}
-
-function useIsMobile(): boolean {
-  const [isMobile, setIsMobile] = useState(() => {
-    if (typeof window === "undefined") {
-      return false
-    }
-
-    return window.matchMedia(MOBILE_MEDIA_QUERY).matches
-  })
-
-  useEffect(() => {
-    if (typeof window === "undefined") {
-      return
-    }
-
-    const mediaQueryList = window.matchMedia(MOBILE_MEDIA_QUERY)
-    const handleChange = (event: MediaQueryListEvent) => {
-      setIsMobile(event.matches)
-    }
-
-    setIsMobile(mediaQueryList.matches)
-    mediaQueryList.addEventListener("change", handleChange)
-
-    return () => {
-      mediaQueryList.removeEventListener("change", handleChange)
-    }
-  }, [])
-
-  return isMobile
-}
-
 export function useAiDescriptionAction({
   disabled,
   form
 }: ActionOptions): ActionState {
-  const [errorMessage, setErrorMessage] = useState<string | null>(null)
-  const [isPreparing, setIsPreparing] = useState(false)
-  const [isDiffViewerOpen, setIsDiffViewerOpen] = useState(false)
-  const [isResultOpen, setIsResultOpen] = useState(false)
-  const [response, setResponse] = useState<AiDescriptionResponse | null>(null)
-  const [visibleDiff, setVisibleDiff] = useState<DescriptionDiffModel | null>(
-    null
-  )
-  const abortControllerRef = useRef<AbortController | null>(null)
-  const lastAppliedDiffRef = useRef<DescriptionDiffModel | null>(null)
-  const restoreResultRef = useRef(false)
-  const isMobile = useIsMobile()
-  const mutation = useMutation({
-    mutationFn: ({
-      item,
-      signal
-    }: {
-      item: ItemUpdateIn
-      signal: AbortSignal
-    }): Promise<AiDescriptionResponse> => requestAiDescription(item, signal)
+  const request = useAiDescriptionRequest({
+    disabled,
+    form
+  })
+  const uiState = useAiDescriptionUiState({
+    form,
+    isRequestPending: request.isPending,
+    suggestionText: request.response?.suggestion ?? null
   })
 
-  const cancelRequest = useCallback(() => {
-    if (abortControllerRef.current === null) {
-      return
-    }
-
-    restoreResultRef.current = false
-    abortControllerRef.current.abort()
-    abortControllerRef.current = null
-    setIsPreparing(false)
-    mutation.reset()
-    setIsResultOpen(false)
-  }, [mutation, setIsPreparing])
-
-  const closeResult = useCallback(() => {
-    restoreResultRef.current = false
-    setIsResultOpen(false)
-  }, [])
-
-  const requestSuggestion = useCallback(async () => {
-    if (disabled || form === null || mutation.isPending || isPreparing) {
-      return
-    }
-
-    setIsPreparing(true)
-    const validationResult = await ensureValidAiPayload(form)
-
-    if (!validationResult.isValid) {
-      setErrorMessage("Заполните обязательные поля перед AI-запросом.")
-      setResponse(null)
-      setIsResultOpen(false)
-      setIsPreparing(false)
-      return
-    }
-
-    const requestAbortController = new AbortController()
-    abortControllerRef.current = requestAbortController
-    restoreResultRef.current = false
-    setErrorMessage(null)
-    setResponse(null)
-    setIsResultOpen(true)
-
-    try {
-      const nextResponse = await mutation.mutateAsync({
-        item: validationResult.payload,
-        signal: requestAbortController.signal
-      })
-
-      if (requestAbortController.signal.aborted) {
-        return
-      }
-
-      setResponse(nextResponse)
-    } catch (error) {
-      if (requestAbortController.signal.aborted) {
-        return
-      }
-
-      setErrorMessage(getErrorMessage(error))
-    } finally {
-      setIsPreparing(false)
-      if (abortControllerRef.current === requestAbortController) {
-        abortControllerRef.current = null
-      }
-    }
-  }, [disabled, form, isPreparing, mutation])
-
-  const retrySuggestion = useCallback(async () => {
-    await requestSuggestion()
-  }, [requestSuggestion])
-
-  const viewDiff = useCallback(() => {
-    const shouldRestoreResult = !isMobile && isResultOpen
-    restoreResultRef.current = shouldRestoreResult
-
-    if (form !== null && response !== null) {
-      setVisibleDiff({
-        sourceText: form.getValues("description"),
-        suggestion: response.suggestion
-      })
-
-      if (shouldRestoreResult) {
-        setIsResultOpen(false)
-      }
-      setIsDiffViewerOpen(true)
-      return
-    }
-
-    if (lastAppliedDiffRef.current !== null) {
-      setVisibleDiff(lastAppliedDiffRef.current)
-
-      if (shouldRestoreResult) {
-        setIsResultOpen(false)
-      }
-      setIsDiffViewerOpen(true)
-    }
-  }, [form, isMobile, isResultOpen, response])
-
-  const applySuggestion = useCallback(() => {
-    if (response === null || form === null) {
-      return
-    }
-
-    const previousDescription = form.getValues("description")
-    const nextDiff: DescriptionDiffModel = {
-      sourceText: previousDescription,
-      suggestion: response.suggestion
-    }
-
-    lastAppliedDiffRef.current = nextDiff
-    restoreResultRef.current = false
-    form.setValue("description", response.suggestion, {
-      shouldDirty: true,
-      shouldTouch: true,
-      shouldValidate: true
+  const start = useCallback(async () => {
+    await request.start({
+      onStart: uiState.openResult
     })
-    setVisibleDiff(nextDiff)
-    setIsResultOpen(false)
-  }, [form, response])
+  }, [request, uiState.openResult])
 
-  const setResultOpen = useCallback(
-    (nextOpen: boolean) => {
-      if (!nextOpen && (mutation.isPending || isPreparing)) {
-        return
-      }
+  const retry = useCallback(async () => {
+    await request.retry({
+      onStart: uiState.openResult
+    })
+  }, [request, uiState.openResult])
 
-      if (!nextOpen) {
-        closeResult()
-        return
-      }
-
-      setIsResultOpen(true)
-    },
-    [closeResult, isPreparing, mutation.isPending]
-  )
-
-  const closeDiffViewer = useCallback(() => {
-    setIsDiffViewerOpen(false)
-    if (restoreResultRef.current) {
-      restoreResultRef.current = false
-      setIsResultOpen(true)
-      return
-    }
-
-    restoreResultRef.current = false
-  }, [])
-
-  useEffect(() => {
-    return () => {
-      if (abortControllerRef.current !== null) {
-        abortControllerRef.current.abort()
-        abortControllerRef.current = null
-      }
-    }
-  }, [])
+  const cancel = useCallback(() => {
+    request.cancel()
+    uiState.panel.close()
+  }, [request, uiState.panel])
 
   return {
-    diff: {
-      close: closeDiffViewer,
-      isOpen: isDiffViewerOpen,
-      open: viewDiff,
-      value: visibleDiff
-    },
-    panel: {
-      close: closeResult,
-      isMobile,
-      isOpen: isResultOpen,
-      setOpen: setResultOpen
-    },
+    diff: uiState.diff,
+    panel: uiState.panel,
     request: {
-      canStart:
-        !disabled && form !== null && !mutation.isPending && !isPreparing,
-      cancel: cancelRequest,
-      errorMessage,
-      isPending: mutation.isPending || isPreparing,
-      retry: retrySuggestion,
-      start: requestSuggestion
+      canStart: request.canStart,
+      cancel,
+      errorMessage: request.errorMessage,
+      isPending: request.isPending,
+      retry,
+      start
     },
     suggestion: {
-      apply: applySuggestion,
-      text: response?.suggestion ?? null
+      apply: uiState.apply,
+      text: request.response?.suggestion ?? null
     }
   }
 }
 
-export type { AdEditFormApi, DescriptionDiffModel }
+export type { AdEditFormApi } from "@/entities/ad/model"
+export type { DescriptionDiffModel } from "./use-ai-description-ui-state"
