@@ -52,6 +52,9 @@ function createDraftRegistryStore(): DraftRegistryStoreApi {
   }))
 }
 
+// Registry metadata is intentionally kept in-memory for the current SPA
+// session. Persistent draft/chat data lives in dedicated localStorage flows,
+// so a full reload may rebuild this registry from those sources.
 const draftRegistryStore = createDraftRegistryStore()
 
 export function getDraftRegistryMeta(itemId: number): DraftMeta | undefined {

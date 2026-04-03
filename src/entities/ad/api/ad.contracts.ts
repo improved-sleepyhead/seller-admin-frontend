@@ -22,7 +22,7 @@ export interface AdReadBaseDto {
   needsRevision?: boolean
 }
 
-export interface AutoAdParamsRead {
+export interface AutoParamsDto {
   brand?: string
   model?: string
   yearOfManufacture?: number
@@ -31,14 +31,14 @@ export interface AutoAdParamsRead {
   enginePower?: number
 }
 
-export interface RealEstateAdParamsRead {
+export interface RealEstateParamsDto {
   type?: "flat" | "house" | "room"
   address?: string
   area?: number
   floor?: number
 }
 
-export interface ElectronicsAdParamsRead {
+export interface ElectronicsParamsDto {
   type?: "phone" | "laptop" | "misc"
   brand?: string
   model?: string
@@ -48,17 +48,17 @@ export interface ElectronicsAdParamsRead {
 
 export interface AutoAdListItemDto extends AdReadBaseDto {
   category: "auto"
-  params: AutoAdParamsRead
+  params: AutoParamsDto
 }
 
 export interface RealEstateAdListItemDto extends AdReadBaseDto {
   category: "real_estate"
-  params: RealEstateAdParamsRead
+  params: RealEstateParamsDto
 }
 
 export interface ElectronicsAdListItemDto extends AdReadBaseDto {
   category: "electronics"
-  params: ElectronicsAdParamsRead
+  params: ElectronicsParamsDto
 }
 
 export type AdListItemDto =
@@ -79,7 +79,7 @@ export interface ItemUpdateBase {
   price: number
 }
 
-export interface AutoAdParamsWrite {
+export interface AutoParamsIn {
   brand: string
   model: string
   yearOfManufacture: number
@@ -88,14 +88,14 @@ export interface AutoAdParamsWrite {
   enginePower: number
 }
 
-export interface RealEstateAdParamsWrite {
+export interface RealEstateParamsIn {
   type: "flat" | "house" | "room"
   address: string
   area: number
   floor: number
 }
 
-export interface ElectronicsAdParamsWrite {
+export interface ElectronicsParamsIn {
   type: "phone" | "laptop" | "misc"
   brand: string
   model: string
@@ -103,25 +103,22 @@ export interface ElectronicsAdParamsWrite {
   color: string
 }
 
-export interface AutoItemUpdateIn extends ItemUpdateBase {
+export interface AutoItemIn extends ItemUpdateBase {
   category: "auto"
-  params: AutoAdParamsWrite
+  params: AutoParamsIn
 }
 
-export interface RealEstateItemUpdateIn extends ItemUpdateBase {
+export interface RealEstateItemIn extends ItemUpdateBase {
   category: "real_estate"
-  params: RealEstateAdParamsWrite
+  params: RealEstateParamsIn
 }
 
-export interface ElectronicsItemUpdateIn extends ItemUpdateBase {
+export interface ElectronicsItemIn extends ItemUpdateBase {
   category: "electronics"
-  params: ElectronicsAdParamsWrite
+  params: ElectronicsParamsIn
 }
 
-export type ItemUpdateIn =
-  | AutoItemUpdateIn
-  | RealEstateItemUpdateIn
-  | ElectronicsItemUpdateIn
+export type ItemUpdateIn = AutoItemIn | RealEstateItemIn | ElectronicsItemIn
 
 export interface ItemPatchBase {
   category: AdCategory
@@ -132,17 +129,17 @@ export interface ItemPatchBase {
 
 export interface AutoItemPatchIn extends ItemPatchBase {
   category: "auto"
-  params?: Partial<AutoAdParamsWrite>
+  params?: Partial<AutoParamsIn>
 }
 
 export interface RealEstateItemPatchIn extends ItemPatchBase {
   category: "real_estate"
-  params?: Partial<RealEstateAdParamsWrite>
+  params?: Partial<RealEstateParamsIn>
 }
 
 export interface ElectronicsItemPatchIn extends ItemPatchBase {
   category: "electronics"
-  params?: Partial<ElectronicsAdParamsWrite>
+  params?: Partial<ElectronicsParamsIn>
 }
 
 export type ItemPatchIn =

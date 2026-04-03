@@ -128,6 +128,8 @@ function createStateStore(): StateStore {
   }))
 }
 
+// Draft session state is module-scoped on purpose: it coordinates restore
+// dialogs and transient UI state only for the current SPA lifetime.
 const stateStore = createStateStore()
 
 export function useDraftSession<Selected>(

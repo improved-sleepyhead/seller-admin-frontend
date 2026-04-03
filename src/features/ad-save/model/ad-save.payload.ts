@@ -1,8 +1,8 @@
 import type {
-  AutoAdParamsWrite,
+  AutoParamsIn,
+  ElectronicsParamsIn,
   ItemPatchIn,
-  RealEstateAdParamsWrite,
-  ElectronicsAdParamsWrite
+  RealEstateParamsIn
 } from "@/entities/ad/api"
 import type { AdEditFormValues } from "@/entities/ad/model"
 
@@ -65,7 +65,7 @@ function toOptionalEnumValue<const TValue extends string>(
 
 function mapAutoParams(
   values: AdEditFormValues["params"]
-): Partial<AutoAdParamsWrite> {
+): Partial<AutoParamsIn> {
   return {
     brand: toOptionalTrimmedString(values.brand),
     model: toOptionalTrimmedString(values.model),
@@ -81,7 +81,7 @@ function mapAutoParams(
 
 function mapRealEstateParams(
   values: AdEditFormValues["params"]
-): Partial<RealEstateAdParamsWrite> {
+): Partial<RealEstateParamsIn> {
   return {
     type: toOptionalEnumValue(values.type, REAL_ESTATE_TYPE_VALUES),
     address: toOptionalTrimmedString(values.address),
@@ -92,7 +92,7 @@ function mapRealEstateParams(
 
 function mapElectronicsParams(
   values: AdEditFormValues["params"]
-): Partial<ElectronicsAdParamsWrite> {
+): Partial<ElectronicsParamsIn> {
   return {
     type: toOptionalEnumValue(values.type, ELECTRONICS_TYPE_VALUES),
     brand: toOptionalTrimmedString(values.brand),

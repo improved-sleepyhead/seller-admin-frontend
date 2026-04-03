@@ -196,4 +196,28 @@ describe("AiDescriptionAction", () => {
       screen.getByRole("button", { name: "Сравнить изменения" })
     ).toBeTruthy()
   })
+
+  it("should retry request after error result", async () => {
+    requestAiDescriptionMock
+      .mockRejectedValueOnce(new Error("Временная ошибка AI"))
+      .mockResolvedValueOnce({
+        suggestion: "Повторно сгенерированное описание"
+      })
+
+    render(<AiDescriptionActionHarness />)
+
+    fireEvent.click(screen.getByRole("button", { name: "Улучшить описание" }))
+
+    expect(await screen.findByText("Временная ошибка AI")).toBeTruthy()
+
+    fireEvent.click(screen.getByRole("button", { name: "Повторить запрос" }))
+
+    await waitFor(() => {
+      expect(requestAiDescriptionMock).toHaveBeenCalledTimes(2)
+    })
+
+    expect(
+      await screen.findByRole("button", { name: "Применить" })
+    ).toBeTruthy()
+  })
 })

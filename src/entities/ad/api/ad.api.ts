@@ -1,6 +1,8 @@
-import { apiGet, apiPatch, apiPost } from "@/shared/api/client"
-
-import { executeApiRequest } from "./ad.request"
+import {
+  getParsedResponse,
+  patchParsedResponse,
+  postParsedResponse
+} from "./ad.request"
 import {
   AdDetailsSchema,
   AdListResponseSchema,
@@ -81,20 +83,22 @@ export async function getAdsList(
   params: AdsListQueryParams,
   signal: AbortSignal
 ): Promise<AdsListResponseDto> {
-  return executeApiRequest(
-    () => apiGet<unknown>(buildAdsListUrl(params), signal),
-    AdListResponseSchema
-  )
+  return getParsedResponse({
+    schema: AdListResponseSchema,
+    signal,
+    url: buildAdsListUrl(params)
+  })
 }
 
 export async function getAdById(
   id: number,
   signal: AbortSignal
 ): Promise<AdDetailsDto> {
-  return executeApiRequest(
-    () => apiGet<unknown>(`/items/${id}`, signal),
-    AdDetailsSchema
-  )
+  return getParsedResponse({
+    schema: AdDetailsSchema,
+    signal,
+    url: `/items/${id}`
+  })
 }
 
 export async function patchAd(
@@ -102,44 +106,42 @@ export async function patchAd(
   item: ItemPatchIn,
   signal: AbortSignal
 ): Promise<ApiSuccessDto> {
-  return executeApiRequest(
-    () => apiPatch<unknown, ItemPatchIn>(`/items/${id}`, item, signal),
-    SuccessSchema
-  )
+  return patchParsedResponse({
+    body: item,
+    schema: SuccessSchema,
+    signal,
+    url: `/items/${id}`
+  })
 }
 
 export async function getAiStatus(signal: AbortSignal): Promise<AiStatusDto> {
-  return executeApiRequest(
-    () => apiGet<unknown>("/api/ai/status", signal),
-    AiStatusSchema
-  )
+  return getParsedResponse({
+    schema: AiStatusSchema,
+    signal,
+    url: "/api/ai/status"
+  })
 }
 
 export async function requestAiDescription(
   item: ItemUpdateIn,
   signal: AbortSignal
 ): Promise<AiDescriptionResponse> {
-  const body: AiDescriptionRequest = { item }
-
-  return executeApiRequest(
-    () =>
-      apiPost<unknown, AiDescriptionRequest>(
-        "/api/ai/description",
-        body,
-        signal
-      ),
-    AiDescriptionResponseSchema
-  )
+  return postParsedResponse({
+    body: { item } satisfies AiDescriptionRequest,
+    schema: AiDescriptionResponseSchema,
+    signal,
+    url: "/api/ai/description"
+  })
 }
 
 export async function requestAiPrice(
   item: ItemUpdateIn,
   signal: AbortSignal
 ): Promise<AiPriceResponse> {
-  const body: AiPriceRequest = { item }
-
-  return executeApiRequest(
-    () => apiPost<unknown, AiPriceRequest>("/api/ai/price", body, signal),
-    AiPriceResponseSchema
-  )
+  return postParsedResponse({
+    body: { item } satisfies AiPriceRequest,
+    schema: AiPriceResponseSchema,
+    signal,
+    url: "/api/ai/price"
+  })
 }

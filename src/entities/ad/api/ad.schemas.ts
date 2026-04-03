@@ -32,7 +32,7 @@ const AdReadBaseSchema = z.object({
   updatedAt: z.string().min(1)
 })
 
-const AutoAdParamsReadSchema = z.object({
+const AutoParamsDtoSchema = z.object({
   brand: z.string().optional(),
   enginePower: z.number().optional(),
   mileage: z.number().optional(),
@@ -41,14 +41,14 @@ const AutoAdParamsReadSchema = z.object({
   yearOfManufacture: z.number().optional()
 })
 
-const RealEstateAdParamsReadSchema = z.object({
+const RealEstateParamsDtoSchema = z.object({
   address: z.string().optional(),
   area: z.number().optional(),
   floor: z.number().optional(),
   type: z.enum(["flat", "house", "room"]).optional()
 })
 
-const ElectronicsAdParamsReadSchema = z.object({
+const ElectronicsParamsDtoSchema = z.object({
   brand: z.string().optional(),
   color: z.string().optional(),
   condition: z.enum(["new", "used"]).optional(),
@@ -61,15 +61,15 @@ export const AdListItemSchema: z.ZodType<AdListItemDto> = z.discriminatedUnion(
   [
     AdReadBaseSchema.extend({
       category: z.literal("auto"),
-      params: AutoAdParamsReadSchema
+      params: AutoParamsDtoSchema
     }),
     AdReadBaseSchema.extend({
       category: z.literal("real_estate"),
-      params: RealEstateAdParamsReadSchema
+      params: RealEstateParamsDtoSchema
     }),
     AdReadBaseSchema.extend({
       category: z.literal("electronics"),
-      params: ElectronicsAdParamsReadSchema
+      params: ElectronicsParamsDtoSchema
     })
   ]
 )
@@ -87,7 +87,7 @@ const ItemUpdateBaseSchema = z.object({
   title: z.string().min(1)
 })
 
-const AutoAdParamsWriteSchema = z.object({
+const AutoParamsInSchema = z.object({
   brand: z.string().min(1),
   enginePower: z.number(),
   mileage: z.number(),
@@ -96,14 +96,14 @@ const AutoAdParamsWriteSchema = z.object({
   yearOfManufacture: z.number()
 })
 
-const RealEstateAdParamsWriteSchema = z.object({
+const RealEstateParamsInSchema = z.object({
   address: z.string().min(1),
   area: z.number(),
   floor: z.number(),
   type: z.enum(["flat", "house", "room"])
 })
 
-const ElectronicsAdParamsWriteSchema = z.object({
+const ElectronicsParamsInSchema = z.object({
   brand: z.string().min(1),
   color: z.string().min(1),
   condition: z.enum(["new", "used"]),
@@ -116,15 +116,15 @@ export const ItemUpdateInSchema: z.ZodType<ItemUpdateIn> = z.discriminatedUnion(
   [
     ItemUpdateBaseSchema.extend({
       category: z.literal("auto"),
-      params: AutoAdParamsWriteSchema
+      params: AutoParamsInSchema
     }),
     ItemUpdateBaseSchema.extend({
       category: z.literal("real_estate"),
-      params: RealEstateAdParamsWriteSchema
+      params: RealEstateParamsInSchema
     }),
     ItemUpdateBaseSchema.extend({
       category: z.literal("electronics"),
-      params: ElectronicsAdParamsWriteSchema
+      params: ElectronicsParamsInSchema
     })
   ]
 )
