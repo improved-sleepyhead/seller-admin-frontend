@@ -12,18 +12,12 @@ import {
 } from "@/shared/ui/shadcn"
 import { AiChatPanel } from "@/widgets/ai-chat-panel"
 
-import type { AdEditPageReadyState } from "../model"
-
-interface AdEditAiToolsSectionProps {
-  adId: number
-  ai: AdEditPageReadyState["ai"]
-  editForm: AdEditPageReadyState["editForm"]
-}
+import type { AdEditAiToolsSectionProps } from "../model"
 
 export const AdEditAiToolsSection = memo(function AdEditAiToolsSection({
   adId,
   ai,
-  editForm
+  form
 }: AdEditAiToolsSectionProps) {
   return (
     <div className="space-y-6">
@@ -32,11 +26,8 @@ export const AdEditAiToolsSection = memo(function AdEditAiToolsSection({
           <CardTitle className="text-base">AI инструменты</CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
-          <AiDescriptionAction
-            disabled={!ai.descriptionEnabled}
-            form={editForm}
-          />
-          <AiPriceAction disabled={!ai.priceEnabled} form={editForm} />
+          <AiDescriptionAction disabled={!ai.descriptionEnabled} form={form} />
+          <AiPriceAction disabled={!ai.priceEnabled} form={form} />
           <div className="space-y-2">
             <Badge variant={ai.badgeVariant}>{ai.label}</Badge>
             <p className="text-muted-foreground text-sm">{ai.message}</p>
@@ -46,7 +37,7 @@ export const AdEditAiToolsSection = memo(function AdEditAiToolsSection({
       </Card>
 
       <AiChatPanel disabled={!ai.chatEnabled}>
-        <AdAiChat disabled={!ai.chatEnabled} form={editForm} itemId={adId} />
+        <AdAiChat disabled={!ai.chatEnabled} form={form} itemId={adId} />
       </AiChatPanel>
     </div>
   )

@@ -4,18 +4,9 @@ import { DraftSavedHint } from "@/features/ad-draft"
 import { AdEditForm } from "@/features/ad-edit-form"
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/shadcn"
 
-import type { AdEditPageReadyState } from "../model"
+import type { AdEditFormSectionProps } from "../model"
 
 const EDIT_FORM_ID = "ad-edit-form"
-
-interface AdEditFormSectionProps {
-  ad: AdEditPageReadyState["ad"]
-  draftSavedAt: AdEditPageReadyState["draft"]["draftSavedAt"]
-  onCategoryChangeRequest: AdEditPageReadyState["categoryChange"]["requestCategoryChange"]
-  onFormReady: AdEditPageReadyState["onFormReady"]
-  onSubmit: AdEditPageReadyState["onSubmit"]
-  savePending: boolean
-}
 
 export const AdEditFormSection = memo(function AdEditFormSection({
   ad,

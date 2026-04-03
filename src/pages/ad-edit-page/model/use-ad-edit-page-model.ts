@@ -68,22 +68,44 @@ export function useAdEditPageModel(): AdEditPageModel {
     }
   }
 
+  const savePending = saveState.isSavePending
+
   return {
-    ad,
-    adId,
-    ai: getAdEditPageAiState(
-      aiStatusQueryResult.data ?? null,
-      aiStatusQueryResult.isError,
-      aiStatusQueryResult.isPending
-    ),
-    backHref,
-    categoryChange,
-    draft,
-    editForm,
-    navigationState,
-    onFormReady: setEditForm,
-    onSubmit: saveState.saveAd,
-    savePending: saveState.isSavePending,
+    aiSection: {
+      adId,
+      ai: getAdEditPageAiState(
+        aiStatusQueryResult.data ?? null,
+        aiStatusQueryResult.isError,
+        aiStatusQueryResult.isPending
+      ),
+      form: editForm
+    },
+    dialogs: {
+      categoryChange: {
+        nextCategory: categoryChange.requestedCategory,
+        onCancel: categoryChange.cancelCategoryChange,
+        onConfirm: categoryChange.confirmCategoryChange,
+        open: categoryChange.isCategoryChangeDialogOpen
+      },
+      draftRestore: {
+        onRestoreDraft: draft.restoreDraft,
+        onUseServerVersion: draft.useServerVersion,
+        open: draft.isRestoreDialogOpen
+      }
+    },
+    footerSection: {
+      adId,
+      navigationState,
+      savePending
+    },
+    formSection: {
+      ad,
+      draftSavedAt: draft.draftSavedAt,
+      onCategoryChangeRequest: categoryChange.requestCategoryChange,
+      onFormReady: setEditForm,
+      onSubmit: saveState.saveAd,
+      savePending
+    },
     state: "ready"
   }
 }

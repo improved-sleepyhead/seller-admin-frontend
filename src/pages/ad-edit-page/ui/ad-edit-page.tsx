@@ -32,46 +32,14 @@ export function AdEditPage() {
       return (
         <div>
           <AdEditLayout
-            aiArea={
-              <AdEditAiToolsSection
-                adId={model.adId}
-                ai={model.ai}
-                editForm={model.editForm}
-              />
-            }
-            footer={
-              <AdEditFooterActions
-                adId={model.adId}
-                navigationState={model.navigationState}
-                savePending={model.savePending}
-              />
-            }
-            formArea={
-              <AdEditFormSection
-                ad={model.ad}
-                draftSavedAt={model.draft.draftSavedAt}
-                onCategoryChangeRequest={
-                  model.categoryChange.requestCategoryChange
-                }
-                onFormReady={model.onFormReady}
-                onSubmit={model.onSubmit}
-                savePending={model.savePending}
-              />
-            }
+            aiArea={<AdEditAiToolsSection {...model.aiSection} />}
+            footer={<AdEditFooterActions {...model.footerSection} />}
+            formArea={<AdEditFormSection {...model.formSection} />}
           />
 
-          <CategoryChangeConfirmDialog
-            nextCategory={model.categoryChange.requestedCategory}
-            onCancel={model.categoryChange.cancelCategoryChange}
-            onConfirm={model.categoryChange.confirmCategoryChange}
-            open={model.categoryChange.isCategoryChangeDialogOpen}
-          />
+          <CategoryChangeConfirmDialog {...model.dialogs.categoryChange} />
 
-          <DraftRestoreDialog
-            onRestoreDraft={model.draft.restoreDraft}
-            onUseServerVersion={model.draft.useServerVersion}
-            open={model.draft.isRestoreDialogOpen}
-          />
+          <DraftRestoreDialog {...model.dialogs.draftRestore} />
         </div>
       )
   }
