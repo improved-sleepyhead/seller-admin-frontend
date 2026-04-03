@@ -2,15 +2,12 @@ import { CategoryChangeConfirmDialog } from "@/features/ad-category-change"
 import { DraftRestoreDialog } from "@/features/ad-draft"
 import {
   AdEditErrorState,
-  AdEditLayout,
   AdEditLayoutSkeleton,
   AdEditNotFoundState
 } from "@/widgets/ad-edit-layout"
 
 import { useAdEditPageModel } from "../model"
-import { AdEditAiToolsSection } from "./ad-edit-ai-tools-section"
-import { AdEditFooterActions } from "./ad-edit-footer-actions"
-import { AdEditFormSection } from "./ad-edit-form-section"
+import { AdEditPageReadyContent } from "./ad-edit-page-ready-content"
 
 export function AdEditPage() {
   const model = useAdEditPageModel()
@@ -31,10 +28,10 @@ export function AdEditPage() {
     case "ready":
       return (
         <div>
-          <AdEditLayout
-            aiArea={<AdEditAiToolsSection {...model.aiSection} />}
-            footer={<AdEditFooterActions {...model.footerSection} />}
-            formArea={<AdEditFormSection {...model.formSection} />}
+          <AdEditPageReadyContent
+            aiSection={model.aiSection}
+            footerSection={model.footerSection}
+            formSection={model.formSection}
           />
 
           <CategoryChangeConfirmDialog {...model.dialogs.categoryChange} />

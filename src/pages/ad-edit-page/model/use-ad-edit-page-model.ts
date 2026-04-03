@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query"
-import { useState } from "react"
+import { useMemo, useState } from "react"
 import { useLocation, useParams } from "react-router-dom"
 
 import { adEditDetailQuery, aiStatusQuery } from "@/entities/ad/api"
@@ -28,8 +28,14 @@ export function useAdEditPageModel(): AdEditPageModel {
   const { id } = useParams<{ id: string }>()
   const location = useLocation()
   const adId = parseAdEditPageId(id)
-  const backHref = getAdsListHref(location.state)
-  const navigationState = resolveAdEditNavigationState(location.state)
+  const backHref = useMemo(
+    () => getAdsListHref(location.state),
+    [location.state]
+  )
+  const navigationState = useMemo(
+    () => resolveAdEditNavigationState(location.state),
+    [location.state]
+  )
   const editEntryRevision = useAdEditEntryRevision(location.pathname)
   const [editForm, setEditForm] = useState<AdEditPageFormApi | null>(null)
   const saveState = useSaveAd({
@@ -53,34 +59,64 @@ export function useAdEditPageModel(): AdEditPageModel {
   })
   useCancelAdEditPageQueries(adId)
 
-  const screenState = getScreenState(adId, backHref, detailQuery)
-
-  if (screenState !== null) {
-    return screenState
-  }
-
   const ad = detailQuery.data
-
-  if (adId === null || ad === undefined) {
-    return {
-      backHref,
-      state: "loading"
-    }
-  }
-
-  const savePending = saveState.isSavePending
-
-  return {
-    aiSection: {
-      adId,
-      ai: getAdEditPageAiState(
+  const aiState = useMemo(
+    () =>
+      getAdEditPageAiState(
         aiStatusQueryResult.data ?? null,
         aiStatusQueryResult.isError,
         aiStatusQueryResult.isPending
       ),
+    [
+      aiStatusQueryResult.data,
+      aiStatusQueryResult.isError,
+      aiStatusQueryResult.isPending
+    ]
+  )
+  const aiSection = useMemo(() => {
+    if (adId === null) {
+      return null
+    }
+
+    return {
+      adId,
+      ai: aiState,
       form: editForm
-    },
-    dialogs: {
+    }
+  }, [adId, aiState, editForm])
+  const footerSection = useMemo(() => {
+    if (adId === null) {
+      return null
+    }
+
+    return {
+      adId,
+      navigationState,
+      savePending: saveState.isSavePending
+    }
+  }, [adId, navigationState, saveState.isSavePending])
+  const formSection = useMemo(() => {
+    if (ad === undefined) {
+      return null
+    }
+
+    return {
+      ad,
+      draftSavedAt: draft.draftSavedAt,
+      onCategoryChangeRequest: categoryChange.requestCategoryChange,
+      onFormReady: setEditForm,
+      onSubmit: saveState.saveAd,
+      savePending: saveState.isSavePending
+    }
+  }, [
+    ad,
+    categoryChange.requestCategoryChange,
+    draft.draftSavedAt,
+    saveState.isSavePending,
+    saveState.saveAd
+  ])
+  const dialogs = useMemo(
+    () => ({
       categoryChange: {
         nextCategory: categoryChange.requestedCategory,
         onCancel: categoryChange.cancelCategoryChange,
@@ -92,20 +128,42 @@ export function useAdEditPageModel(): AdEditPageModel {
         onUseServerVersion: draft.useServerVersion,
         open: draft.isRestoreDialogOpen
       }
-    },
-    footerSection: {
-      adId,
-      navigationState,
-      savePending
-    },
-    formSection: {
-      ad,
-      draftSavedAt: draft.draftSavedAt,
-      onCategoryChangeRequest: categoryChange.requestCategoryChange,
-      onFormReady: setEditForm,
-      onSubmit: saveState.saveAd,
-      savePending
-    },
+    }),
+    [
+      categoryChange.cancelCategoryChange,
+      categoryChange.confirmCategoryChange,
+      categoryChange.isCategoryChangeDialogOpen,
+      categoryChange.requestedCategory,
+      draft.isRestoreDialogOpen,
+      draft.restoreDraft,
+      draft.useServerVersion
+    ]
+  )
+
+  const screenState = getScreenState(adId, backHref, detailQuery)
+
+  if (screenState !== null) {
+    return screenState
+  }
+
+  if (
+    adId === null ||
+    ad === undefined ||
+    aiSection === null ||
+    footerSection === null ||
+    formSection === null
+  ) {
+    return {
+      backHref,
+      state: "loading"
+    }
+  }
+
+  return {
+    aiSection,
+    dialogs,
+    footerSection,
+    formSection,
     state: "ready"
   }
 }
