@@ -133,6 +133,9 @@ describe("AdAiChat", () => {
 
     await screen.findByText("Част")
     expect(screen.getByText("Привет")).toBeDefined()
+    expect(
+      within(screen.getByTestId("ai-chat-message-user")).queryByText("Готово")
+    ).toBeNull()
 
     stream.push(toSseFrame("chunk", { content: "ь ответа" }))
     stream.push(toSseFrame("done", { model: "test-model" }))

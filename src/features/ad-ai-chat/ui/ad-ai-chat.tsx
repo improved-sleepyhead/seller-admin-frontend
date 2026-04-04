@@ -52,6 +52,7 @@ function getStatusBadgeVariant(status: AiChatMessage["status"]) {
 
 function ChatMessageItem({ message }: { message: AiChatMessage }) {
   const isUser = message.role === "user"
+  const showStatusBadge = !isUser
 
   return (
     <article
@@ -66,9 +67,11 @@ function ChatMessageItem({ message }: { message: AiChatMessage }) {
       >
         <div className="flex items-center justify-between gap-2">
           <p className="text-xs font-medium">{getRoleLabel(message.role)}</p>
-          <Badge variant={getStatusBadgeVariant(message.status)}>
-            {getStatusLabel(message.status)}
-          </Badge>
+          {showStatusBadge ? (
+            <Badge variant={getStatusBadgeVariant(message.status)}>
+              {getStatusLabel(message.status)}
+            </Badge>
+          ) : null}
         </div>
         <p className="whitespace-pre-wrap">{message.content}</p>
       </div>
