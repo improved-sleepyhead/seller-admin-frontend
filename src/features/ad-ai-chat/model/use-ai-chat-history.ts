@@ -1,37 +1,25 @@
-import { useEffect, useRef, useState } from "react"
-
-import type { AiChatMessage } from "@/entities/ad/model"
+import { useCallback, useMemo } from "react"
 
 import { readAdAiChatHistory, saveAdAiChatHistory } from "./ai-chat-history"
 
-import type { Dispatch, SetStateAction } from "react"
+import type { UIMessage } from "ai"
 
 interface UseAiChatHistoryResult {
-  messages: AiChatMessage[]
-  setMessages: Dispatch<SetStateAction<AiChatMessage[]>>
+  initialMessages: UIMessage[]
+  saveMessages: (messages: UIMessage[]) => void
 }
 
 export function useAiChatHistory(itemId: number): UseAiChatHistoryResult {
-  const [messages, setMessages] = useState<AiChatMessage[]>(() =>
-    readAdAiChatHistory(itemId)
+  const initialMessages = useMemo(() => readAdAiChatHistory(itemId), [itemId])
+  const saveMessages = useCallback(
+    (messages: UIMessage[]) => {
+      saveAdAiChatHistory(itemId, messages)
+    },
+    [itemId]
   )
-  const savedItemIdRef = useRef(itemId)
-
-  useEffect(() => {
-    setMessages(readAdAiChatHistory(itemId))
-  }, [itemId])
-
-  useEffect(() => {
-    if (savedItemIdRef.current !== itemId) {
-      savedItemIdRef.current = itemId
-      return
-    }
-
-    saveAdAiChatHistory(itemId, messages)
-  }, [itemId, messages])
 
   return {
-    messages,
-    setMessages
+    initialMessages,
+    saveMessages
   }
 }

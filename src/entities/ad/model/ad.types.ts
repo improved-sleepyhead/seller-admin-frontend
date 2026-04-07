@@ -69,14 +69,6 @@ export interface AdDraft {
   serverHash: string
 }
 
-export interface AiChatMessage {
-  id: string
-  role: "user" | "assistant" | "system"
-  content: string
-  createdAt: string
-  status: "done" | "streaming" | "error"
-}
-
 export interface FilledSpec {
   label: string
   value: string

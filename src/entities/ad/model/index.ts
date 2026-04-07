@@ -22,13 +22,7 @@ export {
   upsertDraftRegistryMeta
 } from "./draft-registry.store"
 export { getFilledSpecs } from "./ad.specs"
-export type {
-  Ad,
-  AdEditFormValues,
-  AdDraft,
-  AiChatMessage,
-  FilledSpec
-} from "./ad.types"
+export type { Ad, AdEditFormValues, AdDraft, FilledSpec } from "./ad.types"
 export type {
   DraftMeta,
   DraftMetaPatch,

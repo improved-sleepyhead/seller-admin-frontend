@@ -1,6 +1,6 @@
 // eslint-disable-next-line import/no-internal-modules -- zod resolver is provided by package subpath
 import { zodResolver } from "@hookform/resolvers/zod"
-import { useEffect, type ComponentType } from "react"
+import { useEffect, type ComponentType, type ReactNode } from "react"
 import { useForm, type UseFormReturn } from "react-hook-form"
 
 import { AD_CATEGORIES, type AdDetailsDto } from "@/entities/ad/api"
@@ -48,6 +48,7 @@ type ActionButtonComponent = ComponentType<AdEditFormActionButtonProps>
 interface AdEditFormProps {
   ad: AdDetailsDto
   CancelButton?: ActionButtonComponent
+  descriptionAction?: ReactNode
   formId?: string
   hideActions?: boolean
   isSavePending?: boolean
@@ -56,6 +57,7 @@ interface AdEditFormProps {
   ) => void
   onCategoryChangeRequest?: (request: CategoryChangeRequest) => void
   onSubmit?: FormSubmitHandler
+  priceAction?: ReactNode
   SubmitButton?: ActionButtonComponent
 }
 
@@ -81,12 +83,14 @@ function DefaultSubmitButton({
 export function AdEditForm({
   ad,
   CancelButton,
+  descriptionAction,
   formId,
   hideActions = false,
   isSavePending = false,
   onFormReady,
   onCategoryChangeRequest,
   onSubmit,
+  priceAction,
   SubmitButton = DefaultSubmitButton
 }: AdEditFormProps) {
   const form = useForm<AdEditFormValues, unknown, AdEditFormValues>({
@@ -197,7 +201,12 @@ export function AdEditForm({
             name="price"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Цена</FormLabel>
+                <div className="flex items-center justify-between gap-3">
+                  <FormLabel>Цена</FormLabel>
+                  {priceAction ? (
+                    <div className="shrink-0">{priceAction}</div>
+                  ) : null}
+                </div>
                 <FormControl>
                   <Input
                     className={NUMBER_INPUT_NO_SPINNERS_CLASS}
@@ -232,7 +241,12 @@ export function AdEditForm({
           name="description"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Описание</FormLabel>
+              <div className="flex items-center justify-between gap-3">
+                <FormLabel>Описание</FormLabel>
+                {descriptionAction ? (
+                  <div className="shrink-0">{descriptionAction}</div>
+                ) : null}
+              </div>
               <FormControl>
                 <Textarea rows={4} {...field} value={field.value} />
               </FormControl>

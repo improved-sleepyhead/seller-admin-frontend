@@ -5,6 +5,6 @@ export {
   isDraftDifferentFromServer,
   toServerForm
 } from "./draft-comparator"
-export { getDraftKey, getLegacyDraftKey } from "./draft-keys"
+export { getDraftKey } from "./draft-keys"
 export { readAdDraft, removeAdDraft, saveAdDraft } from "./draft-storage"
 export { useAdDraft } from "./use-ad-draft"

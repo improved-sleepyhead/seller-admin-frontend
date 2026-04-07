@@ -93,7 +93,9 @@ export function useAdEditPageModel(): AdEditPageModel {
 
     return {
       ad,
+      ai: aiState,
       draftSavedAt: draft.draftSavedAt,
+      form: editForm,
       onCategoryChangeRequest: categoryChange.requestCategoryChange,
       onFormReady: setEditForm,
       onSubmit: saveState.saveAd,
@@ -101,8 +103,10 @@ export function useAdEditPageModel(): AdEditPageModel {
     }
   }, [
     ad,
+    aiState,
     categoryChange.requestCategoryChange,
     draft.draftSavedAt,
+    editForm,
     saveState.isSavePending,
     saveState.saveAd
   ])

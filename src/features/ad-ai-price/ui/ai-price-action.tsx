@@ -1,3 +1,5 @@
+import { LightbulbIcon } from "lucide-react"
+
 import { Loader } from "@/shared/ui/loader"
 import {
   Button,
@@ -17,11 +19,16 @@ import { getViewModel } from "./ai-price-action.view-model"
 import { ResultContent } from "./ai-price-result-content"
 
 interface AiPriceActionProps {
+  className?: string
   disabled: boolean
   form: AdEditFormApi | null
 }
 
-export function AiPriceAction({ disabled, form }: AiPriceActionProps) {
+export function AiPriceAction({
+  className,
+  disabled,
+  form
+}: AiPriceActionProps) {
   const action = useAiPriceAction({
     disabled,
     form
@@ -30,18 +37,20 @@ export function AiPriceAction({ disabled, form }: AiPriceActionProps) {
 
   const triggerButton = (
     <Button
-      className="w-full"
+      className={className}
       disabled={!viewModel.trigger.canStart}
+      size="xs"
       type="button"
-      variant="outline"
+      variant="ai"
       onClick={() => {
         void viewModel.trigger.start()
       }}
     >
+      <LightbulbIcon className="size-3.5" />
       {viewModel.trigger.isPending ? (
         <>
           <Loader />
-          Подбираем цену...
+          Генерируем...
         </>
       ) : (
         "Предложить цену"
