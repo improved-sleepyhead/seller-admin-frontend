@@ -69,7 +69,7 @@ function WarningLabel({
         variant="ghost"
         size="sm"
         className={cn(
-          "h-auto px-2 py-0.5 text-xs",
+          "h-7 px-2 py-0.5 text-xs",
           !hasValue && "pointer-events-none invisible"
         )}
         onClick={onClear}

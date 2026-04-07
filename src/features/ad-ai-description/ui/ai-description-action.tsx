@@ -1,3 +1,4 @@
+import { LightbulbIcon } from "lucide-react"
 import { lazy, Suspense } from "react"
 
 import { Loader } from "@/shared/ui/loader"
@@ -25,11 +26,13 @@ const LazyAdDiffViewer = lazy(async () => {
 })
 
 interface AiDescriptionActionProps {
+  className?: string
   disabled: boolean
   form: AdEditFormApi | null
 }
 
 export function AiDescriptionAction({
+  className,
   disabled,
   form
 }: AiDescriptionActionProps) {
@@ -42,18 +45,20 @@ export function AiDescriptionAction({
 
   const triggerButton = (
     <Button
-      className="w-full"
+      className={className}
       disabled={!viewModel.trigger.canStart}
+      size="xs"
       type="button"
-      variant="outline"
+      variant="ai"
       onClick={() => {
         void viewModel.trigger.start()
       }}
     >
+      <LightbulbIcon className="size-3.5" />
       {viewModel.trigger.isPending ? (
         <>
           <Loader />
-          Генерируем описание...
+          Генерируем...
         </>
       ) : (
         "Улучшить описание"

@@ -1,5 +1,7 @@
 import { memo } from "react"
 
+import { AiDescriptionAction } from "@/features/ad-ai-description"
+import { AiPriceAction } from "@/features/ad-ai-price"
 import { DraftSavedHint } from "@/features/ad-draft"
 import { AdEditForm } from "@/features/ad-edit-form"
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/shadcn"
@@ -10,7 +12,9 @@ const EDIT_FORM_ID = "ad-edit-form"
 
 export const AdEditFormSection = memo(function AdEditFormSection({
   ad,
+  ai,
   draftSavedAt,
+  form,
   onCategoryChangeRequest,
   onFormReady,
   onSubmit,
@@ -25,6 +29,12 @@ export const AdEditFormSection = memo(function AdEditFormSection({
         <DraftSavedHint savedAt={draftSavedAt} />
         <AdEditForm
           ad={ad}
+          descriptionAction={
+            <AiDescriptionAction
+              disabled={!ai.descriptionEnabled}
+              form={form}
+            />
+          }
           formId={EDIT_FORM_ID}
           hideActions
           isSavePending={savePending}
@@ -36,6 +46,9 @@ export const AdEditFormSection = memo(function AdEditFormSection({
           }}
           onFormReady={onFormReady}
           onSubmit={onSubmit}
+          priceAction={
+            <AiPriceAction disabled={!ai.priceEnabled} form={form} />
+          }
         />
       </CardContent>
     </Card>

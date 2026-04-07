@@ -1,5 +1,5 @@
 import { useChat } from "@ai-sdk/react"
-import { DefaultChatTransport, type UIMessage } from "ai"
+import { DefaultChatTransport, type ChatStatus, type UIMessage } from "ai"
 import { useCallback, useEffect, useMemo, useState } from "react"
 
 import { ensureValidAiPayload, type AdEditFormApi } from "@/entities/ad/model"
@@ -22,8 +22,9 @@ interface UseAdAiChatModelResult {
   isPending: boolean
   messages: UIMessage[]
   retryLastMessage: () => Promise<void>
-  sendMessage: () => Promise<void>
+  sendMessage: (nextMessage?: string) => Promise<void>
   setInputValue: (nextValue: string) => void
+  status: ChatStatus
   stopStreaming: () => void
 }
 
@@ -117,30 +118,33 @@ export function useAdAiChatModel({
     return validationResult.payload
   }, [clearError, disabled, form, isPending])
 
-  const sendMessage = useCallback(async () => {
-    const nextMessage = inputValue.trim()
+  const sendMessage = useCallback(
+    async (nextMessage?: string) => {
+      const trimmedMessage = (nextMessage ?? inputValue).trim()
 
-    if (nextMessage.length === 0) {
-      return
-    }
-
-    const itemPayload = await validatePayload()
-
-    if (itemPayload === null) {
-      return
-    }
-
-    setInputValue("")
-
-    await submitChatMessage(
-      { text: nextMessage },
-      {
-        body: {
-          item: itemPayload
-        }
+      if (trimmedMessage.length === 0) {
+        return
       }
-    )
-  }, [inputValue, submitChatMessage, validatePayload])
+
+      const itemPayload = await validatePayload()
+
+      if (itemPayload === null) {
+        return
+      }
+
+      setInputValue("")
+
+      await submitChatMessage(
+        { text: trimmedMessage },
+        {
+          body: {
+            item: itemPayload
+          }
+        }
+      )
+    },
+    [inputValue, submitChatMessage, validatePayload]
+  )
 
   const retryLastMessage = useCallback(async () => {
     if (isPending || !hasRetryTarget(messages)) {
@@ -186,6 +190,7 @@ export function useAdAiChatModel({
     retryLastMessage,
     sendMessage,
     setInputValue,
+    status,
     stopStreaming: () => {
       void stop()
     }

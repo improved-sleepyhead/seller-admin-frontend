@@ -44,7 +44,9 @@ export interface CategoryChangeRequest {
 
 export interface FormSectionProps {
   ad: AdDetailsDto
+  ai: AdEditPageAiState
   draftSavedAt: string | null
+  form: FormApi | null
   onCategoryChangeRequest: (request: CategoryChangeRequest) => void
   onFormReady: (form: FormApi | null) => void
   onSubmit: (values: AdEditFormValues) => Promise<void>

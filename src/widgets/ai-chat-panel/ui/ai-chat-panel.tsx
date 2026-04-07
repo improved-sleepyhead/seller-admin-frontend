@@ -18,6 +18,7 @@ import type { ReactNode } from "react"
 interface AiChatPanelProps {
   children: ReactNode
   disabled: boolean
+  statusContent?: ReactNode
 }
 
 const MOBILE_MEDIA_QUERY = "(max-width: 1023px)"
@@ -52,7 +53,11 @@ function useIsMobile(): boolean {
   return isMobile
 }
 
-export function AiChatPanel({ children, disabled }: AiChatPanelProps) {
+export function AiChatPanel({
+  children,
+  disabled,
+  statusContent
+}: AiChatPanelProps) {
   const [isMobileSheetOpen, setIsMobileSheetOpen] = useState(false)
   const isMobile = useIsMobile()
 
@@ -71,14 +76,20 @@ export function AiChatPanel({ children, disabled }: AiChatPanelProps) {
           Открыть AI чат
         </Button>
         <Sheet open={isMobileSheetOpen} onOpenChange={setIsMobileSheetOpen}>
-          <SheetContent className="max-h-[90vh]" side="bottom">
+          <SheetContent
+            className="flex h-[90vh] flex-col overflow-hidden"
+            side="bottom"
+          >
             <SheetHeader>
               <SheetTitle>AI чат</SheetTitle>
               <SheetDescription>
                 Диалог сохраняется локально для текущего объявления.
               </SheetDescription>
             </SheetHeader>
-            <div className="px-4 pb-4">{children}</div>
+            <div className="flex h-full min-h-0 flex-1 flex-col gap-4 overflow-hidden px-4 pb-4">
+              {statusContent}
+              {children}
+            </div>
           </SheetContent>
         </Sheet>
       </>
@@ -86,11 +97,14 @@ export function AiChatPanel({ children, disabled }: AiChatPanelProps) {
   }
 
   return (
-    <Card className="sticky top-6">
+    <Card className="sticky top-4 flex h-[calc(100vh-4rem)] flex-col overflow-hidden">
       <CardHeader>
         <CardTitle className="text-base">AI чат</CardTitle>
       </CardHeader>
-      <CardContent>{children}</CardContent>
+      <CardContent className="flex min-h-0 flex-1 flex-col gap-4 overflow-hidden">
+        {statusContent}
+        {children}
+      </CardContent>
     </Card>
   )
 }

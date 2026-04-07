@@ -107,6 +107,22 @@ describe("AdAiChat", () => {
   beforeEach(() => {
     vi.clearAllMocks()
     vi.stubGlobal("fetch", fetchMock)
+    vi.stubGlobal(
+      "ResizeObserver",
+      class ResizeObserver {
+        disconnect() {
+          return undefined
+        }
+
+        observe() {
+          return undefined
+        }
+
+        unobserve() {
+          return undefined
+        }
+      }
+    )
 
     window.localStorage.clear()
     window.sessionStorage.clear()
@@ -127,7 +143,7 @@ describe("AdAiChat", () => {
     fireEvent.change(screen.getByLabelText("Сообщение для AI чата"), {
       target: { value: "Привет" }
     })
-    fireEvent.click(screen.getByRole("button", { name: "Отправить" }))
+    fireEvent.click(screen.getByRole("button", { name: "Отправить сообщение" }))
 
     await waitFor(() => {
       expect(fetchMock).toHaveBeenCalledTimes(1)
@@ -185,7 +201,7 @@ describe("AdAiChat", () => {
     await screen.findByText("Част")
     expect(screen.getByText("Привет")).toBeDefined()
     expect(
-      within(screen.getByTestId("ai-chat-message-user")).getByText("Вы")
+      within(screen.getByTestId("ai-chat-message-user")).getByText("Привет")
     ).toBeDefined()
 
     stream.push(
@@ -229,7 +245,7 @@ describe("AdAiChat", () => {
     fireEvent.change(screen.getByLabelText("Сообщение для AI чата"), {
       target: { value: "Отмени" }
     })
-    fireEvent.click(screen.getByRole("button", { name: "Отправить" }))
+    fireEvent.click(screen.getByRole("button", { name: "Отправить сообщение" }))
 
     await waitFor(() => {
       expect(fetchMock).toHaveBeenCalledTimes(1)
@@ -258,10 +274,12 @@ describe("AdAiChat", () => {
 
     await screen.findByText("Частичный")
 
-    fireEvent.click(screen.getByRole("button", { name: "Отменить" }))
+    fireEvent.click(screen.getByRole("button", { name: "Остановить ответ AI" }))
 
     await waitFor(() => {
-      expect(screen.queryByRole("button", { name: "Отменить" })).toBeNull()
+      expect(
+        screen.queryByRole("button", { name: "Остановить ответ AI" })
+      ).toBeNull()
     })
 
     expect(screen.getByText("Частичный")).toBeDefined()
@@ -293,7 +311,7 @@ describe("AdAiChat", () => {
     fireEvent.change(screen.getByLabelText("Сообщение для AI чата"), {
       target: { value: "Повтори" }
     })
-    fireEvent.click(screen.getByRole("button", { name: "Отправить" }))
+    fireEvent.click(screen.getByRole("button", { name: "Отправить сообщение" }))
 
     await waitFor(() => {
       expect(fetchMock).toHaveBeenCalledTimes(1)
