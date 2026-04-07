@@ -88,7 +88,7 @@ export function AiChatPanel({
             </SheetHeader>
             <div className="flex h-full min-h-0 flex-1 flex-col gap-4 overflow-hidden px-4 pb-4">
               {statusContent}
-              {children}
+              {isMobileSheetOpen ? children : null}
             </div>
           </SheetContent>
         </Sheet>
