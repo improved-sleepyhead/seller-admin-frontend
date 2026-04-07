@@ -9,7 +9,7 @@ export const APP_QUERY_CLIENT_CACHE_POLICY = {
   resetOnFullRefresh: true
 } as const
 
-export const APP_QUERY_CLIENT_DEFAULT_QUERY_OPTIONS = {
+export const DEFAULT_QUERY_OPTIONS = {
   queries: {
     refetchOnWindowFocus: false,
     retry: 1
@@ -17,7 +17,7 @@ export const APP_QUERY_CLIENT_DEFAULT_QUERY_OPTIONS = {
 } as const satisfies DefaultOptions
 
 export const APP_QUERY_CLIENT_CONFIG = {
-  defaultOptions: APP_QUERY_CLIENT_DEFAULT_QUERY_OPTIONS
+  defaultOptions: DEFAULT_QUERY_OPTIONS
 } as const satisfies QueryClientConfig
 
 export function createQueryClient() {

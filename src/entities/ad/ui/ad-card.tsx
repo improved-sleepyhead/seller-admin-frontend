@@ -21,7 +21,7 @@ export function AdCard({ ad, className }: AdCardProps) {
         className
       )}
     >
-      <div className="aspect-[4/3] w-full">
+      <div className="aspect-4/3 w-full">
         <AdImage src={ad.previewImageSrc} alt={ad.title} />
       </div>
 
