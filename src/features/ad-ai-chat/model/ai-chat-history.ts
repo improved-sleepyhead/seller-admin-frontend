@@ -8,7 +8,7 @@ import {
 
 import type { UIMessage } from "ai"
 
-const AI_CHAT_STORAGE_KEY_PREFIX = "ad-ai-chat:v2:"
+const AI_CHAT_STORAGE_KEY_PREFIX = "ad-ai-chat:"
 
 const StoredTextPartSchema = z.object({
   state: z.enum(["done", "streaming"]).optional(),

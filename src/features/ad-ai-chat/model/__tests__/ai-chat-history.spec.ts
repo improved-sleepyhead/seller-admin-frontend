@@ -38,7 +38,7 @@ describe("ai-chat-history", () => {
     resetDraftRegistryStore()
   })
 
-  it("should store and restore v2 UIMessage history", () => {
+  it("should store and restore UIMessage history", () => {
     const messages = [
       createTextMessage("user", "Привет", "user-1"),
       createTextMessage("assistant", "Здравствуйте", "assistant-1")
