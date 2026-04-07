@@ -1,9 +1,13 @@
-import { type AdEditFormApi, type AiChatMessage } from "@/entities/ad/model"
+import { useEffect, useRef } from "react"
+
+import { type AdEditFormApi } from "@/entities/ad/model"
 import { cn } from "@/shared/lib/cn"
 import { Loader } from "@/shared/ui/loader"
-import { Badge, Button, Label, Textarea } from "@/shared/ui/shadcn"
+import { Button, Label, Textarea } from "@/shared/ui/shadcn"
 
-import { useAiChat } from "../model"
+import { useAdAiChatModel } from "../model"
+
+import type { UIMessage } from "ai"
 
 interface AdAiChatProps {
   disabled: boolean
@@ -15,44 +19,31 @@ const AI_CHAT_ROLE_LABELS = {
   assistant: "AI",
   system: "Система",
   user: "Вы"
-} satisfies Record<AiChatMessage["role"], string>
+} satisfies Record<UIMessage["role"], string>
 
-const AI_CHAT_STATUS_CONFIG = {
-  done: {
-    label: "Готово",
-    variant: "outline"
-  },
-  error: {
-    label: "Ошибка",
-    variant: "destructive"
-  },
-  streaming: {
-    label: "Печатает...",
-    variant: "secondary"
-  }
-} satisfies Record<
-  AiChatMessage["status"],
-  {
-    label: string
-    variant: "destructive" | "outline" | "secondary"
-  }
->
-
-function getRoleLabel(role: AiChatMessage["role"]): string {
+function getRoleLabel(role: UIMessage["role"]): string {
   return AI_CHAT_ROLE_LABELS[role]
 }
 
-function getStatusLabel(status: AiChatMessage["status"]): string {
-  return AI_CHAT_STATUS_CONFIG[status].label
+function getMessageText(message: UIMessage): string {
+  return message.parts
+    .flatMap(part => {
+      if (part.type !== "text" || part.text.trim().length === 0) {
+        return []
+      }
+
+      return [part.text]
+    })
+    .join("")
 }
 
-function getStatusBadgeVariant(status: AiChatMessage["status"]) {
-  return AI_CHAT_STATUS_CONFIG[status].variant
-}
-
-function ChatMessageItem({ message }: { message: AiChatMessage }) {
+function ChatMessageItem({ message }: { message: UIMessage }) {
   const isUser = message.role === "user"
-  const showStatusBadge = !isUser
+  const messageText = getMessageText(message)
+
+  if (messageText.trim().length === 0) {
+    return null
+  }
 
   return (
     <article
@@ -65,33 +56,27 @@ function ChatMessageItem({ message }: { message: AiChatMessage }) {
           isUser ? "bg-primary text-primary-foreground" : "bg-muted"
         )}
       >
-        <div className="flex items-center justify-between gap-2">
-          <p className="text-xs font-medium">{getRoleLabel(message.role)}</p>
-          {showStatusBadge ? (
-            <Badge variant={getStatusBadgeVariant(message.status)}>
-              {getStatusLabel(message.status)}
-            </Badge>
-          ) : null}
-        </div>
-        <p className="whitespace-pre-wrap">{message.content}</p>
+        <p className="text-xs font-medium">{getRoleLabel(message.role)}</p>
+        <p className="whitespace-pre-wrap">{messageText}</p>
       </div>
     </article>
   )
 }
 
 export function AdAiChat({ disabled, form, itemId }: AdAiChatProps) {
+  const messagesContainerRef = useRef<HTMLDivElement | null>(null)
   const {
     canRetry,
     canSubmit,
-    cancelStreaming,
     inlineError,
     inputValue,
     isPending,
     messages,
     retryLastMessage,
     sendMessage,
-    setInputValue
-  } = useAiChat({
+    setInputValue,
+    stopStreaming
+  } = useAdAiChatModel({
     disabled,
     form,
     itemId
@@ -100,6 +85,24 @@ export function AdAiChat({ disabled, form, itemId }: AdAiChatProps) {
   const chatErrorId = `ad-ai-chat-error-${itemId}`
   const hasInlineError = inlineError !== null
 
+  useEffect(() => {
+    const container = messagesContainerRef.current
+
+    if (container === null) {
+      return
+    }
+
+    if (typeof container.scrollTo === "function") {
+      container.scrollTo({
+        behavior: "smooth",
+        top: container.scrollHeight
+      })
+      return
+    }
+
+    container.scrollTop = container.scrollHeight
+  }, [messages])
+
   return (
     <div className="space-y-4">
       <div
@@ -107,9 +110,12 @@ export function AdAiChat({ disabled, form, itemId }: AdAiChatProps) {
         aria-relevant="additions text"
         className="max-h-80 space-y-3 overflow-y-auto rounded-md border p-3"
         data-testid="ai-chat-messages"
+        ref={messagesContainerRef}
         role="log"
       >
-        {messages.length === 0 ? (
+        {messages.every(
+          message => getMessageText(message).trim().length === 0
+        ) ? (
           <p className="text-muted-foreground text-sm">
             История чата пуста. Задайте вопрос по объявлению.
           </p>
@@ -183,7 +189,7 @@ export function AdAiChat({ disabled, form, itemId }: AdAiChatProps) {
         />
         <div className="flex items-center justify-end gap-2">
           {isPending ? (
-            <Button type="button" variant="outline" onClick={cancelStreaming}>
+            <Button type="button" variant="outline" onClick={stopStreaming}>
               Отменить
             </Button>
           ) : null}

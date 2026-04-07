@@ -3,26 +3,35 @@ import { z } from "zod/v4"
 import {
   clearDraftRegistryMeta,
   getDraftRegistryMeta,
-  upsertDraftRegistryMeta,
-  type AiChatMessage
+  upsertDraftRegistryMeta
 } from "@/entities/ad/model"
 
-const AI_CHAT_STORAGE_KEY_PREFIX = "ad-ai-chat:v1:"
-const LEGACY_AI_CHAT_STORAGE_KEY_PREFIX = "ad-ai-chat:"
+import type { UIMessage } from "ai"
 
-const AiChatMessageSchema: z.ZodType<AiChatMessage> = z.object({
-  content: z.string(),
-  createdAt: z.string().datetime(),
+const AI_CHAT_STORAGE_KEY_PREFIX = "ad-ai-chat:v2:"
+
+const StoredTextPartSchema = z.object({
+  state: z.enum(["done", "streaming"]).optional(),
+  text: z.string(),
+  type: z.literal("text")
+})
+
+const StoredChatMessageSchema = z.object({
   id: z.string().min(1),
-  role: z.enum(["assistant", "system", "user"]),
-  status: z.enum(["done", "streaming", "error"])
+  metadata: z.unknown().optional(),
+  parts: z.array(StoredTextPartSchema).min(1),
+  role: z.enum(["assistant", "system", "user"])
 })
 
 const StoredAiChatHistorySchema = z.object({
   itemId: z.number().int().positive(),
-  messages: z.array(AiChatMessageSchema),
+  messages: z.array(StoredChatMessageSchema),
   updatedAt: z.string().datetime()
 })
+
+function isNotNull<T>(value: T | null): value is T {
+  return value !== null
+}
 
 function isBrowserEnvironment(): boolean {
   return typeof window !== "undefined"
@@ -32,22 +41,16 @@ function toStorageKey(itemId: number): string {
   return `${AI_CHAT_STORAGE_KEY_PREFIX}${itemId}`
 }
 
-function toLegacyStorageKey(itemId: number): string {
-  return `${LEGACY_AI_CHAT_STORAGE_KEY_PREFIX}${itemId}`
-}
-
-function normalizeStreamingMessage(message: AiChatMessage): AiChatMessage {
-  if (message.status !== "streaming") {
-    return message
+function normalizeTextPart(
+  part: z.infer<typeof StoredTextPartSchema>
+): z.infer<typeof StoredTextPartSchema> {
+  if (part.state !== "streaming") {
+    return part
   }
 
   return {
-    ...message,
-    content:
-      message.content.trim().length > 0
-        ? message.content
-        : "Генерация была прервана.",
-    status: "error"
+    ...part,
+    state: "done"
   }
 }
 
@@ -77,10 +80,60 @@ function syncChatMetadata(itemId: number, hasChatHistory: boolean): void {
   })
 }
 
+function toUiMessage(
+  message: z.infer<typeof StoredChatMessageSchema>
+): UIMessage | null {
+  const parts = message.parts
+    .map(normalizeTextPart)
+    .filter(part => part.text.trim().length > 0)
+
+  if (parts.length === 0) {
+    return null
+  }
+
+  return {
+    ...(message.metadata === undefined ? {} : { metadata: message.metadata }),
+    id: message.id,
+    parts,
+    role: message.role
+  }
+}
+
+function toStoredMessage(
+  message: UIMessage
+): z.infer<typeof StoredChatMessageSchema> | null {
+  const parts = message.parts.flatMap(part => {
+    if (part.type !== "text" || part.text.trim().length === 0) {
+      return []
+    }
+
+    return [
+      {
+        ...(part.state === undefined
+          ? {}
+          : { state: part.state === "streaming" ? "done" : part.state }),
+        text: part.text,
+        type: "text" as const
+      }
+    ]
+  })
+
+  if (parts.length === 0) {
+    return null
+  }
+
+  return {
+    ...(message.metadata === undefined ? {} : { metadata: message.metadata }),
+    id: message.id,
+    parts,
+    role: message.role
+  }
+}
+
 function parseStoredHistory(
   rawPayload: string | null,
   itemId: number
-): AiChatMessage[] | null {
+): UIMessage[] | null {
   if (rawPayload === null) {
     return null
   }
@@ -97,7 +150,7 @@ function parseStoredHistory(
       return null
     }
 
-    return parsedHistory.data.messages.map(normalizeStreamingMessage)
+    return parsedHistory.data.messages.map(toUiMessage).filter(isNotNull)
   } catch {
     return null
   }
@@ -107,17 +160,12 @@ export function getChatKey(itemId: number): string {
   return toStorageKey(itemId)
 }
 
-export function getLegacyChatKey(itemId: number): string {
-  return toLegacyStorageKey(itemId)
-}
-
-export function readAdAiChatHistory(itemId: number): AiChatMessage[] {
+export function readAdAiChatHistory(itemId: number): UIMessage[] {
   if (!isBrowserEnvironment()) {
     return []
   }
 
   const storageKey = toStorageKey(itemId)
-  const legacyStorageKey = toLegacyStorageKey(itemId)
   const currentHistory = parseStoredHistory(
     window.localStorage.getItem(storageKey),
     itemId
@@ -128,41 +176,27 @@ export function readAdAiChatHistory(itemId: number): AiChatMessage[] {
     return currentHistory
   }
 
-  const legacyHistory = parseStoredHistory(
-    window.localStorage.getItem(legacyStorageKey),
-    itemId
-  )
-
-  if (legacyHistory === null) {
-    syncChatMetadata(itemId, false)
-    return []
-  }
-
-  saveAdAiChatHistory(itemId, legacyHistory)
-  window.localStorage.removeItem(legacyStorageKey)
-
-  return legacyHistory
+  syncChatMetadata(itemId, false)
+  return []
 }
 
 export function saveAdAiChatHistory(
   itemId: number,
-  messages: AiChatMessage[]
+  messages: UIMessage[]
 ): void {
   if (!isBrowserEnvironment()) {
     return
   }
 
   const storageKey = toStorageKey(itemId)
-  const legacyStorageKey = toLegacyStorageKey(itemId)
+  const normalizedMessages = messages.map(toStoredMessage).filter(isNotNull)
 
-  if (messages.length === 0) {
+  if (normalizedMessages.length === 0) {
     window.localStorage.removeItem(storageKey)
-    window.localStorage.removeItem(legacyStorageKey)
     syncChatMetadata(itemId, false)
     return
   }
 
-  const normalizedMessages = messages.map(normalizeStreamingMessage)
   const payload = {
     itemId,
     messages: normalizedMessages,
@@ -170,6 +204,5 @@ export function saveAdAiChatHistory(
   }
 
   window.localStorage.setItem(storageKey, JSON.stringify(payload))
-  window.localStorage.removeItem(legacyStorageKey)
   syncChatMetadata(itemId, true)
 }

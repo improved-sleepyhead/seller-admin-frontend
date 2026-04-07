@@ -77,15 +77,20 @@ function createControlledSseResponse(): ControlledSseResponse {
     ready,
     response: new Response(stream, {
       headers: {
-        "Content-Type": "text/event-stream"
+        "Content-Type": "text/event-stream",
+        "x-vercel-ai-ui-message-stream": "v1"
       },
       status: 200
     })
   }
 }
 
-function toSseFrame(eventName: string, data: object): string {
-  return `event: ${eventName}\ndata: ${JSON.stringify(data)}\n\n`
+function toUiMessageFrame(chunk: object | "[DONE]"): string {
+  if (chunk === "[DONE]") {
+    return "data: [DONE]\n\n"
+  }
+
+  return `data: ${JSON.stringify(chunk)}\n\n`
 }
 
 function AdAiChatHarness(): ReactElement {
@@ -128,17 +133,75 @@ describe("AdAiChat", () => {
       expect(fetchMock).toHaveBeenCalledTimes(1)
     })
 
+    const requestInit = fetchMock.mock.calls[0]?.[1]
+    const requestBody =
+      typeof requestInit?.body === "string"
+        ? (JSON.parse(requestInit.body) as {
+            item: Record<string, unknown>
+            messages: {
+              parts: { text?: string; type: string }[]
+              role: string
+            }[]
+            userMessage?: string
+          })
+        : null
+
+    expect(requestBody).not.toBeNull()
+    expect(requestBody?.userMessage).toBeUndefined()
+    expect(requestBody?.item.title).toBe("Ноутбук")
+    expect(requestBody?.messages.at(-1)).toEqual(
+      expect.objectContaining({
+        parts: [
+          {
+            text: "Привет",
+            type: "text"
+          }
+        ],
+        role: "user"
+      })
+    )
+
     await stream.ready
-    stream.push(toSseFrame("chunk", { content: "Част" }))
+    stream.push(
+      toUiMessageFrame({
+        messageId: "assistant-1",
+        type: "start"
+      })
+    )
+    stream.push(
+      toUiMessageFrame({
+        id: "text-1",
+        type: "text-start"
+      })
+    )
+    stream.push(
+      toUiMessageFrame({
+        delta: "Част",
+        id: "text-1",
+        type: "text-delta"
+      })
+    )
 
     await screen.findByText("Част")
     expect(screen.getByText("Привет")).toBeDefined()
     expect(
-      within(screen.getByTestId("ai-chat-message-user")).queryByText("Готово")
-    ).toBeNull()
+      within(screen.getByTestId("ai-chat-message-user")).getByText("Вы")
+    ).toBeDefined()
 
-    stream.push(toSseFrame("chunk", { content: "ь ответа" }))
-    stream.push(toSseFrame("done", { model: "test-model" }))
+    stream.push(
+      toUiMessageFrame({
+        delta: "ь ответа",
+        id: "text-1",
+        type: "text-delta"
+      })
+    )
+    stream.push(
+      toUiMessageFrame({
+        id: "text-1",
+        type: "text-end"
+      })
+    )
+    stream.push(toUiMessageFrame("[DONE]"))
     stream.close()
 
     await waitFor(() => {
@@ -173,7 +236,25 @@ describe("AdAiChat", () => {
     })
 
     await stream.ready
-    stream.push(toSseFrame("chunk", { content: "Частичный" }))
+    stream.push(
+      toUiMessageFrame({
+        messageId: "assistant-1",
+        type: "start"
+      })
+    )
+    stream.push(
+      toUiMessageFrame({
+        id: "text-1",
+        type: "text-start"
+      })
+    )
+    stream.push(
+      toUiMessageFrame({
+        delta: "Частичный",
+        id: "text-1",
+        type: "text-delta"
+      })
+    )
 
     await screen.findByText("Частичный")
 
@@ -184,15 +265,27 @@ describe("AdAiChat", () => {
     })
 
     expect(screen.getByText("Частичный")).toBeDefined()
-    expect(screen.queryByText("Печатает...")).toBeNull()
   })
 
   it("should show inline error and retry last message", async () => {
-    const firstStream = createControlledSseResponse()
     const secondStream = createControlledSseResponse()
 
     fetchMock
-      .mockResolvedValueOnce(firstStream.response)
+      .mockResolvedValueOnce(
+        new Response(
+          JSON.stringify({
+            code: "AI_PROVIDER_ERROR",
+            message: "Временная ошибка",
+            success: false
+          }),
+          {
+            headers: {
+              "Content-Type": "application/json"
+            },
+            status: 502
+          }
+        )
+      )
       .mockResolvedValueOnce(secondStream.response)
 
     render(<AdAiChatHarness />)
@@ -206,15 +299,6 @@ describe("AdAiChat", () => {
       expect(fetchMock).toHaveBeenCalledTimes(1)
     })
 
-    await firstStream.ready
-    firstStream.push(
-      toSseFrame("error", {
-        message: "Временная ошибка",
-        success: false
-      })
-    )
-    firstStream.close()
-
     const errorContainer = await screen.findByTestId("ai-chat-error")
     expect(within(errorContainer).getByText("Временная ошибка")).toBeDefined()
 
@@ -225,9 +309,39 @@ describe("AdAiChat", () => {
     })
 
     await secondStream.ready
-    secondStream.push(toSseFrame("chunk", { content: "Ответ после " }))
-    secondStream.push(toSseFrame("chunk", { content: "повтора" }))
-    secondStream.push(toSseFrame("done", { model: "test-model" }))
+    secondStream.push(
+      toUiMessageFrame({
+        messageId: "assistant-2",
+        type: "start"
+      })
+    )
+    secondStream.push(
+      toUiMessageFrame({
+        id: "text-2",
+        type: "text-start"
+      })
+    )
+    secondStream.push(
+      toUiMessageFrame({
+        delta: "Ответ после ",
+        id: "text-2",
+        type: "text-delta"
+      })
+    )
+    secondStream.push(
+      toUiMessageFrame({
+        delta: "повтора",
+        id: "text-2",
+        type: "text-delta"
+      })
+    )
+    secondStream.push(
+      toUiMessageFrame({
+        id: "text-2",
+        type: "text-end"
+      })
+    )
+    secondStream.push(toUiMessageFrame("[DONE]"))
     secondStream.close()
 
     await screen.findByText("Ответ после повтора")
