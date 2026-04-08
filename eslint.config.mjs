@@ -251,6 +251,7 @@ export default defineConfig(
             "../../../../../**",
 
             "react-dom/*",
+            "lodash-es/debounce",
             "zod/*",
 
             "app/*",
