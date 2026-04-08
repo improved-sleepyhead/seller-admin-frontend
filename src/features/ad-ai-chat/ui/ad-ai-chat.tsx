@@ -6,7 +6,6 @@ import {
   ConversationScrollButton,
   Message,
   MessageContent,
-  MessageResponse,
   PromptInput,
   PromptInputFooter,
   PromptInputSubmit,
@@ -89,13 +88,7 @@ export function AdAiChat({ disabled, form, itemId }: AdAiChatProps) {
                   key={message.id}
                 >
                   <MessageContent>
-                    {message.role === "assistant" ? (
-                      <MessageResponse isAnimating={isPending}>
-                        {messageText}
-                      </MessageResponse>
-                    ) : (
-                      <p className="whitespace-pre-wrap">{messageText}</p>
-                    )}
+                    <p className="whitespace-pre-wrap">{messageText}</p>
                   </MessageContent>
                 </Message>
               )

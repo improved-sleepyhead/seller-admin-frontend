@@ -1,17 +1,7 @@
-"use client"
-
-import { cjk } from "@streamdown/cjk"
-import { code } from "@streamdown/code"
-import { math } from "@streamdown/math"
-import { mermaid } from "@streamdown/mermaid"
-import { Streamdown } from "streamdown"
-
 import { cn } from "@/shared/lib/cn"
 
 import type { UIMessage } from "ai"
-import type { ComponentProps, HTMLAttributes } from "react"
-
-const streamdownPlugins = { cjk, code, math, mermaid }
+import type { HTMLAttributes } from "react"
 
 export interface MessageProps extends HTMLAttributes<HTMLDivElement> {
   from: UIMessage["role"]
@@ -49,20 +39,5 @@ export function MessageContent({
     >
       {children}
     </div>
-  )
-}
-
-export type MessageResponseProps = ComponentProps<typeof Streamdown>
-
-export function MessageResponse({ className, ...props }: MessageResponseProps) {
-  return (
-    <Streamdown
-      className={cn(
-        "size-full [&>*:first-child]:mt-0 [&>*:last-child]:mb-0",
-        className
-      )}
-      plugins={streamdownPlugins}
-      {...props}
-    />
   )
 }

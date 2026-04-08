@@ -4,7 +4,7 @@ export {
   ConversationEmptyState,
   ConversationScrollButton
 } from "./conversation"
-export { Message, MessageContent, MessageResponse } from "./message"
+export { Message, MessageContent } from "./message"
 export {
   PromptInput,
   PromptInputFooter,
