@@ -2,7 +2,7 @@ import { useChat } from "@ai-sdk/react"
 import { DefaultChatTransport, type ChatStatus, type UIMessage } from "ai"
 import { useCallback, useEffect, useMemo, useState } from "react"
 
-import { ensureValidAiPayload, type AdEditFormApi } from "@/entities/ad/model"
+import { ensureValidAiPayload, type AdEditFormApi } from "@/entities/ad/lib"
 import { getApiBaseUrl } from "@/shared/config/runtime-config"
 
 import { useAiChatHistory } from "./use-ai-chat-history"
