@@ -14,10 +14,6 @@ function getManualChunk(id: string): string | undefined {
     return undefined
   }
 
-  if (normalizedId.includes('/node_modules/lodash-es/')) {
-    return 'debounce'
-  }
-
   if (
     normalizedId.includes('/node_modules/@tanstack/react-query/') ||
     normalizedId.includes('/node_modules/axios/') ||
@@ -28,10 +24,13 @@ function getManualChunk(id: string): string | undefined {
 
   if (
     normalizedId.includes('/node_modules/@hookform/resolvers/') ||
-    normalizedId.includes('/node_modules/react-hook-form/') ||
-    normalizedId.includes('/node_modules/zod/')
+    normalizedId.includes('/node_modules/react-hook-form/')
   ) {
     return 'forms'
+  }
+
+  if (normalizedId.includes('/node_modules/zod/')) {
+    return 'validation'
   }
 
   if (
@@ -43,12 +42,23 @@ function getManualChunk(id: string): string | undefined {
   }
 
   if (
-    normalizedId.includes('/node_modules/@radix-ui/') ||
-    normalizedId.includes('/node_modules/lucide-react/') ||
+    normalizedId.includes('/node_modules/@radix-ui/react-checkbox/') ||
+    normalizedId.includes('/node_modules/@radix-ui/react-label/') ||
+    normalizedId.includes('/node_modules/@radix-ui/react-select/') ||
+    normalizedId.includes('/node_modules/@radix-ui/react-switch/')
+  ) {
+    return 'ui-controls'
+  }
+
+  if (
     normalizedId.includes('/node_modules/sonner/') ||
     normalizedId.includes('/node_modules/vaul/')
   ) {
-    return 'ui-primitives'
+    return 'ui-overlays'
+  }
+
+  if (normalizedId.includes('/node_modules/lucide-react/')) {
+    return 'icons'
   }
 
   return undefined
