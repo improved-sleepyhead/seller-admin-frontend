@@ -4,21 +4,7 @@ import tailwindcss from '@tailwindcss/vite'
 import react from '@vitejs/plugin-react'
 import { defineConfig } from 'vite'
 
-
 const src = fileURLToPath(new URL('./src', import.meta.url)).replace(/\\/g, '/')
-
-const fsdLayers = ['app', 'pages', 'widgets', 'features', 'entities', 'shared']
-
-const fsdAliases = fsdLayers.flatMap((layer) => [
-  {
-    find: new RegExp(`^${layer}$`),
-    replacement: `${src}/${layer}`,
-  },
-  {
-    find: new RegExp(`^${layer}/(.*)$`),
-    replacement: `${src}/${layer}/$1`,
-  },
-])
 
 export default defineConfig({
   plugins: [react(), tailwindcss()],
@@ -33,7 +19,6 @@ export default defineConfig({
         find: /^@\/(.*)$/,
         replacement: `${src}/$1`,
       },
-      ...fsdAliases,
     ],
     dedupe: ['react', 'react-dom'],
   },

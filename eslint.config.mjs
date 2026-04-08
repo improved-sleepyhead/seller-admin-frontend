@@ -107,6 +107,7 @@ const sharedPublicSubmoduleEntryPoints = [
   "@/shared/ui/loader",
   "@/shared/ui/page-state",
   "@/shared/ui/placeholders",
+  "@/shared/ui/ai-elements",
   "@/shared/ui/shadcn",
   "@/shared/ui/theme"
 ]

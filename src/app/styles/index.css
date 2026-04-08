@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@import "@/shared/ui/ai-elements/streamdown.css";
 
 @custom-variant dark (&:is(.dark *));
 
