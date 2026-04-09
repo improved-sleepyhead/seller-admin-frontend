@@ -1,5 +1,5 @@
 import type { AdsLayout, AdsListItemVM } from "@/entities/ad/api"
-import type { AdsListNavigationState } from "@/entities/ad/model"
+import type { AdsListNavigationState } from "@/entities/ad-list"
 
 export interface AdsListPageLoadingState {
   state: "loading"

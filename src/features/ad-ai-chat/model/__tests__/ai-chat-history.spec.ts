@@ -2,8 +2,6 @@
 
 import { beforeEach, describe, expect, it } from "vitest"
 
-import { resetDraftRegistryStore } from "@/entities/ad/model"
-
 import {
   getChatKey,
   readAdAiChatHistory,
@@ -35,7 +33,6 @@ function createTextMessage(
 describe("ai-chat-history", () => {
   beforeEach(() => {
     window.localStorage.clear()
-    resetDraftRegistryStore()
   })
 
   it("should store and restore UIMessage history", () => {

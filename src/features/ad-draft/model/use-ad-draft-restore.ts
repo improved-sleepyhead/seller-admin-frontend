@@ -2,7 +2,6 @@ import { useCallback, useEffect } from "react"
 
 import type { AdDraft } from "@/entities/ad/model"
 
-import { clearAdDraftMetadata } from "./ad-draft-metadata"
 import {
   closeRestoreDialog,
   markRestorePending,
@@ -100,7 +99,6 @@ export function useAdDraftRestore({
 
   const useServerVersion = useCallback(() => {
     removeAdDraft(itemId)
-    clearAdDraftMetadata(itemId)
     resetSession(itemId)
   }, [itemId])
 

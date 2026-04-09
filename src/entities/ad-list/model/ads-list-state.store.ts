@@ -1,21 +1,17 @@
 import { createStore, type StoreApi, useStore } from "zustand"
 
-/* eslint-disable import/no-internal-modules */
 import {
   AD_CATEGORIES,
-  type AdCategory,
-  type AdSortColumn,
-  type AdSortDirection
-} from "../api/ad.contracts"
-import {
   ADS_LIST_DEFAULT_URL_PARAMS,
   areAdsListUrlParamsEqual,
   createAdsSearchParams,
   parseAdsSearchParams,
+  type AdCategory,
   type AdsLayout,
-  type AdsListUrlParams
-} from "../api/ad.search-params"
-/* eslint-enable import/no-internal-modules */
+  type AdsListUrlParams,
+  type AdSortColumn,
+  type AdSortDirection
+} from "@/entities/ad/api"
 
 export interface AdsListState extends AdsListUrlParams {
   setSearch: (nextSearch: string) => void
@@ -141,9 +137,6 @@ function createAdsListStateStore(): AdsListStateStoreApi {
   }))
 }
 
-// This store is intentionally module-scoped and session-only.
-// URL search params are the persistence layer for list state, so a full reload
-// should rehydrate from the URL rather than from in-memory store persistence.
 const adsListStateStore = createAdsListStateStore()
 
 export function useAdsListState<Selected>(

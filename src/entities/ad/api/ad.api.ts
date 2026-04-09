@@ -101,7 +101,7 @@ export async function getAdById(
   })
 }
 
-export async function patchAd(
+export async function updateAd(
   id: number,
   item: ItemPatchIn,
   signal: AbortSignal

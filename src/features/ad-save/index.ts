@@ -1,2 +1,2 @@
-export { toItemPatch, useSaveAd } from "./model"
+export { useSaveAd } from "./model"
 export { SaveAdButton } from "./ui"

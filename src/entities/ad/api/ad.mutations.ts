@@ -1,6 +1,6 @@
 import { mutationOptions } from "@tanstack/react-query"
 
-import { patchAd } from "./ad.api"
+import { updateAd } from "./ad.api"
 import { adsKeys } from "./ad.queries"
 
 import type { ApiSuccessDto, ItemPatchIn } from "./ad.contracts"
@@ -16,7 +16,7 @@ export function updateAdMutation(id: number) {
       item,
       signal
     }: UpdateAdMutationVariables): Promise<ApiSuccessDto> =>
-      patchAd(id, item, signal),
+      updateAd(id, item, signal),
     mutationKey: [...adsKeys.detail(id), "update"] as const
   })
 }

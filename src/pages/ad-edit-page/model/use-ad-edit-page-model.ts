@@ -3,7 +3,7 @@ import { useMemo, useState } from "react"
 import { useLocation, useParams } from "react-router-dom"
 
 import { adEditDetailQuery, aiStatusQuery } from "@/entities/ad/api"
-import { getAdsListHref } from "@/entities/ad/model"
+import { getAdsListHref } from "@/entities/ad-list"
 import { useCategoryChangeConfirm } from "@/features/ad-category-change"
 import { useAdDraft } from "@/features/ad-draft"
 import { useSaveAd } from "@/features/ad-save"

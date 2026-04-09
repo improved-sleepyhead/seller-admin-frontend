@@ -1,4 +1,4 @@
-import { getAdsSearch, type AdsListNavigationState } from "@/entities/ad/model"
+import { getAdsSearch, type AdsListNavigationState } from "@/entities/ad-list"
 
 export function parseAdId(rawId: string | undefined): number | null {
   if (!rawId) {

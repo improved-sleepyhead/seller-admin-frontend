@@ -1,5 +1,5 @@
 import type { AdsLayout } from "@/entities/ad/api"
-import { useAdsListState } from "@/entities/ad/model"
+import { useAdsListState } from "@/entities/ad-list"
 
 interface UseAdsLayoutSwitchResult {
   activeLayout: AdsLayout
