@@ -251,6 +251,7 @@ export default defineConfig(
             "../../../../../**",
 
             "react-dom/*",
+            "lodash-es/debounce",
             "zod/*",
 
             "app/*",
@@ -380,9 +381,13 @@ export default defineConfig(
   {
     files: [
       "src/pages/*/index.ts",
+      "src/pages/*/{ui,model,api,lib,config}/index.ts",
       "src/widgets/*/index.ts",
+      "src/widgets/*/{ui,model,api,lib,config}/index.ts",
       "src/features/*/index.ts",
-      "src/entities/*/index.ts"
+      "src/features/*/{ui,model,api,lib,config}/index.ts",
+      "src/entities/*/index.ts",
+      "src/entities/*/{ui,model,api,lib,config}/index.ts"
     ],
     rules: {
       "import/no-internal-modules": "off"

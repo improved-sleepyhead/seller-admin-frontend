@@ -1,4 +1,4 @@
-import { debounce } from "lodash"
+import debounce from "lodash-es/debounce"
 import { useEffect } from "react"
 
 import type { AdEditFormValues } from "@/entities/ad/model"
