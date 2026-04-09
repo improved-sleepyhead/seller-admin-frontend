@@ -5,7 +5,6 @@ import { toast } from "sonner"
 
 import { invalidateAdAfterSave, updateAdMutation } from "@/entities/ad/api"
 import {
-  clearDraftRegistryMeta,
   type AdEditFormValues,
   type AdsListNavigationState,
   toItemPatch
@@ -55,7 +54,6 @@ export function useSaveAd({
       await invalidateAdAfterSave(queryClient, itemId)
 
       clearAdDraftAndChatStorage(itemId)
-      clearDraftRegistryMeta(itemId)
       toast.success("Объявление сохранено.")
 
       await navigate(getAdViewPath(itemId), {
