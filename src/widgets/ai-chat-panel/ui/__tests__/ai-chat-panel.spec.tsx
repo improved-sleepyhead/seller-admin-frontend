@@ -27,6 +27,7 @@ function mockMatchMedia(matches: boolean) {
 describe("AiChatPanel", () => {
   beforeEach(() => {
     vi.clearAllMocks()
+    vi.useRealTimers()
   })
 
   afterEach(() => {

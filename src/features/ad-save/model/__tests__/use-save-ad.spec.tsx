@@ -1,6 +1,8 @@
 /* @vitest-environment jsdom */
 
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 import { act, renderHook, waitFor } from "@testing-library/react"
+import { MemoryRouter } from "react-router-dom"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 
 const mocks = vi.hoisted(() => {
@@ -10,8 +12,7 @@ const mocks = vi.hoisted(() => {
     invalidateAdAfterSaveMock: vi.fn(),
     mutationFnMock: vi.fn(),
     navigateMock: vi.fn(),
-    successToastMock: vi.fn(),
-    toItemPatchMock: vi.fn()
+    successToastMock: vi.fn()
   }
 })
 
@@ -46,17 +47,6 @@ vi.mock("@/entities/ad/api", () => {
   }
 })
 
-vi.mock("@/entities/ad/model", async () => {
-  const actual = await vi.importActual<Record<string, unknown>>(
-    "@/entities/ad/model"
-  )
-
-  return {
-    ...actual,
-    toItemPatch: mocks.toItemPatchMock
-  }
-})
-
 vi.mock("../ad-save.storage", () => {
   return {
     clearAdDraftAndChatStorage: mocks.clearAdDraftAndChatStorageMock
@@ -64,13 +54,12 @@ vi.mock("../ad-save.storage", () => {
 })
 
 import type { AdEditFormValues } from "@/entities/ad/model"
+import { toItemPatch } from "@/entities/ad/model"
 import type { AdsListNavigationState } from "@/entities/ad-list"
-import {
-  createTestProvidersWrapper,
-  createTestQueryClient
-} from "@/shared/test"
 
 import { useSaveAd } from "../use-save-ad"
+
+import type { PropsWithChildren } from "react"
 
 const FORM_VALUES: AdEditFormValues = {
   category: "electronics",
@@ -86,29 +75,58 @@ const FORM_VALUES: AdEditFormValues = {
   title: "MacBook Pro"
 }
 
-const ITEM_PATCH = {
+const PARTIAL_FORM_VALUES: AdEditFormValues = {
   category: "electronics",
-  description: "Ноутбук в хорошем состоянии",
+  description: "Краткое описание",
   params: {
-    brand: "Apple",
-    color: "Silver",
+    brand: "",
+    color: "",
     condition: "used",
-    model: "MacBook Pro",
+    model: "MacBook Air",
     type: "laptop"
   },
-  price: 120000,
-  title: "MacBook Pro"
+  price: "90000",
+  title: "Черновик ноутбука"
 }
 
 const NAVIGATION_STATE: AdsListNavigationState = {
   adsSearch: "?q=macbook"
 }
 
+function createTestQueryClient(): QueryClient {
+  return new QueryClient({
+    defaultOptions: {
+      mutations: {
+        retry: false
+      },
+      queries: {
+        retry: false
+      }
+    }
+  })
+}
+
+function createWrapper(queryClient = createTestQueryClient()) {
+  function Wrapper({ children }: PropsWithChildren) {
+    return (
+      <MemoryRouter>
+        <QueryClientProvider client={queryClient}>
+          {children}
+        </QueryClientProvider>
+      </MemoryRouter>
+    )
+  }
+
+  return {
+    queryClient,
+    wrapper: Wrapper
+  }
+}
+
 describe("useSaveAd", () => {
   beforeEach(() => {
     vi.clearAllMocks()
     mocks.invalidateAdAfterSaveMock.mockResolvedValue(undefined)
-    mocks.toItemPatchMock.mockReturnValue(ITEM_PATCH)
   })
 
   afterEach(() => {
@@ -120,10 +138,7 @@ describe("useSaveAd", () => {
       success: true
     })
 
-    const queryClient = createTestQueryClient()
-    const { wrapper } = createTestProvidersWrapper({
-      queryClient
-    })
+    const { queryClient, wrapper } = createWrapper()
     const { result } = renderHook(
       () =>
         useSaveAd({
@@ -139,7 +154,6 @@ describe("useSaveAd", () => {
       await result.current.saveAd(FORM_VALUES)
     })
 
-    expect(mocks.toItemPatchMock).toHaveBeenCalledWith(FORM_VALUES)
     expect(mocks.mutationFnMock).toHaveBeenCalledTimes(1)
 
     const mutationVariables = mocks.mutationFnMock.mock.calls[0]?.[0] as {
@@ -147,7 +161,7 @@ describe("useSaveAd", () => {
       signal: AbortSignal
     }
 
-    expect(mutationVariables.item).toEqual(ITEM_PATCH)
+    expect(mutationVariables.item).toEqual(toItemPatch(FORM_VALUES))
     expect(mutationVariables.signal).toBeInstanceOf(AbortSignal)
 
     await waitFor(() => {
@@ -164,10 +178,50 @@ describe("useSaveAd", () => {
     })
   })
 
+  it("should build partial save payload for incomplete form values", async () => {
+    mocks.mutationFnMock.mockResolvedValue({
+      success: true
+    })
+
+    const { wrapper } = createWrapper()
+    const { result } = renderHook(
+      () =>
+        useSaveAd({
+          itemId: 42
+        }),
+      {
+        wrapper
+      }
+    )
+
+    await act(async () => {
+      await result.current.saveAd(PARTIAL_FORM_VALUES)
+    })
+
+    const mutationVariables = mocks.mutationFnMock.mock.calls[0]?.[0] as {
+      item: unknown
+      signal: AbortSignal
+    }
+
+    expect(mutationVariables.item).toEqual({
+      category: "electronics",
+      description: "Краткое описание",
+      params: {
+        brand: undefined,
+        color: undefined,
+        condition: "used",
+        model: "MacBook Air",
+        type: "laptop"
+      },
+      price: 90000,
+      title: "Черновик ноутбука"
+    })
+  })
+
   it("should show error toast and keep local state untouched when save fails", async () => {
     mocks.mutationFnMock.mockRejectedValue(new Error("Ошибка сохранения"))
 
-    const { wrapper } = createTestProvidersWrapper()
+    const { wrapper } = createWrapper()
     const { result } = renderHook(
       () =>
         useSaveAd({

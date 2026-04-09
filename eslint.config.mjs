@@ -104,7 +104,6 @@ const sharedPublicSubmoduleEntryPoints = [
   "@/shared/config/runtime-config",
   "@/shared/lib/cn",
   "@/shared/lib/draft-autosave-guard",
-  "@/shared/test",
   "@/shared/ui/loader",
   "@/shared/ui/page-state",
   "@/shared/ui/placeholders",
