@@ -123,7 +123,8 @@ export default defineConfig(
       ".codex/**",
       "public/config.js",
       "*.d.ts",
-      "eslint.config.mjs"
+      "eslint.config.mjs",
+      "vitest.setup.ts"
     ]
   },
 
