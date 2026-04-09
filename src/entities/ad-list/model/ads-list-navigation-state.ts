@@ -1,9 +1,7 @@
-/* eslint-disable import/no-internal-modules */
 import {
   serializeAdsListUrlParams,
   type AdsListUrlParams
-} from "../api/ad.search-params"
-/* eslint-enable import/no-internal-modules */
+} from "@/entities/ad/api"
 
 const ADS_LIST_PATH = "/ads"
 

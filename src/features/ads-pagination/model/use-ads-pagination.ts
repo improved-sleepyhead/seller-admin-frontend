@@ -1,7 +1,7 @@
 import { useCallback, useMemo } from "react"
 
 import { ADS_LIST_PAGE_SIZE } from "@/entities/ad/api"
-import { useAdsListState } from "@/entities/ad/model"
+import { useAdsListState } from "@/entities/ad-list"
 
 interface UseAdsPaginationOptions {
   total: number

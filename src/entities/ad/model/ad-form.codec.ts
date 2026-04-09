@@ -170,7 +170,9 @@ function normalizeParams(
 }
 
 const FORM_VALUE_BUILDERS = {
-  auto: (ad: Extract<AdDetailsDto, { category: "auto" }>): AdEditFormValues => ({
+  auto: (
+    ad: Extract<AdDetailsDto, { category: "auto" }>
+  ): AdEditFormValues => ({
     category: ad.category,
     description: ad.description ?? "",
     params: {
@@ -242,7 +244,9 @@ const ITEM_UPDATE_BUILDERS = {
       enginePower: toStrictNumber(values.params.enginePower),
       mileage: toStrictNumber(values.params.mileage),
       model: toTrimmedString(values.params.model),
-      transmission: toTrimmedString(values.params.transmission) as "automatic" | "manual",
+      transmission: toTrimmedString(values.params.transmission) as
+        | "automatic"
+        | "manual",
       yearOfManufacture: toStrictNumber(values.params.yearOfManufacture)
     }
   }),

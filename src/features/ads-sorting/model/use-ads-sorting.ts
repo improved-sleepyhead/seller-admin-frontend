@@ -1,7 +1,7 @@
 import { useCallback } from "react"
 
 import { type AdSortColumn, type AdSortDirection } from "@/entities/ad/api"
-import { useAdsListState } from "@/entities/ad/model"
+import { useAdsListState } from "@/entities/ad-list"
 
 interface UseAdsSortingResult {
   sortColumn: AdSortColumn

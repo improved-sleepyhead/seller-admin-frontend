@@ -138,7 +138,9 @@ describe("ad-form.codec", () => {
       title: "Квартира"
     }
 
-    expect(normalizeAdEditFormValues(left)).toEqual(normalizeAdEditFormValues(right))
+    expect(normalizeAdEditFormValues(left)).toEqual(
+      normalizeAdEditFormValues(right)
+    )
     expect(areAdEditFormValuesEqual(left, right)).toBe(true)
   })
 

@@ -4,11 +4,8 @@ import { useNavigate } from "react-router-dom"
 import { toast } from "sonner"
 
 import { invalidateAdAfterSave, updateAdMutation } from "@/entities/ad/api"
-import {
-  type AdEditFormValues,
-  type AdsListNavigationState,
-  toItemPatch
-} from "@/entities/ad/model"
+import { type AdEditFormValues, toItemPatch } from "@/entities/ad/model"
+import type { AdsListNavigationState } from "@/entities/ad-list"
 import { isAppApiError } from "@/shared/api/error"
 
 import { clearAdDraftAndChatStorage } from "./ad-save.storage"

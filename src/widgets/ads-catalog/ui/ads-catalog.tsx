@@ -1,8 +1,8 @@
 import { Link } from "react-router-dom"
 
 import type { AdsLayout, AdsListItemVM } from "@/entities/ad/api"
-import type { AdsListNavigationState } from "@/entities/ad/model"
 import { AdCard, AdCardListItem } from "@/entities/ad/ui"
+import type { AdsListNavigationState } from "@/entities/ad-list"
 import { ResetFiltersButton } from "@/features/ads-filtering"
 import {
   Button,

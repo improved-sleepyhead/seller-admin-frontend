@@ -10,7 +10,7 @@ import {
   cancelAdsListQuery,
   toListQuery
 } from "@/entities/ad/api"
-import { createAdsNavigationState, useAdsListState } from "@/entities/ad/model"
+import { createAdsNavigationState, useAdsListState } from "@/entities/ad-list"
 
 import { getAdsListPageCatalogState } from "./ads-list-page.catalog-state"
 import { useAdsListUrlSync } from "./use-ads-list-url-sync"
