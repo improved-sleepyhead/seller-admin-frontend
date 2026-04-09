@@ -6,7 +6,7 @@ import {
   type AiPriceResponse,
   type ItemUpdateIn
 } from "@/entities/ad/api"
-import { ensureValidAiPayload, type AdEditFormApi } from "@/entities/ad/model"
+import { ensureValidAiPayload, type AdEditFormApi } from "@/entities/ad/lib"
 import { isAppApiError } from "@/shared/api/error"
 
 interface ActionOptions {

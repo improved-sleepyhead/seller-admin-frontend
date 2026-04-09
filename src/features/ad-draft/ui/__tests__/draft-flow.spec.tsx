@@ -12,11 +12,7 @@ import { useForm } from "react-hook-form"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 
 import type { AdDetailsDto } from "@/entities/ad/api"
-import {
-  resetDraftRegistryStore,
-  type AdDraft,
-  type AdEditFormValues
-} from "@/entities/ad/model"
+import type { AdDraft, AdEditFormValues } from "@/entities/ad/model"
 
 import { getDraftKey, useAdDraft } from "../../model"
 import { DraftRestoreDialog } from "../draft-restore-dialog"
@@ -129,7 +125,6 @@ describe("Draft restore flow", () => {
     vi.useRealTimers()
     window.localStorage.clear()
     window.sessionStorage.clear()
-    resetDraftRegistryStore()
   })
 
   afterEach(() => {

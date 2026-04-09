@@ -2,7 +2,6 @@ import { AlertTriangle } from "lucide-react"
 import { Link } from "react-router-dom"
 
 import type { AdDetailsVM } from "@/entities/ad/api"
-import type { AdsListNavigationState } from "@/entities/ad/model"
 import {
   AdDescription,
   AdImage,
@@ -10,6 +9,7 @@ import {
   AdRevisionBadge,
   AdSpecsList
 } from "@/entities/ad/ui"
+import type { AdsListNavigationState } from "@/entities/ad-list"
 import {
   Button,
   Card,
@@ -94,7 +94,7 @@ export function AdViewLayout({
           <CardContent className="p-0">
             <AdImage
               alt={ad.title}
-              className="aspect-[4/3] w-full rounded-none"
+              className="aspect-4/3 w-full rounded-none"
               src={getMainImage(ad.images)}
             />
           </CardContent>
@@ -145,7 +145,7 @@ export function AdViewLayoutSkeleton() {
       <Skeleton className="h-16 w-full rounded-lg" />
 
       <div className="grid gap-6 lg:grid-cols-[minmax(0,1.3fr)_minmax(0,1fr)]">
-        <Skeleton className="aspect-[4/3] w-full rounded-lg" />
+        <Skeleton className="aspect-4/3 w-full rounded-lg" />
         <Card>
           <CardContent className="space-y-3 p-6">
             <Skeleton className="h-6 w-1/2" />

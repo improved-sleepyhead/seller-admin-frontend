@@ -1,8 +1,8 @@
 import { Link } from "react-router-dom"
 
 import type { AdsLayout, AdsListItemVM } from "@/entities/ad/api"
-import type { AdsListNavigationState } from "@/entities/ad/model"
 import { AdCard, AdCardListItem } from "@/entities/ad/ui"
+import type { AdsListNavigationState } from "@/entities/ad-list"
 import { ResetFiltersButton } from "@/features/ads-filtering"
 import {
   Button,
@@ -124,7 +124,7 @@ export function AdsCatalogSkeleton({ layout }: AdsCatalogSkeletonProps) {
           key={`ads-grid-skeleton-${index}`}
           className="overflow-hidden py-0"
         >
-          <Skeleton className="aspect-[4/3] w-full" />
+          <Skeleton className="aspect-4/3 w-full" />
           <CardContent className="space-y-3 p-4">
             <Skeleton className="h-5 w-3/4" />
             <Skeleton className="h-5 w-1/2" />

@@ -16,7 +16,7 @@ export function PageLoader({
     <div
       aria-live="polite"
       className={cn(
-        "flex min-h-[40vh] w-full items-center justify-center",
+        "flex min-h-[80vh] w-full items-center justify-center",
         className
       )}
       role="status"

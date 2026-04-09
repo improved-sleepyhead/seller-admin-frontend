@@ -1,13 +1,9 @@
-import { debounce } from "lodash"
+import debounce from "lodash-es/debounce"
 import { useEffect } from "react"
 
 import type { AdEditFormValues } from "@/entities/ad/model"
 import { consumeNextAutosaveSkip } from "@/shared/lib/draft-autosave-guard"
 
-import {
-  clearAdDraftMetadata,
-  upsertAdDraftMetadata
-} from "./ad-draft-metadata"
 import { setDraftSavedAt } from "./ad-draft-state.store"
 import { isDraftDifferentFromServer } from "./draft-comparator"
 import { removeAdDraft, saveAdDraft } from "./draft-storage"
@@ -39,14 +35,12 @@ export function useAdDraftAutosave({
 
       if (consumeNextAutosaveSkip(itemId)) {
         removeAdDraft(itemId)
-        clearAdDraftMetadata(itemId)
         setDraftSavedAt(itemId, null)
         return
       }
 
       if (!isDraftDifferentFromServer(values, serverSnapshot)) {
         removeAdDraft(itemId)
-        clearAdDraftMetadata(itemId)
         setDraftSavedAt(itemId, null)
         return
       }
@@ -59,7 +53,6 @@ export function useAdDraftAutosave({
         savedAt,
         serverHash
       })
-      upsertAdDraftMetadata(itemId, savedAt)
       setDraftSavedAt(itemId, savedAt)
     }
 

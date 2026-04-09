@@ -1,9 +1,21 @@
-import { type AdEditFormApi, type AiChatMessage } from "@/entities/ad/model"
-import { cn } from "@/shared/lib/cn"
-import { Loader } from "@/shared/ui/loader"
-import { Badge, Button, Label, Textarea } from "@/shared/ui/shadcn"
+import { type AdEditFormApi } from "@/entities/ad/model"
+import {
+  Conversation,
+  ConversationContent,
+  ConversationEmptyState,
+  ConversationScrollButton,
+  Message,
+  MessageContent,
+  PromptInput,
+  PromptInputFooter,
+  PromptInputSubmit,
+  PromptInputTextarea
+} from "@/shared/ui/ai-elements"
+import { Button, Label } from "@/shared/ui/shadcn"
 
-import { useAiChat } from "../model"
+import { useAdAiChatModel } from "../model"
+
+import type { UIMessage } from "ai"
 
 interface AdAiChatProps {
   disabled: boolean
@@ -11,84 +23,33 @@ interface AdAiChatProps {
   itemId: number
 }
 
-const AI_CHAT_ROLE_LABELS = {
-  assistant: "AI",
-  system: "Система",
-  user: "Вы"
-} satisfies Record<AiChatMessage["role"], string>
+function getMessageText(message: UIMessage): string {
+  return message.parts
+    .flatMap(part => {
+      if (part.type !== "text" || part.text.trim().length === 0) {
+        return []
+      }
 
-const AI_CHAT_STATUS_CONFIG = {
-  done: {
-    label: "Готово",
-    variant: "outline"
-  },
-  error: {
-    label: "Ошибка",
-    variant: "destructive"
-  },
-  streaming: {
-    label: "Печатает...",
-    variant: "secondary"
-  }
-} satisfies Record<
-  AiChatMessage["status"],
-  {
-    label: string
-    variant: "destructive" | "outline" | "secondary"
-  }
->
-
-function getRoleLabel(role: AiChatMessage["role"]): string {
-  return AI_CHAT_ROLE_LABELS[role]
-}
-
-function getStatusLabel(status: AiChatMessage["status"]): string {
-  return AI_CHAT_STATUS_CONFIG[status].label
-}
-
-function getStatusBadgeVariant(status: AiChatMessage["status"]) {
-  return AI_CHAT_STATUS_CONFIG[status].variant
-}
-
-function ChatMessageItem({ message }: { message: AiChatMessage }) {
-  const isUser = message.role === "user"
-
-  return (
-    <article
-      className={cn("flex", isUser ? "justify-end" : "justify-start")}
-      data-testid={`ai-chat-message-${message.role}`}
-    >
-      <div
-        className={cn(
-          "max-w-[90%] space-y-2 rounded-md border px-3 py-2 text-sm",
-          isUser ? "bg-primary text-primary-foreground" : "bg-muted"
-        )}
-      >
-        <div className="flex items-center justify-between gap-2">
-          <p className="text-xs font-medium">{getRoleLabel(message.role)}</p>
-          <Badge variant={getStatusBadgeVariant(message.status)}>
-            {getStatusLabel(message.status)}
-          </Badge>
-        </div>
-        <p className="whitespace-pre-wrap">{message.content}</p>
-      </div>
-    </article>
-  )
+      return [part.text]
+    })
+    .join("")
 }
 
 export function AdAiChat({ disabled, form, itemId }: AdAiChatProps) {
   const {
     canRetry,
     canSubmit,
-    cancelStreaming,
+    clearInlineError,
     inlineError,
     inputValue,
     isPending,
     messages,
     retryLastMessage,
     sendMessage,
-    setInputValue
-  } = useAiChat({
+    setInputValue,
+    status,
+    stopStreaming
+  } = useAdAiChatModel({
     disabled,
     form,
     itemId
@@ -96,32 +57,52 @@ export function AdAiChat({ disabled, form, itemId }: AdAiChatProps) {
   const chatInputId = `ad-ai-chat-input-${itemId}`
   const chatErrorId = `ad-ai-chat-error-${itemId}`
   const hasInlineError = inlineError !== null
+  const isChatEmpty = messages.every(
+    message => getMessageText(message).trim().length === 0
+  )
 
   return (
-    <div className="space-y-4">
-      <div
-        aria-live="polite"
-        aria-relevant="additions text"
-        className="max-h-80 space-y-3 overflow-y-auto rounded-md border p-3"
+    <div className="flex min-h-0 flex-1 flex-col gap-4 overflow-hidden">
+      <Conversation
+        className="bg-background min-h-0 flex-1 overflow-y-auto rounded-2xl border"
         data-testid="ai-chat-messages"
-        role="log"
       >
-        {messages.length === 0 ? (
-          <p className="text-muted-foreground text-sm">
-            История чата пуста. Задайте вопрос по объявлению.
-          </p>
-        ) : (
-          messages.map(message => (
-            <ChatMessageItem key={message.id} message={message} />
-          ))
-        )}
-      </div>
+        <ConversationContent className="gap-3 p-4">
+          {isChatEmpty ? (
+            <ConversationEmptyState
+              description="Задайте вопрос по текущему объявлению."
+              title="История чата пуста"
+            />
+          ) : (
+            messages.map(message => {
+              const messageText = getMessageText(message)
+
+              if (messageText.trim().length === 0) {
+                return null
+              }
+
+              return (
+                <Message
+                  data-testid={`ai-chat-message-${message.role}`}
+                  from={message.role}
+                  key={message.id}
+                >
+                  <MessageContent>
+                    <p className="whitespace-pre-wrap">{messageText}</p>
+                  </MessageContent>
+                </Message>
+              )
+            })
+          )}
+        </ConversationContent>
+        <ConversationScrollButton />
+      </Conversation>
 
       {inlineError !== null ? (
         <div
           id={chatErrorId}
           aria-live="assertive"
-          className="bg-destructive/10 space-y-2 rounded-md border border-red-500/40 p-3"
+          className="bg-destructive/12 border-destructive/35 space-y-2 rounded-xl border p-3"
           data-testid="ai-chat-error"
           role="alert"
         >
@@ -140,63 +121,50 @@ export function AdAiChat({ disabled, form, itemId }: AdAiChatProps) {
         </div>
       ) : null}
 
-      <form
-        className="space-y-3"
-        onSubmit={event => {
+      <Label className="sr-only" htmlFor={chatInputId}>
+        Сообщение для AI чата
+      </Label>
+
+      <PromptInput
+        className="bg-background shrink-0 rounded-2xl border p-2 shadow-xs"
+        onSubmit={(message, event) => {
           event.preventDefault()
-          void sendMessage()
+          void sendMessage(message.text)
         }}
       >
-        <Label className="sr-only" htmlFor={chatInputId}>
-          Сообщение для AI чата
-        </Label>
-        <Textarea
+        <PromptInputTextarea
           aria-describedby={hasInlineError ? chatErrorId : undefined}
           aria-invalid={hasInlineError}
+          className="max-h-40 min-h-14 border-0 bg-transparent pr-12 shadow-none focus-visible:ring-0"
           disabled={disabled || isPending || form === null}
           id={chatInputId}
+          maxLength={1200}
           placeholder={
             disabled
               ? "AI чат недоступен"
-              : "Напишите сообщение для AI помощника..."
+              : "Спросите, что улучшить в объявлении..."
           }
-          rows={3}
           value={inputValue}
           onChange={event => {
-            setInputValue(event.target.value)
-          }}
-          onKeyDown={event => {
-            if (
-              event.key !== "Enter" ||
-              event.shiftKey ||
-              event.nativeEvent.isComposing
-            ) {
-              return
+            if (hasInlineError) {
+              clearInlineError()
             }
 
-            event.preventDefault()
-            void sendMessage()
+            setInputValue(event.target.value)
           }}
         />
-        <div className="flex items-center justify-end gap-2">
-          {isPending ? (
-            <Button type="button" variant="outline" onClick={cancelStreaming}>
-              Отменить
-            </Button>
-          ) : null}
-
-          <Button disabled={!canSubmit} type="submit">
-            {isPending ? (
-              <>
-                <Loader />
-                Генерируем...
-              </>
-            ) : (
-              "Отправить"
-            )}
-          </Button>
-        </div>
-      </form>
+        <PromptInputFooter className="justify-end">
+          <PromptInputSubmit
+            aria-label={
+              isPending ? "Остановить ответ AI" : "Отправить сообщение"
+            }
+            className="rounded-full"
+            disabled={disabled || form === null || (!canSubmit && !isPending)}
+            onStop={stopStreaming}
+            status={status}
+          />
+        </PromptInputFooter>
+      </PromptInput>
     </div>
   )
 }

@@ -1,8 +1,6 @@
 import type { AdDetailsDto } from "@/entities/ad/api"
-import type {
-  AdEditFormValues,
-  AdsListNavigationState
-} from "@/entities/ad/model"
+import type { AdEditFormValues } from "@/entities/ad/model"
+import type { AdsListNavigationState } from "@/entities/ad-list"
 
 import type { UseFormReturn } from "react-hook-form"
 
@@ -44,7 +42,9 @@ export interface CategoryChangeRequest {
 
 export interface FormSectionProps {
   ad: AdDetailsDto
+  ai: AdEditPageAiState
   draftSavedAt: string | null
+  form: FormApi | null
   onCategoryChangeRequest: (request: CategoryChangeRequest) => void
   onFormReady: (form: FormApi | null) => void
   onSubmit: (values: AdEditFormValues) => Promise<void>

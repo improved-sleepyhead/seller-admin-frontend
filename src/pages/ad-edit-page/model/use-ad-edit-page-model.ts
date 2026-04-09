@@ -3,7 +3,7 @@ import { useMemo, useState } from "react"
 import { useLocation, useParams } from "react-router-dom"
 
 import { adEditDetailQuery, aiStatusQuery } from "@/entities/ad/api"
-import { getAdsListHref } from "@/entities/ad/model"
+import { getAdsListHref } from "@/entities/ad-list"
 import { useCategoryChangeConfirm } from "@/features/ad-category-change"
 import { useAdDraft } from "@/features/ad-draft"
 import { useSaveAd } from "@/features/ad-save"
@@ -93,7 +93,9 @@ export function useAdEditPageModel(): AdEditPageModel {
 
     return {
       ad,
+      ai: aiState,
       draftSavedAt: draft.draftSavedAt,
+      form: editForm,
       onCategoryChangeRequest: categoryChange.requestCategoryChange,
       onFormReady: setEditForm,
       onSubmit: saveState.saveAd,
@@ -101,8 +103,10 @@ export function useAdEditPageModel(): AdEditPageModel {
     }
   }, [
     ad,
+    aiState,
     categoryChange.requestCategoryChange,
     draft.draftSavedAt,
+    editForm,
     saveState.isSavePending,
     saveState.saveAd
   ])

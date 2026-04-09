@@ -50,6 +50,7 @@ temp/
 .env
 .env.*
 !.env.example
+public/config.js
 
 # OS / editor junk
 .DS_Store

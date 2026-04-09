@@ -1,6 +1,6 @@
 # Seller Admin Frontend
 
-SPA для управления объявлениями продавца.
+SPA для управления объявлениями продавца: список с фильтрами и сортировкой, просмотр карточки, редактирование с локальными draft/chat flows и AI-подсказки через backend-owned contract.
 
 Стек:
 
@@ -28,9 +28,14 @@ Backend-репозиторий находится здесь:
 
 В backend-репозитории есть отдельный гайд по запуску.
 
-Для локальной интеграции в этом проекте дефолтный API base URL:
+Для AI-функций backend использует OpenRouter. API key для backend нужно взять на
+`https://openrouter.ai/` и передать backend по его инструкции запуска.
 
-- `http://localhost:8080`
+Для локальной интеграции в этом проекте каноничный API base URL:
+
+- `http://localhost`
+
+Если backend запущен напрямую на другом порту например `:8080`, укажи этот URL в runtime config frontend.
 
 ## Быстрый старт
 
@@ -55,18 +60,18 @@ npm run dev
 
 - `http://localhost:5173`
 
-Frontend по умолчанию читает API base URL из `public/config.js`. В репозитории уже задан дефолт:
+Frontend читает API base URL из `public/config.js`. Для текущего локального backend-сценария используй:
 
 ```js
 window.APP_CONFIG = {
-  API_BASE_URL: "http://localhost:8080"
+  API_BASE_URL: "http://localhost"
 };
 ```
 
 То есть для дефолтного локального запуска обычно достаточно:
 
 1. Поднять backend по его гайду.
-2. Убедиться, что backend доступен на `http://localhost:8080`.
+2. Убедиться, что backend доступен на `http://localhost`.
 3. Выполнить `npm install`.
 4. Выполнить `npm run dev`.
 5. Открыть `http://localhost:5173`.
@@ -162,6 +167,6 @@ Health endpoint контейнера:
 
 ## Примечания
 
+- Runtime config живёт в `window.APP_CONFIG`: в dev он задаётся через `public/config.js`, а в Docker контейнере генерируется на старте из `API_BASE_URL`.
 - Query cache в приложении intentional `memory-only`: после full refresh данные запрашиваются заново.
-- Для AI и save flows frontend опирается на backend-owned contract и не работает с provider-specific payload напрямую.
-- Для редактирования объявлений используются локальные draft/chat persistence flows поверх app runtime.
+- AI description, price и chat flows идут только через backend endpoints. Frontend не хранит OpenRouter key и не работает с provider-specific payload напрямую.

@@ -1,4 +1,4 @@
-const SKIP_NEXT_DRAFT_AUTOSAVE_KEY_PREFIX = "ad-draft:skip-next-autosave:v1:"
+const SKIP_NEXT_DRAFT_AUTOSAVE_KEY_PREFIX = "ad-draft:skip-next-autosave:"
 
 function isBrowserEnvironment(): boolean {
   return typeof window !== "undefined"

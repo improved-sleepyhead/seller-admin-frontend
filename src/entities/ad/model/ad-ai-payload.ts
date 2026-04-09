@@ -1,10 +1,11 @@
-import { ItemUpdateInSchema, type ItemUpdateIn } from "../api"
+import { safeParseItemUpdate } from "./ad-form.codec"
 import { REQUIRED_KEYS_BY_CATEGORY } from "./ad.constants"
 
+import type { ItemUpdateIn } from "../api"
+import type { AdEditFormApi } from "./ad-form.types"
 import type { AdEditFormValues } from "./ad.types"
-import type { Path, UseFormReturn } from "react-hook-form"
+import type { Path } from "react-hook-form"
 
-type AdEditFormApi = UseFormReturn<AdEditFormValues, unknown, AdEditFormValues>
 type AdEditFormPath = Path<AdEditFormValues>
 
 interface ValidPayload {
@@ -41,104 +42,6 @@ function toRequiredFieldPaths(
   )
 
   return ["title", "price", ...categoryFieldPaths]
-}
-
-function toStrictTrimmedString(value: unknown): string {
-  if (typeof value === "string") {
-    return value.trim()
-  }
-
-  if (typeof value === "number" && Number.isFinite(value)) {
-    return String(value)
-  }
-
-  return ""
-}
-
-function toStrictNumber(value: unknown): number {
-  if (typeof value === "number") {
-    return Number.isFinite(value) ? value : Number.NaN
-  }
-
-  if (typeof value === "string") {
-    const trimmedValue = value.trim()
-
-    if (trimmedValue.length === 0) {
-      return Number.NaN
-    }
-
-    const parsedValue = Number(trimmedValue)
-    return Number.isFinite(parsedValue) ? parsedValue : Number.NaN
-  }
-
-  return Number.NaN
-}
-
-function toOptionalDescription(value: string): string | undefined {
-  const trimmedValue = value.trim()
-
-  return trimmedValue.length > 0 ? trimmedValue : undefined
-}
-
-interface AiPayloadBaseCandidate {
-  description?: string
-  price: number
-  title: string
-}
-
-const PAYLOAD_BUILDERS = {
-  auto: (values: AdEditFormValues, basePayload: AiPayloadBaseCandidate) => ({
-    ...basePayload,
-    category: "auto",
-    params: {
-      brand: toStrictTrimmedString(values.params.brand),
-      model: toStrictTrimmedString(values.params.model),
-      yearOfManufacture: toStrictNumber(values.params.yearOfManufacture),
-      transmission: toStrictTrimmedString(values.params.transmission),
-      mileage: toStrictNumber(values.params.mileage),
-      enginePower: toStrictNumber(values.params.enginePower)
-    }
-  }),
-  electronics: (
-    values: AdEditFormValues,
-    basePayload: AiPayloadBaseCandidate
-  ) => ({
-    ...basePayload,
-    category: "electronics",
-    params: {
-      type: toStrictTrimmedString(values.params.type),
-      brand: toStrictTrimmedString(values.params.brand),
-      model: toStrictTrimmedString(values.params.model),
-      condition: toStrictTrimmedString(values.params.condition),
-      color: toStrictTrimmedString(values.params.color)
-    }
-  }),
-  real_estate: (
-    values: AdEditFormValues,
-    basePayload: AiPayloadBaseCandidate
-  ) => ({
-    ...basePayload,
-    category: "real_estate",
-    params: {
-      type: toStrictTrimmedString(values.params.type),
-      address: toStrictTrimmedString(values.params.address),
-      area: toStrictNumber(values.params.area),
-      floor: toStrictNumber(values.params.floor)
-    }
-  })
-} satisfies Record<
-  AdEditFormValues["category"],
-  (values: AdEditFormValues, basePayload: AiPayloadBaseCandidate) => unknown
->
-
-function buildPayload(values: AdEditFormValues): unknown {
-  const basePayload = {
-    title: values.title.trim(),
-    description: toOptionalDescription(values.description),
-    price: toStrictNumber(values.price)
-  }
-
-  return PAYLOAD_BUILDERS[values.category](values, basePayload)
 }
 
 function getFieldPath(path: readonly PropertyKey[]): AdEditFormPath | null {
@@ -227,9 +130,7 @@ export async function ensureValidAiPayload(
     return { isValid: false }
   }
 
-  const parseResult = ItemUpdateInSchema.safeParse(
-    buildPayload(form.getValues())
-  )
+  const parseResult = safeParseItemUpdate(form.getValues())
 
   if (!parseResult.success) {
     applyFieldErrors(form, parseResult.error.issues)
