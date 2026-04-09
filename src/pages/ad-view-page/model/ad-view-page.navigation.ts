@@ -2,7 +2,7 @@ import {
   getAdsListHref,
   getAdsSearch,
   type AdsListNavigationState
-} from "@/entities/ad/model"
+} from "@/entities/ad-list"
 
 export function parseAdId(rawId: string | undefined): number | null {
   if (!rawId) {

@@ -4,14 +4,10 @@ import { useNavigate } from "react-router-dom"
 import { toast } from "sonner"
 
 import { invalidateAdAfterSave, updateAdMutation } from "@/entities/ad/api"
-import {
-  clearDraftRegistryMeta,
-  type AdEditFormValues,
-  type AdsListNavigationState
-} from "@/entities/ad/model"
+import { type AdEditFormValues, toItemPatch } from "@/entities/ad/model"
+import type { AdsListNavigationState } from "@/entities/ad-list"
 import { isAppApiError } from "@/shared/api/error"
 
-import { toItemPatch } from "./ad-save.payload"
 import { clearAdDraftAndChatStorage } from "./ad-save.storage"
 
 interface UseSaveAdOptions {
@@ -55,7 +51,6 @@ export function useSaveAd({
       await invalidateAdAfterSave(queryClient, itemId)
 
       clearAdDraftAndChatStorage(itemId)
-      clearDraftRegistryMeta(itemId)
       toast.success("Объявление сохранено.")
 
       await navigate(getAdViewPath(itemId), {

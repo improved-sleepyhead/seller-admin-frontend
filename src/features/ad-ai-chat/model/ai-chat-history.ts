@@ -1,11 +1,5 @@
 import { z } from "zod/v4"
 
-import {
-  clearDraftRegistryMeta,
-  getDraftRegistryMeta,
-  upsertDraftRegistryMeta
-} from "@/entities/ad/model"
-
 import type { UIMessage } from "ai"
 
 const AI_CHAT_STORAGE_KEY_PREFIX = "ad-ai-chat:"
@@ -52,32 +46,6 @@ function normalizeTextPart(
     ...part,
     state: "done"
   }
-}
-
-function syncChatMetadata(itemId: number, hasChatHistory: boolean): void {
-  const draftMeta = getDraftRegistryMeta(itemId)
-  const hasDraft = draftMeta?.hasDraft ?? false
-
-  if (hasChatHistory) {
-    upsertDraftRegistryMeta(itemId, {
-      hasChatHistory: true,
-      hasDraft,
-      updatedAt: new Date().toISOString()
-    })
-
-    return
-  }
-
-  if (!hasDraft) {
-    clearDraftRegistryMeta(itemId)
-    return
-  }
-
-  upsertDraftRegistryMeta(itemId, {
-    hasChatHistory: false,
-    hasDraft: true,
-    updatedAt: new Date().toISOString()
-  })
 }
 
 function toUiMessage(
@@ -172,11 +140,9 @@ export function readAdAiChatHistory(itemId: number): UIMessage[] {
   )
 
   if (currentHistory !== null) {
-    syncChatMetadata(itemId, currentHistory.length > 0)
     return currentHistory
   }
 
-  syncChatMetadata(itemId, false)
   return []
 }
 
@@ -193,7 +159,6 @@ export function saveAdAiChatHistory(
 
   if (normalizedMessages.length === 0) {
     window.localStorage.removeItem(storageKey)
-    syncChatMetadata(itemId, false)
     return
   }
 
@@ -204,5 +169,4 @@ export function saveAdAiChatHistory(
   }
 
   window.localStorage.setItem(storageKey, JSON.stringify(payload))
-  syncChatMetadata(itemId, true)
 }

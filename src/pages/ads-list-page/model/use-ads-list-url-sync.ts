@@ -9,7 +9,7 @@ import {
   getAdsListUrlParamsFromState,
   hydrateAdsListStateFromUrl,
   subscribeToAdsListState
-} from "@/entities/ad/model"
+} from "@/entities/ad-list"
 
 function toSearchWithoutPrefix(search: string): string {
   return search.startsWith("?") ? search.slice(1) : search
