@@ -102,7 +102,7 @@ export function AdAiChat({ disabled, form, itemId }: AdAiChatProps) {
         <div
           id={chatErrorId}
           aria-live="assertive"
-          className="bg-destructive/10 space-y-2 rounded-xl border border-red-500/40 p-3"
+          className="bg-destructive/12 border-destructive/35 space-y-2 rounded-xl border p-3"
           data-testid="ai-chat-error"
           role="alert"
         >
