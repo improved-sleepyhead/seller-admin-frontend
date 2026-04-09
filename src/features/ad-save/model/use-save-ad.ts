@@ -7,11 +7,11 @@ import { invalidateAdAfterSave, updateAdMutation } from "@/entities/ad/api"
 import {
   clearDraftRegistryMeta,
   type AdEditFormValues,
-  type AdsListNavigationState
+  type AdsListNavigationState,
+  toItemPatch
 } from "@/entities/ad/model"
 import { isAppApiError } from "@/shared/api/error"
 
-import { toItemPatch } from "./ad-save.payload"
 import { clearAdDraftAndChatStorage } from "./ad-save.storage"
 
 interface UseSaveAdOptions {

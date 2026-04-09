@@ -2,9 +2,9 @@ export {
   getAdById,
   getAdsList,
   getAiStatus,
-  patchAd,
   requestAiDescription,
-  requestAiPrice
+  requestAiPrice,
+  updateAd
 } from "./ad.api"
 export * from "./ad.contracts"
 export { type AdDetailsVM, type AdsListItemVM } from "./ad.mapper"
@@ -35,4 +35,8 @@ export {
   type AdsListBackendQueryParams,
   type AdsListUrlParams
 } from "./ad.search-params"
-export { AiUsageSchema, ItemUpdateInSchema } from "./ad.schemas"
+export {
+  AiUsageSchema,
+  ItemPatchInSchema,
+  ItemUpdateInSchema
+} from "./ad.schemas"

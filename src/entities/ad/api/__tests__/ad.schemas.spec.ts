@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest"
 import {
   AdDetailsSchema,
   AdListResponseSchema,
+  ItemPatchInSchema,
   ItemUpdateInSchema
 } from "../ad.schemas"
 
@@ -216,6 +217,28 @@ describe("ItemUpdateInSchema", () => {
       },
       price: 120_000,
       title: "MacBook Pro"
+    })
+
+    expect(parseResult.success).toBe(false)
+  })
+})
+
+describe("ItemPatchInSchema", () => {
+  it("should parse partial patch payload", () => {
+    const parseResult = ItemPatchInSchema.safeParse({
+      category: "auto",
+      params: {
+        mileage: 120000
+      },
+      title: "Toyota Corolla"
+    })
+
+    expect(parseResult.success).toBe(true)
+  })
+
+  it("should reject empty patch payload", () => {
+    const parseResult = ItemPatchInSchema.safeParse({
+      category: "auto"
     })
 
     expect(parseResult.success).toBe(false)

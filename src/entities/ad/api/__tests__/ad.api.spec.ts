@@ -13,9 +13,9 @@ import {
   getAdById,
   getAdsList,
   getAiStatus,
-  patchAd,
   requestAiDescription,
-  requestAiPrice
+  requestAiPrice,
+  updateAd
 } from "../ad.api"
 
 import type { ItemPatchIn, ItemUpdateIn } from "../ad.contracts"
@@ -89,17 +89,15 @@ describe("ad.api", () => {
   it("should build PATCH /items/:id request and parse success dto", async () => {
     const item: ItemPatchIn = {
       category: "auto",
-      description: "Новое описание",
       params: {
-        brand: "Toyota"
+        mileage: 95_000
       },
-      price: 910_000,
       title: "Toyota Corolla"
     }
 
     apiPatchMock.mockResolvedValue({ success: true })
 
-    const response = await patchAd(1, item, signal)
+    const response = await updateAd(1, item, signal)
 
     expect(apiPatchMock).toHaveBeenCalledWith("/items/1", item, signal)
     expect(response).toEqual({ success: true })

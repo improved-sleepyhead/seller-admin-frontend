@@ -13,6 +13,7 @@ import {
   type AiPriceResponse,
   type AiStatusDto,
   type ApiSuccessDto,
+  type ItemPatchIn,
   type ItemUpdateIn
 } from "./ad.contracts"
 
@@ -128,6 +129,39 @@ export const ItemUpdateInSchema: z.ZodType<ItemUpdateIn> = z.discriminatedUnion(
     })
   ]
 )
+
+export const ItemPatchInSchema: z.ZodType<ItemPatchIn> = z
+  .discriminatedUnion("category", [
+    z.object({
+      category: z.literal("auto"),
+      description: z.string().optional(),
+      params: AutoParamsInSchema.partial().optional(),
+      price: z.number().optional(),
+      title: z.string().min(1).optional()
+    }),
+    z.object({
+      category: z.literal("real_estate"),
+      description: z.string().optional(),
+      params: RealEstateParamsInSchema.partial().optional(),
+      price: z.number().optional(),
+      title: z.string().min(1).optional()
+    }),
+    z.object({
+      category: z.literal("electronics"),
+      description: z.string().optional(),
+      params: ElectronicsParamsInSchema.partial().optional(),
+      price: z.number().optional(),
+      title: z.string().min(1).optional()
+    })
+  ])
+  .refine(
+    patch =>
+      patch.title !== undefined ||
+      patch.description !== undefined ||
+      patch.price !== undefined ||
+      patch.params !== undefined,
+    "At least one field should be provided for PATCH /items/:id."
+  )
 
 export const SuccessSchema: z.ZodType<ApiSuccessDto> = z.object({
   success: z.literal(true)

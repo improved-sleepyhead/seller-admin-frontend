@@ -1,5 +1,15 @@
 export { AD_CATEGORY_LABELS } from "./ad.constants"
-export type { AdEditFormApi, AiPayloadResult } from "./ad-ai-payload"
+export {
+  areAdEditFormValuesEqual,
+  getAdServerHash,
+  normalizeAdEditFormValues,
+  safeParseItemUpdate,
+  toAdEditFormValues,
+  toItemPatch,
+  toItemUpdate
+} from "./ad-form.codec"
+export type { AdEditFormApi } from "./ad-form.types"
+export type { AiPayloadResult } from "./ad-ai-payload"
 export {
   createAdsNavigationState,
   getAdsListHref,
