@@ -1,3 +1,5 @@
+/// <reference types="vitest/config" />
+
 import { fileURLToPath, URL } from 'node:url'
 
 import tailwindcss from '@tailwindcss/vite'
@@ -87,6 +89,10 @@ export default defineConfig({
 
   optimizeDeps: {
     include: ['react', 'react-dom', 'react/jsx-runtime'],
+  },
+
+  test: {
+    setupFiles: './vitest.setup.ts',
   },
 
   build: {

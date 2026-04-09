@@ -1,6 +1,7 @@
 /* @vitest-environment jsdom */
 
-import { cleanup, fireEvent, render, screen } from "@testing-library/react"
+import { cleanup, render, screen } from "@testing-library/react"
+import userEvent from "@testing-library/user-event"
 import { MemoryRouter } from "react-router-dom"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 
@@ -56,29 +57,32 @@ describe("AdsCatalog", () => {
       <AdsCatalog ads={ADS} layout="grid" navigationState={NAVIGATION_STATE} />
     )
 
-    expect(screen.getByRole("link", { name: /MacBook Pro/i })).not.toBeNull()
     expect(
-      screen.getByRole("link", { name: /Toyota Corolla/i }).getAttribute("href")
-    ).toBe("/ads/2")
+      screen.getByRole("link", { name: /MacBook Pro/i })
+    ).toBeInTheDocument()
+    expect(
+      screen.getByRole("link", { name: /Toyota Corolla/i })
+    ).toHaveAttribute("href", "/ads/2")
 
     rerender(
       <AdsCatalog ads={ADS} layout="list" navigationState={NAVIGATION_STATE} />
     )
 
     expect(screen.getAllByRole("link")).toHaveLength(2)
-    expect(screen.getByText("Требует доработок")).not.toBeNull()
+    expect(screen.getByText("Требует доработок")).toBeInTheDocument()
   })
 
-  it("should render retry action for catalog error state", () => {
+  it("should render retry action for catalog error state", async () => {
+    const user = userEvent.setup()
     const onRetry = vi.fn()
 
     renderWithRouter(
       <AdsErrorState message="Сервис недоступен" onRetry={onRetry} />
     )
 
-    fireEvent.click(screen.getByRole("button", { name: "Повторить" }))
+    await user.click(screen.getByRole("button", { name: "Повторить" }))
 
-    expect(screen.getByText("Сервис недоступен")).not.toBeNull()
+    expect(screen.getByText("Сервис недоступен")).toBeInTheDocument()
     expect(onRetry).toHaveBeenCalledTimes(1)
   })
 })

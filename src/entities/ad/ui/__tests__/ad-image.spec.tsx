@@ -17,19 +17,21 @@ describe("AdImage", () => {
   it("should render placeholder when src is empty", () => {
     render(<AdImage src="" alt="Объявление" />)
 
-    expect(screen.queryByText("Нет изображения")).not.toBeNull()
+    expect(screen.getByText("Нет изображения")).toBeInTheDocument()
   })
 
   it("should render placeholder when image loading fails", () => {
     render(<AdImage src="https://example.com/broken.jpg" alt="Объявление" />)
 
     const image = screen.getByRole("img", { name: "Объявление" })
-    expect(image).not.toBeNull()
-    expect(screen.queryByText("Нет изображения")).toBeNull()
+    expect(image).toBeInTheDocument()
+    expect(screen.queryByText("Нет изображения")).not.toBeInTheDocument()
 
     fireEvent.error(image)
 
-    expect(screen.queryByText("Нет изображения")).not.toBeNull()
-    expect(screen.queryByRole("img", { name: "Объявление" })).toBeNull()
+    expect(screen.getByText("Нет изображения")).toBeInTheDocument()
+    expect(
+      screen.queryByRole("img", { name: "Объявление" })
+    ).not.toBeInTheDocument()
   })
 })

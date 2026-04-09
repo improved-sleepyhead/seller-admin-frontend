@@ -1,6 +1,7 @@
 /* @vitest-environment jsdom */
 
-import { cleanup, fireEvent, render, screen } from "@testing-library/react"
+import { cleanup, render, screen } from "@testing-library/react"
+import userEvent from "@testing-library/user-event"
 import { MemoryRouter } from "react-router-dom"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 
@@ -36,22 +37,25 @@ describe("AdEditLayout", () => {
       />
     )
 
-    expect(screen.getByText("Форма объявления")).not.toBeNull()
-    expect(screen.getByRole("button", { name: "Сохранить" })).not.toBeNull()
-    expect(screen.getByText("AI зона")).not.toBeNull()
+    expect(screen.getByText("Форма объявления")).toBeInTheDocument()
+    expect(
+      screen.getByRole("button", { name: "Сохранить" })
+    ).toBeInTheDocument()
+    expect(screen.getByText("AI зона")).toBeInTheDocument()
   })
 
-  it("should render not-found and error states with actions", () => {
+  it("should render not-found and error states with actions", async () => {
+    const user = userEvent.setup()
     const onRetry = vi.fn()
 
     const { rerender } = renderWithRouter(
       <AdEditNotFoundState backHref="/ads?q=macbook" />
     )
 
-    expect(screen.getByText("Объявление не найдено")).not.toBeNull()
+    expect(screen.getByText("Объявление не найдено")).toBeInTheDocument()
     expect(
       screen.getByRole("link", { name: "Вернуться к списку" })
-    ).not.toBeNull()
+    ).toBeInTheDocument()
 
     rerender(
       <AdEditErrorState
@@ -61,9 +65,9 @@ describe("AdEditLayout", () => {
       />
     )
 
-    fireEvent.click(screen.getByRole("button", { name: "Повторить" }))
+    await user.click(screen.getByRole("button", { name: "Повторить" }))
 
-    expect(screen.getByText("Ошибка загрузки")).not.toBeNull()
+    expect(screen.getByText("Ошибка загрузки")).toBeInTheDocument()
     expect(onRetry).toHaveBeenCalledTimes(1)
   })
 })

@@ -1,6 +1,7 @@
 /* @vitest-environment jsdom */
 
-import { cleanup, fireEvent, render, screen } from "@testing-library/react"
+import { cleanup, render, screen } from "@testing-library/react"
+import userEvent from "@testing-library/user-event"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 
 import { AiChatPanel } from "../ai-chat-panel"
@@ -43,13 +44,17 @@ describe("AiChatPanel", () => {
       </AiChatPanel>
     )
 
-    expect(screen.queryByRole("button", { name: "Открыть AI чат" })).toBeNull()
-    expect(screen.queryByText("AI чат")).not.toBeNull()
-    expect(screen.queryByText("AI доступен")).not.toBeNull()
-    expect(screen.queryByText("Содержимое чата")).not.toBeNull()
+    expect(
+      screen.queryByRole("button", { name: "Открыть AI чат" })
+    ).not.toBeInTheDocument()
+    expect(screen.getByText("AI чат")).toBeInTheDocument()
+    expect(screen.getByText("AI доступен")).toBeInTheDocument()
+    expect(screen.getByText("Содержимое чата")).toBeInTheDocument()
   })
 
   it("should open mobile sheet only after explicit trigger", async () => {
+    const user = userEvent.setup()
+
     mockMatchMedia(true)
 
     render(
@@ -60,14 +65,14 @@ describe("AiChatPanel", () => {
 
     const openButton = screen.getByRole("button", { name: "Открыть AI чат" })
 
-    expect(screen.queryByText("Содержимое чата")).toBeNull()
+    expect(screen.queryByText("Содержимое чата")).not.toBeInTheDocument()
 
-    fireEvent.click(openButton)
+    await user.click(openButton)
 
-    expect(await screen.findByText("Содержимое чата")).not.toBeNull()
+    expect(await screen.findByText("Содержимое чата")).toBeInTheDocument()
     expect(
       screen.queryByText("Диалог сохраняется локально для текущего объявления.")
-    ).not.toBeNull()
+    ).toBeInTheDocument()
   })
 
   it("should keep mobile trigger disabled when chat is unavailable", () => {
@@ -83,6 +88,6 @@ describe("AiChatPanel", () => {
       name: "Открыть AI чат"
     })
 
-    expect(openButton.getAttribute("disabled")).not.toBeNull()
+    expect(openButton).toBeDisabled()
   })
 })

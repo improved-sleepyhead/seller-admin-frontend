@@ -1,13 +1,8 @@
 /* @vitest-environment jsdom */
 
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
-import {
-  cleanup,
-  fireEvent,
-  render,
-  screen,
-  waitFor
-} from "@testing-library/react"
+import { cleanup, render, screen, waitFor } from "@testing-library/react"
+import userEvent from "@testing-library/user-event"
 import {
   type ComponentProps,
   type ReactElement,
@@ -170,21 +165,22 @@ describe("AdEditFormSection", () => {
   })
 
   it("should send full current form payload for AI description on edit page", async () => {
+    const user = userEvent.setup()
+
     renderEditPageForm(<AdEditPageFormHarness />)
 
-    fireEvent.change(screen.getByLabelText("Заголовок"), {
-      target: { value: "MacBook Air 13" }
-    })
+    const titleInput = screen.getByLabelText("Заголовок")
+
+    await user.clear(titleInput)
+    await user.type(titleInput, "MacBook Air 13")
 
     await waitFor(() => {
       expect(
-        screen
-          .getByRole("button", { name: "Улучшить описание" })
-          .getAttribute("disabled")
-      ).toBeNull()
+        screen.getByRole("button", { name: "Улучшить описание" })
+      ).toBeEnabled()
     })
 
-    fireEvent.click(screen.getByRole("button", { name: "Улучшить описание" }))
+    await user.click(screen.getByRole("button", { name: "Улучшить описание" }))
 
     await waitFor(() => {
       expect(mocks.requestAiDescriptionMock).toHaveBeenCalledTimes(1)
@@ -206,21 +202,22 @@ describe("AdEditFormSection", () => {
   })
 
   it("should send full current form payload for AI price on edit page", async () => {
+    const user = userEvent.setup()
+
     renderEditPageForm(<AdEditPageFormHarness />)
 
-    fireEvent.change(screen.getByLabelText("Описание"), {
-      target: { value: "Обновлённое описание для AI цены" }
-    })
+    const descriptionInput = screen.getByLabelText("Описание")
+
+    await user.clear(descriptionInput)
+    await user.type(descriptionInput, "Обновлённое описание для AI цены")
 
     await waitFor(() => {
       expect(
-        screen
-          .getByRole("button", { name: "Предложить цену" })
-          .getAttribute("disabled")
-      ).toBeNull()
+        screen.getByRole("button", { name: "Предложить цену" })
+      ).toBeEnabled()
     })
 
-    fireEvent.click(screen.getByRole("button", { name: "Предложить цену" }))
+    await user.click(screen.getByRole("button", { name: "Предложить цену" }))
 
     await waitFor(() => {
       expect(mocks.requestAiPriceMock).toHaveBeenCalledTimes(1)
@@ -242,35 +239,31 @@ describe("AdEditFormSection", () => {
   })
 
   it("should block AI request when required category field is empty", async () => {
+    const user = userEvent.setup()
+
     renderEditPageForm(<AdEditPageFormHarness />)
 
-    fireEvent.change(screen.getByLabelText("Бренд"), {
-      target: { value: "" }
-    })
-    fireEvent.blur(screen.getByLabelText("Бренд"))
+    const brandInput = screen.getByLabelText("Бренд")
 
-    fireEvent.click(screen.getByRole("button", { name: "Улучшить описание" }))
+    await user.clear(brandInput)
+    await user.click(screen.getByRole("button", { name: "Улучшить описание" }))
 
-    await waitFor(() => {
-      expect(mocks.requestAiDescriptionMock).not.toHaveBeenCalled()
-    })
+    expect(mocks.requestAiDescriptionMock).not.toHaveBeenCalled()
 
-    expect(screen.getByText("Заполните обязательное поле")).not.toBeNull()
+    expect(screen.getByText("Заполните обязательное поле")).toBeInTheDocument()
   })
 
   it("should submit partial save payload from edit page form", async () => {
+    const user = userEvent.setup()
+
     renderEditPageForm(
       <AdEditPageFormHarness onSubmitPayload={mocks.submitPayloadMock} />
     )
 
-    fireEvent.change(screen.getByLabelText("Бренд"), {
-      target: { value: "" }
-    })
-    fireEvent.change(screen.getByLabelText("Цвет"), {
-      target: { value: "" }
-    })
+    await user.clear(screen.getByLabelText("Бренд"))
+    await user.clear(screen.getByLabelText("Цвет"))
 
-    fireEvent.click(screen.getByRole("button", { name: "Сохранить" }))
+    await user.click(screen.getByRole("button", { name: "Сохранить" }))
 
     await waitFor(() => {
       expect(mocks.submitPayloadMock).toHaveBeenCalledTimes(1)
@@ -292,18 +285,21 @@ describe("AdEditFormSection", () => {
   })
 
   it("should submit full save payload from edit page form", async () => {
+    const user = userEvent.setup()
+
     renderEditPageForm(
       <AdEditPageFormHarness onSubmitPayload={mocks.submitPayloadMock} />
     )
 
-    fireEvent.change(screen.getByLabelText("Заголовок"), {
-      target: { value: "  Обновлённый MacBook  " }
-    })
-    fireEvent.change(screen.getByLabelText("Цена"), {
-      target: { value: "150000" }
-    })
+    const titleInput = screen.getByLabelText("Заголовок")
+    const priceInput = screen.getByLabelText("Цена")
 
-    fireEvent.click(screen.getByRole("button", { name: "Сохранить" }))
+    await user.clear(titleInput)
+    await user.type(titleInput, "  Обновлённый MacBook  ")
+    await user.clear(priceInput)
+    await user.type(priceInput, "150000")
+
+    await user.click(screen.getByRole("button", { name: "Сохранить" }))
 
     await waitFor(() => {
       expect(mocks.submitPayloadMock).toHaveBeenCalledTimes(1)
